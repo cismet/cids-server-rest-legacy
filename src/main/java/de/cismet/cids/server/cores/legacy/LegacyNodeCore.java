@@ -18,6 +18,7 @@ import java.util.List;
 
 import de.cismet.cids.server.api.types.Node;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.NodeCore;
 
@@ -40,7 +41,7 @@ public class LegacyNodeCore implements NodeCore {
     @Override
     public List<ObjectNode> getRootNodes(final User user, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node[] cidsNodes = LegacyCoreBackend.getInstance()
                         .getService()
                         .getRoots(cidsUser);
@@ -93,7 +94,7 @@ public class LegacyNodeCore implements NodeCore {
     @Override
     public ObjectNode getNode(final User user, final String nodeKey, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
@@ -109,7 +110,7 @@ public class LegacyNodeCore implements NodeCore {
     @Override
     public List<ObjectNode> getChildren(final User user, final String nodeKey, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
@@ -134,7 +135,7 @@ public class LegacyNodeCore implements NodeCore {
     @Override
     public List<ObjectNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node[] cidsChildren = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(cidsUser, nodeQuery);

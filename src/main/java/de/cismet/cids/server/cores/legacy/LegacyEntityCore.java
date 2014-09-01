@@ -29,6 +29,7 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.api.types.SimpleObjectQuery;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.EntityCore;
 import de.cismet.cids.server.exceptions.InvalidClassKeyException;
@@ -151,7 +152,7 @@ public class LegacyEntityCore implements EntityCore {
             final boolean requestResultingInstance) {
         try {
             final String[] classKeySplitted = classKey.split("@");
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String domain = classKeySplitted[1];
             final int cid = Integer.parseInt(classKeySplitted[0]);
             final int oid = Integer.parseInt(objectId);
@@ -190,7 +191,7 @@ public class LegacyEntityCore implements EntityCore {
 //        }
         try {
             final String[] classKeySplitted = classKey.split("@");
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String domain = classKeySplitted[1];
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
             final CidsBean updatedBean = beanNew.persist(LegacyCoreBackend.getInstance().getService(),
@@ -228,7 +229,7 @@ public class LegacyEntityCore implements EntityCore {
             final boolean deduplicate) {
         try {
             final String[] classKeySplitted = classKey.split("@");
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String domain = classKeySplitted[1];
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
                         .getService()
@@ -251,7 +252,7 @@ public class LegacyEntityCore implements EntityCore {
     @Override
     public boolean deleteObject(final User user, final String classKey, final String objectId, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String[] classKeySplitted = classKey.split("@");
             final String domain = classKeySplitted[1];
             final MetaObject metaObject = LegacyCoreBackend.getInstance()

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.UserCore;
 
@@ -55,11 +56,11 @@ public class LegacyUserCore implements UserCore {
             user.setUserGroups(userGroupNames);
             LegacyCoreBackend.getInstance().registerUser(cidsUser, user);
             user.setValidated(true);
-            return user;
         } catch (final Exception ex) {
             log.error("Fehler beim Anmelden", ex);
-            return null;
+            user.setValidated(false);
         }
+        return user;
     }
 
     @Override

@@ -14,6 +14,7 @@ import Sirius.server.middleware.types.MetaObject;
 import org.openide.util.lookup.ServiceProvider;
 
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.PermissionCore;
 
@@ -35,7 +36,7 @@ public class LegacyPermissionCore implements PermissionCore {
     @Override
     public boolean hasClassReadPermission(final User user, final String role, final String classKey) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String[] classKeySplitted = classKey.split("@");
             final String domain = classKeySplitted[1];
             final int classId = Integer.parseInt(classKeySplitted[0]);
@@ -55,7 +56,7 @@ public class LegacyPermissionCore implements PermissionCore {
     @Override
     public boolean hasClassWritePermission(final User user, final String role, final String classKey) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String[] classKeySplitted = classKey.split("@");
             final String domain = classKeySplitted[1];
             final int classId = Integer.parseInt(classKeySplitted[0]);
@@ -95,7 +96,7 @@ public class LegacyPermissionCore implements PermissionCore {
             final String objectKey) {
         try {
             final String[] classKeySplitted = classKey.split("@");
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String domain = classKeySplitted[1];
             final int cid = Integer.parseInt(classKeySplitted[0]);
             final int oid = Integer.parseInt(objectKey);
@@ -116,7 +117,7 @@ public class LegacyPermissionCore implements PermissionCore {
             final String classKey,
             final String attributeKey) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String[] classKeySplitted = classKey.split("@");
             final String domain = classKeySplitted[1];
             final int classId = Integer.parseInt(classKeySplitted[0]);
@@ -139,7 +140,7 @@ public class LegacyPermissionCore implements PermissionCore {
             final String classKey,
             final String attributeKey) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String[] classKeySplitted = classKey.split("@");
             final String domain = classKeySplitted[1];
             final int classId = Integer.parseInt(classKeySplitted[0]);
@@ -160,7 +161,7 @@ public class LegacyPermissionCore implements PermissionCore {
     @Override
     public boolean hasNodeReadPermission(final User user, final String role, final String nodeKey) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
@@ -176,7 +177,7 @@ public class LegacyPermissionCore implements PermissionCore {
     @Override
     public boolean hasNodeWritePermission(final User user, final String role, final String nodeKey) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user);
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
