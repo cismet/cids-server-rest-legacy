@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.server.cores.legacy;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import de.cismet.cids.server.cores.CidsServerCore;
@@ -17,6 +19,7 @@ import de.cismet.cids.server.cores.CidsServerCore;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyCidsServerCore implements CidsServerCore {
 

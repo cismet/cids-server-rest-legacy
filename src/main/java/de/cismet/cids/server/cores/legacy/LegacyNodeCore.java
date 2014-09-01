@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import java.util.ArrayList;
@@ -28,12 +30,12 @@ import de.cismet.cids.server.cores.NodeCore;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyNodeCore implements NodeCore {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LegacyNodeCore.class);
     private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
 
     //~ Methods ----------------------------------------------------------------
@@ -54,7 +56,7 @@ public class LegacyNodeCore implements NodeCore {
 
             return nodes;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }
@@ -102,7 +104,7 @@ public class LegacyNodeCore implements NodeCore {
             final Node node = createCidsNode(cidsNode);
             return MAPPER.convertValue(node, ObjectNode.class);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         } // Tools | Templates.
     }
@@ -126,7 +128,7 @@ public class LegacyNodeCore implements NodeCore {
 
             return nodes;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         } // Tools | Templates.
         // Tools | Templates.
@@ -148,7 +150,7 @@ public class LegacyNodeCore implements NodeCore {
 
             return children;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         } // Tools | Templates.
     }

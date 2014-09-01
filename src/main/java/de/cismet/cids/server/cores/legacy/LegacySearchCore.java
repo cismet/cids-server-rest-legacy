@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import org.postgresql.util.Base64;
@@ -41,13 +43,13 @@ import de.cismet.cids.server.search.CidsServerSearch;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacySearchCore implements SearchCore {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LegacySearchCore.class);
 
     //~ Methods ----------------------------------------------------------------
 
@@ -71,7 +73,7 @@ public class LegacySearchCore implements SearchCore {
             }
             return searchInfos;
         } catch (final Exception ex) {
-            LOG.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }
@@ -195,7 +197,7 @@ public class LegacySearchCore implements SearchCore {
             }
             return all;
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
         return null;
     }
