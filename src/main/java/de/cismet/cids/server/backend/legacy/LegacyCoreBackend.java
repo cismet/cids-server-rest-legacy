@@ -33,6 +33,7 @@ import java.util.Set;
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.cores.legacy.LegacyCidsServerCore;
 import de.cismet.cids.server.data.configkeys.AttributeConfig;
 import de.cismet.cids.server.data.configkeys.CidsAttributeConfigurationFlagKey;
 import de.cismet.cids.server.data.configkeys.CidsAttributeConfigurationKey;
@@ -57,8 +58,6 @@ public class LegacyCoreBackend {
     private static final LegacyCoreBackend INSTANCE = new LegacyCoreBackend();
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LegacyCoreBackend.class);
 
-    private static final String CALLSERVER_URL = "http://localhost:9917/callserver/binary";
-
     //~ Instance fields --------------------------------------------------------
 
     private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<User, Sirius.server.newuser.User>();
@@ -69,7 +68,7 @@ public class LegacyCoreBackend {
         new HashMap<String, HashMap<String, String>>();
     private final HashMap<String, List<String>> serverSearchParamsListMap = new HashMap<String, List<String>>();
 
-    private final CallServerService service = new RESTfulSerialInterfaceConnector(CALLSERVER_URL);
+    private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver());
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
 
@@ -148,7 +147,12 @@ public class LegacyCoreBackend {
     public void setEnableTestMode(final boolean enabled) {
         testModeEnabled = enabled;
         try {
-            testUser = service.getUser(null, null, "testdomain", "testuser", "testpassword");
+            testUser = service.getUser(
+                    null,
+                    null,
+                    LegacyCidsServerCore.getTestDomain(),
+                    LegacyCidsServerCore.getTestUser(),
+                    LegacyCidsServerCore.getTestPassword());
         } catch (final Exception ex) {
             log.error(ex, ex);
         }
