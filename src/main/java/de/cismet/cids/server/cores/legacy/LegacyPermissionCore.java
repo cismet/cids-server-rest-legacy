@@ -11,6 +11,8 @@ import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import de.cismet.cids.server.api.types.User;
@@ -24,12 +26,9 @@ import de.cismet.cids.server.cores.PermissionCore;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyPermissionCore implements PermissionCore {
-
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LegacyNodeCore.class);
 
     //~ Methods ----------------------------------------------------------------
 
@@ -47,7 +46,7 @@ public class LegacyPermissionCore implements PermissionCore {
 
             return metaClass.getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;
@@ -67,7 +66,7 @@ public class LegacyPermissionCore implements PermissionCore {
 
             return metaClass.getPermissions().hasWritePermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;
@@ -105,7 +104,7 @@ public class LegacyPermissionCore implements PermissionCore {
                         .getMetaObject(cidsUser, oid, cid, domain);
             return metaObject.hasObjectWritePermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;
@@ -128,7 +127,7 @@ public class LegacyPermissionCore implements PermissionCore {
 
             return ((Attribute)metaClass.getAttributeByName(attributeKey)).getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;
@@ -152,7 +151,7 @@ public class LegacyPermissionCore implements PermissionCore {
             return ((Attribute)metaClass.getAttributeByName(attributeKey)).getPermissions()
                         .hasWritePermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;
@@ -168,7 +167,7 @@ public class LegacyPermissionCore implements PermissionCore {
 
             return cidsNode.getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;
@@ -184,7 +183,7 @@ public class LegacyPermissionCore implements PermissionCore {
 
             return cidsNode.getPermissions().hasWritePermission(cidsUser);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         } // Tools | Templates.
 
         return false;

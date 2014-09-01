@@ -13,6 +13,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import java.util.ArrayList;
@@ -33,12 +35,11 @@ import de.cismet.cids.server.data.legacy.CidsClass;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyEntityInfoCore implements EntityInfoCore {
 
     //~ Static fields/initializers ---------------------------------------------
-
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LegacyEntityInfoCore.class);
 
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
 
@@ -62,7 +63,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
 
             return all;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -82,7 +83,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 return node;
             }
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -106,7 +107,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 return node;
             }
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -123,7 +124,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(beanNew.toJSONString(true));
             return node;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }

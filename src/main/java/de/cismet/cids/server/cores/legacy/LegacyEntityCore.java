@@ -15,6 +15,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import lombok.NonNull;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Date;
@@ -33,6 +37,7 @@ import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.EntityCore;
 import de.cismet.cids.server.exceptions.InvalidClassKeyException;
+import de.cismet.cids.server.exceptions.InvalidRoleException;
 import de.cismet.cids.server.exceptions.InvalidUserException;
 
 /**
@@ -41,12 +46,12 @@ import de.cismet.cids.server.exceptions.InvalidUserException;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyEntityCore implements EntityCore {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LegacyEntityCore.class);
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
     private static final Pattern CLASSKEY_PATTERN = Pattern.compile("^/([^/]*)/");
     private static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
@@ -54,9 +59,9 @@ public class LegacyEntityCore implements EntityCore {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public List<ObjectNode> getAllObjects(final User user,
-            final String classkey,
-            final String role,
+    public List<ObjectNode> getAllObjects(@NonNull final User user,
+            @NonNull final String classKey,
+            @NonNull final String role,
             final int limit,
             final int offset,
             final String expand,
@@ -64,8 +69,17 @@ public class LegacyEntityCore implements EntityCore {
             final String fields,
             final String profile,
             final String filter,
-            final boolean ommitNullValues,
+            final boolean omitNullValues,
             final boolean deduplicate) {
+        if (!user.isValidated()) {
+            throw new InvalidUserException("user is not validated");   // NOI18N
+        }
+        if (classKey.isEmpty()) {
+            throw new InvalidClassKeyException("class key is empty");  // NOI18N
+        }
+        if (role.isEmpty()) {
+            throw new InvalidRoleException("role is empty");           // NOI18N
+        }
         throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
         // Tools | Templates.
     }
@@ -168,16 +182,16 @@ public class LegacyEntityCore implements EntityCore {
             final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
             return node;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }
 
     @Override
-    public ObjectNode createObject(final User user,
-            final String classKey,
-            final ObjectNode jsonObject,
-            final String role,
+    public ObjectNode createObject(@NonNull final User user,
+            @NonNull final String classKey,
+            @NonNull final ObjectNode jsonObject,
+            @NonNull final String role,
             final boolean requestResultingInstance) {
         if (!user.isValidated()) {
             throw new InvalidUserException("user is not validated");  // NOI18N
@@ -185,10 +199,9 @@ public class LegacyEntityCore implements EntityCore {
         if (classKey.isEmpty()) {
             throw new InvalidClassKeyException("class key is empty"); // NOI18N
         }
-
-//        if (role.isEmpty()) {
-//            throw new InvalidRoleException("role is empty");          // NOI18N
-//        }
+        if (role.isEmpty()) {
+            throw new InvalidRoleException("role is empty");          // NOI18N
+        }
         try {
             final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
@@ -200,7 +213,7 @@ public class LegacyEntityCore implements EntityCore {
             final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
             return node;
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }
@@ -216,17 +229,29 @@ public class LegacyEntityCore implements EntityCore {
     }
 
     @Override
-    public ObjectNode getObject(final User user,
-            final String classKey,
-            final String objectId,
+    public ObjectNode getObject(@NonNull final User user,
+            @NonNull final String classKey,
+            @NonNull final String objectId,
             final String version,
             final String expand,
             final String level,
             final String fields,
             final String profile,
-            final String role,
-            final boolean ommitNullValues,
+            @NonNull final String role,
+            final boolean omitNullValues,
             final boolean deduplicate) {
+        if (!user.isValidated()) {
+            throw new InvalidUserException("user is not validated");  // NOI18N
+        }
+        if (classKey.isEmpty()) {
+            throw new InvalidClassKeyException("class key is empty"); // NOI18N
+        }
+        if (objectId.isEmpty()) {
+            throw new IllegalArgumentException("objectId is empty");  // NOI18N
+        }
+        if (role.isEmpty()) {
+            throw new InvalidRoleException("role is empty");          // NOI18N
+        }
         try {
             final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
@@ -244,13 +269,29 @@ public class LegacyEntityCore implements EntityCore {
                 return node;
             }
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
         }
         return null;
     }
 
     @Override
-    public boolean deleteObject(final User user, final String classKey, final String objectId, final String role) {
+    public boolean deleteObject(@NonNull final User user,
+            @NonNull final String classKey,
+            @NonNull final String objectId,
+            @NonNull final String role) {
+        if (!user.isValidated()) {
+            throw new InvalidUserException("user is not validated");  // NOI18N
+        }
+        if (classKey.isEmpty()) {
+            throw new InvalidClassKeyException("class key is empty"); // NOI18N
+        }
+        if (objectId.isEmpty()) {
+            throw new IllegalArgumentException("objectId is empty");  // NOI18N
+        }
+        if (role.isEmpty()) {
+            throw new InvalidRoleException("role is empty");          // NOI18N
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final String[] classKeySplitted = classKey.split("@");
@@ -265,7 +306,7 @@ public class LegacyEntityCore implements EntityCore {
             final int ret = LegacyCoreBackend.getInstance().getService().deleteMetaObject(cidsUser, metaObject, domain);
             return (ret > 100);
         } catch (final Exception ex) {
-            log.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return false; // Tools | Templates.
         }
     }

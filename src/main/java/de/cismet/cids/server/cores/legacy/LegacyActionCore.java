@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import java.io.InputStream;
@@ -44,12 +46,12 @@ import static Sirius.server.middleware.impls.domainserver.DomainServerImpl.SERVE
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyActionCore implements ActionCore {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LegacyNodeCore.class);
     private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
     private static final String STREAMTYPE_APPOCTETSTREAM = "application/octet-stream";
 
@@ -87,7 +89,7 @@ public class LegacyActionCore implements ActionCore {
             }
             return taskNameNodes;
         } catch (final Exception ex) {
-            LOG.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }
@@ -112,7 +114,7 @@ public class LegacyActionCore implements ActionCore {
                 return null;
             }
         } catch (final Exception ex) {
-            LOG.error(null, ex);
+            log.error(ex.getMessage(), ex);
             return null;
         }
     }
@@ -183,7 +185,7 @@ public class LegacyActionCore implements ActionCore {
                             resultMap.put(finalTask.getKey(), grwct);
                             finalTask.setStatus(ActionTask.Status.FINISHED);
                         } catch (final Exception ex) {
-                            LOG.error(ex, ex);
+                            log.error(ex.getMessage(), ex);
                             finalTask.setStatus(ActionTask.Status.ERROR);
                         } finally {
                             taskMap.remove(finalTask.getKey());
@@ -205,7 +207,7 @@ public class LegacyActionCore implements ActionCore {
             try {
                 return (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
             } catch (final Exception ex) {
-                LOG.error(ex, ex);
+                log.error(ex.getMessage(), ex);
                 return null;
             }
         } else {

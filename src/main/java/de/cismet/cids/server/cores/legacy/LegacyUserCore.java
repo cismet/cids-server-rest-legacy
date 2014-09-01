@@ -9,6 +9,8 @@ package de.cismet.cids.server.cores.legacy;
 
 import Sirius.server.newuser.UserGroup;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import java.util.ArrayList;
@@ -25,12 +27,9 @@ import de.cismet.cids.server.cores.UserCore;
  * @author   thorsten
  * @version  1.0
  */
+@Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacyUserCore implements UserCore {
-
-    //~ Instance fields --------------------------------------------------------
-
-    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Methods ----------------------------------------------------------------
 
