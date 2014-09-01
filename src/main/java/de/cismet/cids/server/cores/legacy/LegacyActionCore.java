@@ -176,7 +176,7 @@ public class LegacyActionCore implements ActionCore {
                                         .executeTask(
                                             cidsUser,
                                             actionKey,
-                                            "WUNDA_BLAU",
+                                            cidsUser.getDomain(),
                                             null,
                                             cidsSAPs.toArray(new ServerActionParameter[0]));
                             final GenericResourceWithContentType grwct = new GenericResourceWithContentType(

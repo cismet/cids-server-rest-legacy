@@ -81,7 +81,8 @@ public class LegacySearchCore implements SearchCore {
     @Override
     public SearchInfo getSearch(final User user, final String searchKey, final String role) {
         final HashMap<String, String> serverSearchParamMap = LegacyCoreBackend.getInstance()
-                    .getServerSearchParamMap(searchKey);
+                    .getServerSearchParamMap(
+                        searchKey);
         final HashMap<String, Class<? extends CidsServerSearch>> serverSearchMap = LegacyCoreBackend.getInstance()
                     .getServerSearchMap();
 
