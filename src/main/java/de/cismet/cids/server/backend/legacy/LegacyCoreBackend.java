@@ -70,6 +70,8 @@ public class LegacyCoreBackend {
     private final HashMap<String, List<String>> serverSearchParamsListMap = new HashMap<String, List<String>>();
 
     private final CallServerService service = new RESTfulSerialInterfaceConnector(CALLSERVER_URL);
+    private boolean testModeEnabled = false;
+    private Sirius.server.newuser.User testUser = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -141,6 +143,20 @@ public class LegacyCoreBackend {
     /**
      * DOCUMENT ME!
      *
+     * @param  enabled  DOCUMENT ME!
+     */
+    public void setEnableTestMode(final boolean enabled) {
+        testModeEnabled = enabled;
+        try {
+            testUser = service.getUser(null, null, "testdomain", "testuser", "testpassword");
+        } catch (final Exception ex) {
+            log.error(ex, ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   metaClass  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -170,7 +186,10 @@ public class LegacyCoreBackend {
 
                 // FLAGKEY
                 setAttributeFlag(cidsAttribute, AttributeConfig.FlagKey.ARRAY, mai.isArray());
-                setAttributeFlag(cidsAttribute, AttributeConfig.FlagKey.EXTENSION_ATTRIBUTE, mai.isExtensionAttribute());
+                setAttributeFlag(
+                    cidsAttribute,
+                    AttributeConfig.FlagKey.EXTENSION_ATTRIBUTE,
+                    mai.isExtensionAttribute());
                 setAttributeFlag(cidsAttribute, AttributeConfig.FlagKey.FOREIGN_KEY, mai.isForeignKey());
                 setAttributeFlag(cidsAttribute, AttributeConfig.FlagKey.INDEXED, mai.isIndexed());
                 setAttributeFlag(cidsAttribute, AttributeConfig.FlagKey.OPTIONAL, mai.isOptional());
@@ -400,15 +419,28 @@ public class LegacyCoreBackend {
      * @return  DOCUMENT ME!
      */
     public Sirius.server.newuser.User getCidsUser(final User user) {
-        return getCidsUser(user, null);
+        if (testModeEnabled) {
+            return testUser;
+        } else {
+            return getCidsUser(user, null);
+        }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   role  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public Sirius.server.newuser.User getCidsUser(final User user, final String role) {
+        user.equals(user);
         final Sirius.server.newuser.User cidsUser = userMap.get(user);
         if (cidsUser == null) {
             return null;
         }
-        if (role == null || role.equals("all")) {
+        if ((role == null) || role.equals("all")) {
             cidsUser.setUserGroup(null);
         } else {
             for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
@@ -420,5 +452,4 @@ public class LegacyCoreBackend {
         }
         return cidsUser;
     }
-    
 }
