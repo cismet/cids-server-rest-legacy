@@ -170,6 +170,9 @@ public class LegacyEntityCore implements EntityCore {
 
             final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             final int cid = metaClass.getId();
             final int oid = Integer.parseInt(objectId);
@@ -260,6 +263,9 @@ public class LegacyEntityCore implements EntityCore {
 
             final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             final int cid = metaClass.getId();
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
@@ -303,6 +309,9 @@ public class LegacyEntityCore implements EntityCore {
 
             final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             final int cid = metaClass.getId();
 

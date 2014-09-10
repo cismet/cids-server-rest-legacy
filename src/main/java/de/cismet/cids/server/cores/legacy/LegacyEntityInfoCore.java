@@ -74,6 +74,9 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             if (metaClass != null) {
                 final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
@@ -95,6 +98,9 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             if (metaClass != null) {
                 final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
@@ -114,6 +120,9 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             final CidsBean beanNew = metaClass.getEmptyInstance().getBean();
             final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(beanNew.toJSONString(true));

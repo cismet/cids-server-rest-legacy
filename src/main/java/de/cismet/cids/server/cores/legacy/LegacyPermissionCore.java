@@ -38,6 +38,9 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             return metaClass.getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
@@ -53,6 +56,9 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             return metaClass.getPermissions().hasWritePermission(cidsUser);
         } catch (final Exception ex) {
@@ -88,6 +94,9 @@ public class LegacyPermissionCore implements PermissionCore {
 
             final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             final int cid = metaClass.getId();
             final int oid = Integer.parseInt(objectKey);
@@ -111,6 +120,9 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             return ((Attribute)metaClass.getAttributeByName(attributeKey)).getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
@@ -129,6 +141,9 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
 
             return ((Attribute)metaClass.getAttributeByName(attributeKey)).getPermissions()
                         .hasWritePermission(cidsUser);
