@@ -36,13 +36,8 @@ public class LegacyPermissionCore implements PermissionCore {
     public boolean hasClassReadPermission(final User user, final String role, final String classKey) {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String[] classKeySplitted = classKey.split("@");
-            final String domain = classKeySplitted[1];
-            final int classId = Integer.parseInt(classKeySplitted[0]);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getClass(cidsUser, classId, domain);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
 
             return metaClass.getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
@@ -56,13 +51,8 @@ public class LegacyPermissionCore implements PermissionCore {
     public boolean hasClassWritePermission(final User user, final String role, final String classKey) {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String[] classKeySplitted = classKey.split("@");
-            final String domain = classKeySplitted[1];
-            final int classId = Integer.parseInt(classKeySplitted[0]);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getClass(cidsUser, classId, domain);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
 
             return metaClass.getPermissions().hasWritePermission(cidsUser);
         } catch (final Exception ex) {
@@ -94,10 +84,12 @@ public class LegacyPermissionCore implements PermissionCore {
             final String classKey,
             final String objectKey) {
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
-            final int cid = Integer.parseInt(classKeySplitted[0]);
+
+            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
+            final int cid = metaClass.getId();
             final int oid = Integer.parseInt(objectKey);
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
                         .getService()
@@ -117,13 +109,8 @@ public class LegacyPermissionCore implements PermissionCore {
             final String attributeKey) {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String[] classKeySplitted = classKey.split("@");
-            final String domain = classKeySplitted[1];
-            final int classId = Integer.parseInt(classKeySplitted[0]);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getClass(cidsUser, classId, domain);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
 
             return ((Attribute)metaClass.getAttributeByName(attributeKey)).getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
@@ -140,13 +127,8 @@ public class LegacyPermissionCore implements PermissionCore {
             final String attributeKey) {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String[] classKeySplitted = classKey.split("@");
-            final String domain = classKeySplitted[1];
-            final int classId = Integer.parseInt(classKeySplitted[0]);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getClass(cidsUser, classId, domain);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
 
             return ((Attribute)metaClass.getAttributeByName(attributeKey)).getPermissions()
                         .hasWritePermission(cidsUser);
