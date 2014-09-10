@@ -227,11 +227,14 @@ public class LegacyEntityCore implements EntityCore {
                         .getBean();
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
             deepcopyAllProperties(beanNew, beanToUpdate);
-            final CidsBean updatedBean = beanToUpdate.persist(LegacyCoreBackend.getInstance().getService(),
-                    cidsUser,
-                    domain);
-            final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
-            return node;
+
+            final CidsBean updatedBean = beanToUpdate.persist();
+            if (requestResultingInstance) {            
+                final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                return node;
+            } else {
+                return null;
+            }
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             throw new RuntimeException("error while updating Object", ex);
@@ -254,16 +257,15 @@ public class LegacyEntityCore implements EntityCore {
             throw new InvalidRoleException("role is empty");          // NOI18N
         }
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
-
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
-            final CidsBean updatedBean = beanNew.persist(LegacyCoreBackend.getInstance().getService(),
-                    cidsUser,
-                    domain);
-            final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
-            return node;
+            beanNew.getMetaObject().setStatus(MetaObject.NEW);
+            final CidsBean updatedBean = beanNew.persist();
+            if (requestResultingInstance) {
+                final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                return node;
+            } else {
+                return null;
+            }
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             throw new RuntimeException("error while creating Object", ex);
@@ -321,6 +323,7 @@ public class LegacyEntityCore implements EntityCore {
                             cid,
                             domain);
             if (metaObject != null) {
+                metaObject.setAllClasses();
                 final ObjectNode node = (ObjectNode)MAPPER.reader()
                             .readTree(metaObject.getBean().toJSONString(deduplicate));
                 return node;
