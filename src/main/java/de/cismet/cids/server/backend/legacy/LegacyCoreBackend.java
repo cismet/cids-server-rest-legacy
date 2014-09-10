@@ -19,7 +19,6 @@ import Sirius.navigator.connection.RESTfulConnection;
 import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.connection.proxy.ConnectionProxy;
 import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
-import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
@@ -41,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerAction;
@@ -99,7 +100,6 @@ public class LegacyCoreBackend {
     /**
      * DOCUMENT ME!
      *
-<<<<<<< Updated upstream
      * @param   classKey  DOCUMENT ME!
      * @param   cidsUser  DOCUMENT ME!
      *
@@ -132,6 +132,11 @@ public class LegacyCoreBackend {
         return domain;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  user  DOCUMENT ME!
+     */
     private void initProxy(final User user) {
         try {
             final ConnectionInfo info = new ConnectionInfo();
