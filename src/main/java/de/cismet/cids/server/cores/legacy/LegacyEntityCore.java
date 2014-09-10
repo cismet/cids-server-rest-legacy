@@ -110,23 +110,23 @@ public class LegacyEntityCore implements EntityCore {
                     all.add(node);
                 }
             } else {
-            final MetaObject[] metaObjects = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getMetaObject(cidsUser, query, domain);
+                final MetaObject[] metaObjects = LegacyCoreBackend.getInstance()
+                            .getService()
+                            .getMetaObject(cidsUser, query, domain);
 
-            if (metaObjects != null) {
-                for (final MetaObject metaObject : metaObjects) {
-                    metaObject.setAllClasses();
-                    final ObjectNode node = (ObjectNode)MAPPER.reader()
-                                .readTree(metaObject.getBean().toJSONString(deduplicate));
-                    all.add(node);
-    }
-            }
+                if (metaObjects != null) {
+                    for (final MetaObject metaObject : metaObjects) {
+                        metaObject.setAllClasses();
+                        final ObjectNode node = (ObjectNode)MAPPER.reader()
+                                    .readTree(metaObject.getBean().toJSONString(deduplicate));
+                        all.add(node);
+                    }
+                }
             }
             return all;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while getting all Objects", ex);
         }
     }
 
@@ -234,7 +234,7 @@ public class LegacyEntityCore implements EntityCore {
             return node;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while updating Object", ex);
         }
     }
 
@@ -266,7 +266,7 @@ public class LegacyEntityCore implements EntityCore {
             return node;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while creating Object", ex);
         }
     }
 
@@ -324,11 +324,13 @@ public class LegacyEntityCore implements EntityCore {
                 final ObjectNode node = (ObjectNode)MAPPER.reader()
                             .readTree(metaObject.getBean().toJSONString(deduplicate));
                 return node;
+            } else {
+                return null;
             }
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while getting Object", ex);
         }
-        return null;
     }
 
     @Override

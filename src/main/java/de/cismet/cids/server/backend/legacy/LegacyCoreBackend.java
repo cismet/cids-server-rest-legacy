@@ -161,7 +161,7 @@ public class LegacyCoreBackend {
             log.error(ex.getMessage(), ex);
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      */

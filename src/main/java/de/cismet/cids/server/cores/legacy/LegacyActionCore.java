@@ -90,7 +90,7 @@ public class LegacyActionCore implements ActionCore {
             return taskNameNodes;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while getting all actions", ex);
         }
     }
 
@@ -115,7 +115,7 @@ public class LegacyActionCore implements ActionCore {
             }
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while getting action", ex);
         }
     }
 
@@ -208,7 +208,7 @@ public class LegacyActionCore implements ActionCore {
                 return (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
             } catch (final Exception ex) {
                 log.error(ex.getMessage(), ex);
-                return null;
+                throw new RuntimeException("error while creating new action task", ex);
             }
         } else {
             return null;

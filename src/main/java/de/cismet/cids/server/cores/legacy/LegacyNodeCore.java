@@ -57,7 +57,7 @@ public class LegacyNodeCore implements NodeCore {
             return nodes;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while getting root nodes", ex);
         }
     }
 
@@ -105,8 +105,8 @@ public class LegacyNodeCore implements NodeCore {
             return MAPPER.convertValue(node, ObjectNode.class);
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
-        } // Tools | Templates.
+            throw new RuntimeException("error while getting node", ex);
+        }
     }
 
     @Override
@@ -129,9 +129,8 @@ public class LegacyNodeCore implements NodeCore {
             return nodes;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
-        } // Tools | Templates.
-        // Tools | Templates.
+            throw new RuntimeException("error while getting children", ex);
+        }
     }
 
     @Override
@@ -151,8 +150,8 @@ public class LegacyNodeCore implements NodeCore {
             return children;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
-        } // Tools | Templates.
+            throw new RuntimeException("error while getting children by query", ex);
+        }
     }
 
     @Override
