@@ -74,7 +74,7 @@ public class LegacySearchCore implements SearchCore {
             return searchInfos;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while getting all searches", ex);
         }
     }
 
@@ -132,8 +132,7 @@ public class LegacySearchCore implements SearchCore {
 
     // curl -F
     // "params={\"params\":[{\"key\":\"Resulttyp\",\"value\":\"rO0ABX5yAFFkZS5jaXNtZXQuY2lkcy5jdXN0b20ud3VuZGFfYmxhdS5zZWFyY2guc2VydmVyLkNpZHNBbGtpc1NlYXJjaFN0YXRlbWVudCRSZXN1bHR0eXAAAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcuRW51bQAAAAAAAAAAEgAAeHB0AApGTFVSU1RVRUNL\"},{\"key\":\"Name\",\"value\":\"rO0ABXQABERpZXM=\"},{\"key\":\"Vorname\",\"value\":\"rO0ABXQAB2lzdCBlaW4=\"},{\"key\":\"Geburtsname\",\"value\":\"rO0ABXQABFRlc3Q=\"},{\"key\":\"Geburtstag\",\"value\":\"rO0ABXQACTE3LjUuMTk4Mg==\"},{\"key\":\"Ptyp\",\"value\":\"rO0ABXA=\"},{\"key\":\"Geometry\",\"value\":\"rO0ABXNyACNjb20udml2aWRzb2x1dGlvbnMuanRzLmdlb20uUG9seWdvbs+AAQJyNo5LAgACWwAFaG9sZXN0AClbTGNvbS92aXZpZHNvbHV0aW9ucy9qdHMvZ2VvbS9MaW5lYXJSaW5nO0wABXNoZWxsdAAoTGNvbS92aXZpZHNvbHV0aW9ucy9qdHMvZ2VvbS9MaW5lYXJSaW5nO3hyACRjb20udml2aWRzb2x1dGlvbnMuanRzLmdlb20uR2VvbWV0cnl5nqRlIoVKPgIABEkABFNSSURMAAhlbnZlbG9wZXQAJkxjb20vdml2aWRzb2x1dGlvbnMvanRzL2dlb20vRW52ZWxvcGU7TAAHZmFjdG9yeXQALUxjb20vdml2aWRzb2x1dGlvbnMvanRzL2dlb20vR2VvbWV0cnlGYWN0b3J5O0wACHVzZXJEYXRhdAASTGphdmEvbGFuZy9PYmplY3Q7eHAAAGTocHNyACtjb20udml2aWRzb2x1dGlvbnMuanRzLmdlb20uR2VvbWV0cnlGYWN0b3J5oVig364RTO0CAANJAARTUklETAAZY29vcmRpbmF0ZVNlcXVlbmNlRmFjdG9yeXQAN0xjb20vdml2aWRzb2x1dGlvbnMvanRzL2dlb20vQ29vcmRpbmF0ZVNlcXVlbmNlRmFjdG9yeTtMAA5wcmVjaXNpb25Nb2RlbHQALExjb20vdml2aWRzb2x1dGlvbnMvanRzL2dlb20vUHJlY2lzaW9uTW9kZWw7eHAAAGToc3IAP2NvbS52aXZpZHNvbHV0aW9ucy5qdHMuZ2VvbS5pbXBsLkNvb3JkaW5hdGVBcnJheVNlcXVlbmNlRmFjdG9yeccbYFkwkNFXAgAAeHBzcgAqY29tLnZpdmlkc29sdXRpb25zLmp0cy5nZW9tLlByZWNpc2lvbk1vZGVsa+5kBOmiXDsCAAJEAAVzY2FsZUwACW1vZGVsVHlwZXQAMUxjb20vdml2aWRzb2x1dGlvbnMvanRzL2dlb20vUHJlY2lzaW9uTW9kZWwkVHlwZTt4cAAAAAAAAAAAc3IAL2NvbS52aXZpZHNvbHV0aW9ucy5qdHMuZ2VvbS5QcmVjaXNpb25Nb2RlbCRUeXBls0Z1Mr9ZTUICAAFMAARuYW1ldAASTGphdmEvbGFuZy9TdHJpbmc7eHB0AAhGTE9BVElOR3B1cgApW0xjb20udml2aWRzb2x1dGlvbnMuanRzLmdlb20uTGluZWFyUmluZzv1LANJVSmsswIAAHhwAAAAAHNyACZjb20udml2aWRzb2x1dGlvbnMuanRzLmdlb20uTGluZWFyUmluZ8TdYdncmFlLAgAAeHIAJmNvbS52aXZpZHNvbHV0aW9ucy5qdHMuZ2VvbS5MaW5lU3RyaW5nKytRukNcjjgCAAFMAAZwb2ludHN0ADBMY29tL3Zpdmlkc29sdXRpb25zL2p0cy9nZW9tL0Nvb3JkaW5hdGVTZXF1ZW5jZTt4cQB+AAMAAGTocHEAfgALcHNyADhjb20udml2aWRzb2x1dGlvbnMuanRzLmdlb20uaW1wbC5Db29yZGluYXRlQXJyYXlTZXF1ZW5jZfNLtYhyTnH2AgABWwALY29vcmRpbmF0ZXN0AClbTGNvbS92aXZpZHNvbHV0aW9ucy9qdHMvZ2VvbS9Db29yZGluYXRlO3hwdXIAKVtMY29tLnZpdmlkc29sdXRpb25zLmp0cy5nZW9tLkNvb3JkaW5hdGU77cTUSKr6Q7cCAAB4cAAAAAZzcgAmY29tLnZpdmlkc29sdXRpb25zLmp0cy5nZW9tLkNvb3JkaW5hdGVcvywjXH5YPgIAA0QAAXhEAAF5RAABenhwQRbaBSYVN9NBVayD8KFgcn/4AAAAAAAAc3EAfgAgQRbZ2AvqBKJBVax/IDBisX/4AAAAAAAAc3EAfgAgQRbaQGPe/OxBVax6dDyeln/4AAAAAAAAc3EAfgAgQRbbBAdGBFZBVax78mh/rX/4AAAAAAAAc3EAfgAgQRbbKndkJBFBVayDZnSf/X/4AAAAAAAAc3EAfgAgQRbaBSYVN9NBVayD8KFgcn/4AAAAAAAA\"}]};type=application/json"
-    // h
-    // ttp://localhost:8890/searches/WUNDA_BLAU.de.cismet.cids.custom.wunda_blau.search.server.CidsAlkisSearchStatement/results?limit=100&offset=0
+    // http://localhost:8890/searches/WUNDA_BLAU.de.cismet.cids.custom.wunda_blau.search.server.CidsAlkisSearchStatement/results?limit=100&offset=0
     // curl -F
     // "params={\"params\":[{\"key\":\"Resulttyp\",\"value\":\"rO0ABX5yAFFkZS5jaXNtZXQuY2lkcy5jdXN0b20ud3VuZGFfYmxhdS5zZWFyY2guc2VydmVyLkNp
     // ZHNBbGtpc1NlYXJjaFN0YXRlbWVudCRSZXN1bHR0eXAAAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcu
@@ -199,8 +198,8 @@ public class LegacySearchCore implements SearchCore {
             return all;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-        } // Tools | Templates.
-        return null;
+            throw new RuntimeException("error while executing search", ex);
+        }
     }
 
     @Override

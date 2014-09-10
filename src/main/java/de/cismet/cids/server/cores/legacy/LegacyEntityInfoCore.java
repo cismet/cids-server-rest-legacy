@@ -64,8 +64,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             return all;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while getting all classes", ex);
         }
-        return null;
     }
 
     @Override
@@ -78,15 +78,13 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
 
-            if (metaClass != null) {
-                final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
-                final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
-                return node;
-            }
+            final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+            final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
+            return node;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while gett class", ex);
         }
-        return null;
     }
 
     @Override
@@ -102,16 +100,14 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
 
-            if (metaClass != null) {
-                final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
-                final CidsAttribute cidsAttribute = cidsClass.getAttribute(attributeKey);
-                final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsAttribute, ObjectNode.class);
-                return node;
-            }
+            final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+            final CidsAttribute cidsAttribute = cidsClass.getAttribute(attributeKey);
+            final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsAttribute, ObjectNode.class);
+            return node;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while getting all classes", ex);
         }
-        return null;
     }
 
     @Override
@@ -129,7 +125,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             return node;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new RuntimeException("error while creating empty instance", ex);
         }
     }
 
