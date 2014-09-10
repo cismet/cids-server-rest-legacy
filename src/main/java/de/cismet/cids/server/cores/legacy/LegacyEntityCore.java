@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cids.server.cores.legacy;
 
+import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
@@ -73,16 +74,60 @@ public class LegacyEntityCore implements EntityCore {
             final boolean omitNullValues,
             final boolean deduplicate) {
         if (!user.isValidated()) {
-            throw new InvalidUserException("user is not validated");   // NOI18N
+            throw new InvalidUserException("user is not validated");  // NOI18N
         }
         if (classKey.isEmpty()) {
-            throw new InvalidClassKeyException("class key is empty");  // NOI18N
+            throw new InvalidClassKeyException("class key is empty"); // NOI18N
         }
         if (role.isEmpty()) {
-            throw new InvalidRoleException("role is empty");           // NOI18N
+            throw new InvalidRoleException("role is empty");          // NOI18N
         }
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+
+        try {
+            final List<ObjectNode> all = new ArrayList<ObjectNode>();
+
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+
+            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
+
+            final String query = "SELECT " + metaClass.getID() + ", " + metaClass.getTableName() + "."
+                        + metaClass.getPrimaryKey() + " FROM " + metaClass.getTableName() + " ORDER BY "
+                        + metaClass.getTableName() + "."
+                        + metaClass.getPrimaryKey() + " ASC LIMIT " + limit + " OFFSET " + offset;
+
+            if ("0".equals(level)) {
+                final LightweightMetaObject[] lwmos = LegacyCoreBackend.getInstance()
+                            .getService()
+                            .getLightweightMetaObjectsByQuery(metaClass.getId(), cidsUser, query, new String[0]);
+                for (final LightweightMetaObject lwmo : lwmos) {
+                    final String selfString = "{\"$self\":\"/" + metaClass.getDomain() + "." + metaClass.getTableName()
+                                + "/" + lwmo.getId() + "\"}";
+                    final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(selfString);
+                    all.add(node);
+                }
+            } else {
+            final MetaObject[] metaObjects = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .getMetaObject(cidsUser, query, domain);
+
+            if (metaObjects != null) {
+                for (final MetaObject metaObject : metaObjects) {
+                    metaObject.setAllClasses();
+                    final ObjectNode node = (ObjectNode)MAPPER.reader()
+                                .readTree(metaObject.getBean().toJSONString(deduplicate));
+                    all.add(node);
+    }
+            }
+            }
+            return all;
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+            return null;
+        }
     }
 
     /**
