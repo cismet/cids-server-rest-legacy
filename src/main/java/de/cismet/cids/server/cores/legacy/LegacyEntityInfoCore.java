@@ -71,12 +71,10 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     @Override
     public ObjectNode getClass(final User user, final String classKey, final String role) {
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
-            final MetaClass metaClass = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getClass(cidsUser, Integer.parseInt(classKeySplitted[0]), domain);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
             if (metaClass != null) {
                 final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
                 final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
@@ -94,12 +92,10 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final String attributeKey,
             final String role) {
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
-            final MetaClass metaClass = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getClass(cidsUser, Integer.parseInt(classKeySplitted[0]), domain);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
             if (metaClass != null) {
                 final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
                 final CidsAttribute cidsAttribute = cidsClass.getAttribute(attributeKey);
@@ -115,11 +111,10 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     @Override
     public ObjectNode emptyInstance(final User user, final String classKey, final String role) {
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
-            final int cid = Integer.parseInt(classKeySplitted[0]);
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getService().getClass(cidsUser, cid, domain);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
             final CidsBean beanNew = metaClass.getEmptyInstance().getBean();
             final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(beanNew.toJSONString(true));
             return node;

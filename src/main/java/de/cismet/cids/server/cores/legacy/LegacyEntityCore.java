@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cids.server.cores.legacy;
 
+import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -165,10 +166,12 @@ public class LegacyEntityCore implements EntityCore {
             final String role,
             final boolean requestResultingInstance) {
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
-            final int cid = Integer.parseInt(classKeySplitted[0]);
+
+            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
+            final int cid = metaClass.getId();
             final int oid = Integer.parseInt(objectId);
             final CidsBean beanToUpdate = LegacyCoreBackend.getInstance()
                         .getService()
@@ -203,9 +206,10 @@ public class LegacyEntityCore implements EntityCore {
             throw new InvalidRoleException("role is empty");          // NOI18N
         }
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
+
+            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
             final CidsBean updatedBean = beanNew.persist(LegacyCoreBackend.getInstance().getService(),
                     cidsUser,
@@ -225,7 +229,6 @@ public class LegacyEntityCore implements EntityCore {
             final int limit,
             final int offset) {
         throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
     }
 
     @Override
@@ -253,15 +256,18 @@ public class LegacyEntityCore implements EntityCore {
             throw new InvalidRoleException("role is empty");          // NOI18N
         }
         try {
-            final String[] classKeySplitted = classKey.split("@");
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String domain = classKeySplitted[1];
+
+            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
+            final int cid = metaClass.getId();
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObject(
                             cidsUser,
                             Integer.parseInt(objectId),
-                            Integer.parseInt(classKeySplitted[0]),
+                            cid,
                             domain);
             if (metaObject != null) {
                 final ObjectNode node = (ObjectNode)MAPPER.reader()
@@ -294,14 +300,18 @@ public class LegacyEntityCore implements EntityCore {
 
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final String[] classKeySplitted = classKey.split("@");
-            final String domain = classKeySplitted[1];
+
+            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+
+            final int cid = metaClass.getId();
+
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObject(
                             cidsUser,
                             Integer.parseInt(objectId),
-                            Integer.parseInt(classKeySplitted[0]),
+                            cid,
                             domain);
             final int ret = LegacyCoreBackend.getInstance().getService().deleteMetaObject(cidsUser, metaObject, domain);
             return (ret > 100);

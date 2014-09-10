@@ -23,6 +23,8 @@ import org.reflections.ReflectionUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import java.rmi.RemoteException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -83,6 +85,41 @@ public class LegacyCoreBackend {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classKey  DOCUMENT ME!
+     * @param   cidsUser  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public MetaClass getMetaclassForClasskey(final String classKey, final Sirius.server.newuser.User cidsUser)
+            throws RemoteException {
+        final String[] classKeySplitted = classKey.split("\\.");
+        final String domain = classKeySplitted[0];
+        final String tableName = classKeySplitted[1].toLowerCase();
+
+        final MetaClass metaClass = LegacyCoreBackend.getInstance()
+                    .getService()
+                    .getClassByTableName(cidsUser, tableName, domain);
+        return metaClass;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classKey  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDomainForClasskey(final String classKey) {
+        final String[] classKeySplitted = classKey.split("\\.");
+        final String domain = classKeySplitted[0];
+        return domain;
+    }
 
     /**
      * DOCUMENT ME!
@@ -166,12 +203,13 @@ public class LegacyCoreBackend {
      * @return  DOCUMENT ME!
      */
     public CidsClass createCidsClass(final MetaClass metaClass) {
-        final CidsClass cidsClass = new CidsClass((String)metaClass.getKey(), metaClass.getDomain());
+        final CidsClass cidsClass = new CidsClass((String)metaClass.getTableName(), metaClass.getDomain());
 
         for (final MemberAttributeInfo mai
                     : (Collection<MemberAttributeInfo>)metaClass.getMemberAttributeInfos().values()) {
             try {
-                final CidsAttribute cidsAttribute = new CidsAttribute((String)mai.getKey(), (String)metaClass.getKey());
+                final CidsAttribute cidsAttribute = new CidsAttribute((String)mai.getFieldName(),
+                        (String)metaClass.getTableName());
 
                 // KEY
                 setAttributeConfig(cidsAttribute, AttributeConfig.Key.NAME, mai.getName());
@@ -411,6 +449,7 @@ public class LegacyCoreBackend {
      */
     public void registerUser(final Sirius.server.newuser.User cidsUser, final User user) {
         if (!userMap.containsKey(user)) {
+//            initProxy(user);
             userMap.put(user, cidsUser);
         }
     }
