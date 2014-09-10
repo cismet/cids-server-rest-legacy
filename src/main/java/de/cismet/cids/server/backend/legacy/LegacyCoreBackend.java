@@ -11,6 +11,16 @@
  */
 package de.cismet.cids.server.backend.legacy;
 
+import Sirius.navigator.connection.Connection;
+import Sirius.navigator.connection.ConnectionFactory;
+import Sirius.navigator.connection.ConnectionInfo;
+import Sirius.navigator.connection.ConnectionSession;
+import Sirius.navigator.connection.RESTfulConnection;
+import Sirius.navigator.connection.SessionManager;
+import Sirius.navigator.connection.proxy.ConnectionProxy;
+import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
+import de.cismet.cids.navigator.utils.ClassCacheMultiple;
+
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.middleware.types.MetaClass;
@@ -89,6 +99,7 @@ public class LegacyCoreBackend {
     /**
      * DOCUMENT ME!
      *
+<<<<<<< Updated upstream
      * @param   classKey  DOCUMENT ME!
      * @param   cidsUser  DOCUMENT ME!
      *
@@ -121,6 +132,31 @@ public class LegacyCoreBackend {
         return domain;
     }
 
+    private void initProxy(final User user) {
+        try {
+            final ConnectionInfo info = new ConnectionInfo();
+            info.setCallserverURL(LegacyCidsServerCore.getCallserver());
+            info.setUsername(user.getUser());
+            info.setUsergroup(null);
+            info.setPassword(user.getPass());
+            info.setUserDomain(user.getDomain());
+            info.setUsergroupDomain(null);
+
+            final Connection connection = ConnectionFactory.getFactory()
+                        .createConnection(RESTfulConnection.class.getCanonicalName(),
+                            info.getCallserverURL());
+
+            final ConnectionSession session = ConnectionFactory.getFactory().createSession(connection, info, true);
+            final ConnectionProxy proxy = ConnectionFactory.getFactory()
+                        .createProxy(DefaultConnectionProxyHandler.class.getCanonicalName(), session);
+            SessionManager.init(proxy);
+
+            ClassCacheMultiple.setInstance(user.getDomain());
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+        }
+    }
+    
     /**
      * DOCUMENT ME!
      */
@@ -449,7 +485,7 @@ public class LegacyCoreBackend {
      */
     public void registerUser(final Sirius.server.newuser.User cidsUser, final User user) {
         if (!userMap.containsKey(user)) {
-//            initProxy(user);
+            initProxy(user);
             userMap.put(user, cidsUser);
         }
     }
