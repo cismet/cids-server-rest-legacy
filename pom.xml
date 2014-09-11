@@ -70,12 +70,6 @@
             <groupId>de.cismet.cids</groupId>
             <artifactId>cids-server-rest</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <type>test-jar</type>
-        </dependency>        
-        <dependency>
-            <groupId>de.cismet.cids</groupId>
-            <artifactId>cids-server-rest</artifactId>
-            <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>        
         <dependency>
