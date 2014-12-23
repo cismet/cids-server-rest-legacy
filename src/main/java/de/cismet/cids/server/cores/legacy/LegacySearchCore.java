@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang.ClassUtils;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import org.postgresql.util.Base64;
@@ -180,9 +182,54 @@ public class LegacySearchCore implements SearchCore {
             final CidsServerSearch cidsServerSearch = searchClass.newInstance();
             for (final SearchParameter param : params) {
                 final String paramKey = param.getKey();
-                final Object paramValue = fromString(param.getValue());
-                final Class paramClass = Class.forName(LegacyCoreBackend.getInstance().getServerSearchParamMap(
+                final Class paramClass = ClassUtils.getClass(LegacyCoreBackend.getInstance().getServerSearchParamMap(
                             searchKey).get(paramKey));
+
+                final Object paramValue;
+                final String rawParamValue = param.getValue();
+                if (paramClass.isPrimitive()) {
+                    if (paramClass.equals(byte.class)) {
+                        paramValue = Byte.valueOf(rawParamValue);
+                    } else if (paramClass.equals(short.class)) {
+                        paramValue = Short.valueOf(rawParamValue);
+                    } else if (paramClass.equals(int.class)) {
+                        paramValue = Integer.valueOf(rawParamValue);
+                    } else if (paramClass.equals(long.class)) {
+                        paramValue = Long.valueOf(rawParamValue);
+                    } else if (paramClass.equals(float.class)) {
+                        paramValue = Float.valueOf(rawParamValue);
+                    } else if (paramClass.equals(double.class)) {
+                        paramValue = Double.valueOf(rawParamValue);
+                    } else if (paramClass.equals(boolean.class)) {
+                        paramValue = Boolean.valueOf(rawParamValue);
+                    } else if (paramClass.equals(char.class)) {
+                        paramValue = rawParamValue.toCharArray()[0];
+                    } else {
+                        paramValue = null; // should not be possible
+                    }
+                } else {
+                    if (paramClass.equals(Byte.class)) {
+                        paramValue = Byte.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Short.class)) {
+                        paramValue = Short.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Integer.class)) {
+                        paramValue = Integer.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Long.class)) {
+                        paramValue = Long.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Float.class)) {
+                        paramValue = Float.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Double.class)) {
+                        paramValue = Double.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Boolean.class)) {
+                        paramValue = Boolean.valueOf(rawParamValue);
+                    } else if (paramClass.equals(Character.class)) {
+                        paramValue = rawParamValue.toCharArray()[0];
+                    } else if (paramClass.equals(String.class)) {
+                        paramValue = param.getValue();
+                    } else {
+                        paramValue = fromString(param.getValue());
+                    }
+                }
                 cidsServerSearch.getClass()
                         .getMethod("set" + paramKey, paramClass)
                         .invoke(cidsServerSearch, paramValue);
