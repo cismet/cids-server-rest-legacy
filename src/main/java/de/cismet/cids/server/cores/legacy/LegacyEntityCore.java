@@ -26,6 +26,7 @@ import org.openide.util.lookup.ServiceProvider;
 import java.sql.Date;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -117,8 +118,22 @@ public class LegacyEntityCore implements EntityCore {
                 if (metaObjects != null) {
                     for (final MetaObject metaObject : metaObjects) {
                         metaObject.setAllClasses();
+                        int intLevel = -1;
+                        try {
+                            intLevel = Integer.parseInt(level);
+                        } catch (final Exception ex) {
+                            // could not be cast, ignore (intLevel = -1)
+                        }
+                        final List<String> fieldsList = Arrays.asList(fields.split(","));
+                        final List<String> expandList = Arrays.asList(expand.split(","));
+
                         final ObjectNode node = (ObjectNode)MAPPER.reader()
-                                    .readTree(metaObject.getBean().toJSONString(deduplicate));
+                                    .readTree(metaObject.getBean().toJSONString(
+                                                deduplicate,
+                                                omitNullValues,
+                                                intLevel,
+                                                fieldsList,
+                                                expandList));
                         all.add(node);
                     }
                 }
@@ -136,11 +151,31 @@ public class LegacyEntityCore implements EntityCore {
      * @param   sourceBean  DOCUMENT ME!
      * @param   targetBean  DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static void deepcopyAllProperties(final CidsBean sourceBean, final CidsBean targetBean) throws Exception {
+    public static CidsBean deepcopyAllProperties(final CidsBean sourceBean, final CidsBean targetBean)
+            throws Exception {
+        return deepcopyAllProperties(sourceBean, targetBean, true);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   sourceBean  DOCUMENT ME!
+     * @param   targetBean  DOCUMENT ME!
+     * @param   cloneDeep   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean deepcopyAllProperties(final CidsBean sourceBean,
+            final CidsBean targetBean,
+            final boolean cloneDeep) throws Exception {
         if ((sourceBean == null) || (targetBean == null)) {
-            return;
+            return null;
         }
 
         for (final String propName : sourceBean.getPropertyNames()) {
@@ -151,15 +186,39 @@ public class LegacyEntityCore implements EntityCore {
                 targetBean.setProperty("id", id);
                 targetBean.getMetaObject().setID(id);
             } else if (o instanceof CidsBean) {
-                targetBean.setProperty(propName, deepcloneCidsBean((CidsBean)o));
-            } else if (o instanceof Collection) {
-                final List<CidsBean> list = (List<CidsBean>)o;
-                final List<CidsBean> newList = new ArrayList<CidsBean>();
-
-                for (final CidsBean tmpBean : list) {
-                    newList.add(deepcloneCidsBean(tmpBean));
+                final CidsBean sourceChild = (CidsBean)o;
+                final CidsBean targetChild;
+                if (cloneDeep) {
+                    targetChild = deepcloneCidsBean(sourceChild);
+                } else if (targetBean.getProperty(propName) == null) {
+                    targetChild = deepcopyAllProperties(
+                            sourceChild,
+                            sourceChild.getMetaObject().getMetaClass().getEmptyInstance().getBean(),
+                            cloneDeep);
+                } else {
+                    targetChild = deepcopyAllProperties(
+                            sourceChild,
+                            (CidsBean)targetBean.getProperty(propName),
+                            cloneDeep);
                 }
-                targetBean.setProperty(propName, newList);
+                targetBean.setProperty(propName, targetChild);
+            } else if (o instanceof Collection) {
+                final List<CidsBean> sourceList = (List<CidsBean>)o;
+                final List<CidsBean> targetList = (List<CidsBean>)targetBean.getProperty(propName);
+                final List<CidsBean> tempList = new ArrayList<CidsBean>();
+
+                for (final CidsBean sourceChild : sourceList) {
+                    final CidsBean targetChild;
+                    if (cloneDeep) {
+                        targetChild = deepcloneCidsBean(sourceChild);
+                    } else {
+                        targetChild = sourceBean;
+                    }
+                    tempList.add(targetChild);
+                }
+
+                targetList.clear();
+                targetList.addAll(tempList);
             } else if (o instanceof Geometry) {
                 targetBean.setProperty(propName, ((Geometry)o).clone());
             } else if (o instanceof Float) {
@@ -182,7 +241,16 @@ public class LegacyEntityCore implements EntityCore {
                 }
                 targetBean.setProperty(propName, o);
             }
+
+//            if (
+//                    (targetBean.getProperty(propName) != null && !targetBean.equals(sourceBean.getProperty(propName))) ||
+//                    (sourceBean.getProperty(propName) != null && !targetBean.equals(targetBean.getProperty(propName)))) {
+//                targetBean.getMetaObject().getAttributeByFieldName(propName).setChanged(true);
+//                targetBean.getMetaObject().setStatus(MetaObject.MODIFIED);
+//            }
         }
+
+        return targetBean;
     }
 
     /**
@@ -199,8 +267,7 @@ public class LegacyEntityCore implements EntityCore {
             return null;
         }
         final CidsBean cloneBean = cidsBean.getMetaObject().getMetaClass().getEmptyInstance().getBean();
-        deepcopyAllProperties(cidsBean, cloneBean);
-        return cloneBean;
+        return deepcopyAllProperties(cidsBean, cloneBean);
     }
 
     @Override
@@ -226,7 +293,8 @@ public class LegacyEntityCore implements EntityCore {
                         .getMetaObject(cidsUser, oid, cid, domain)
                         .getBean();
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
-            deepcopyAllProperties(beanNew, beanToUpdate);
+            deepcopyAllProperties(beanNew, beanToUpdate, false);
+            beanToUpdate.getMOString();
 
             final CidsBean updatedBean = beanToUpdate.persist();
             if (requestResultingInstance) {
@@ -267,9 +335,7 @@ public class LegacyEntityCore implements EntityCore {
 
             beanNew.getMetaObject().setStatus(MetaObject.NEW);
 
-            deepcopyAllProperties(beanNew, beanToInsert);
-
-            final CidsBean updatedBean = beanToInsert.persist();
+            final CidsBean updatedBean = deepcopyAllProperties(beanNew, beanToInsert).persist();
             if (requestResultingInstance) {
                 final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
                 return node;
@@ -334,8 +400,23 @@ public class LegacyEntityCore implements EntityCore {
                             domain);
             if (metaObject != null) {
                 metaObject.setAllClasses();
+
+                int intLevel = -1;
+                try {
+                    intLevel = Integer.parseInt(level);
+                } catch (final Exception ex) {
+                    // could not be cast, ignore (intLevel = -1)
+                }
+                final List<String> fieldsList = (fields != null) ? Arrays.asList(fields.split(",")) : null;
+                final List<String> expandList = (expand != null) ? Arrays.asList(expand.split(",")) : null;
+
                 final ObjectNode node = (ObjectNode)MAPPER.reader()
-                            .readTree(metaObject.getBean().toJSONString(deduplicate));
+                            .readTree(metaObject.getBean().toJSONString(
+                                        deduplicate,
+                                        omitNullValues,
+                                        intLevel,
+                                        fieldsList,
+                                        expandList));
                 return node;
             } else {
                 return null;
