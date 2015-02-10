@@ -158,7 +158,7 @@ public class LegacyEntityCore implements EntityCore {
 
                 for (final CidsBean tmpBean : list) {
                     newList.add(deepcloneCidsBean(tmpBean));
-                }
+                    }
                 targetBean.setProperty(propName, newList);
             } else if (o instanceof Geometry) {
                 targetBean.setProperty(propName, ((Geometry)o).clone());
