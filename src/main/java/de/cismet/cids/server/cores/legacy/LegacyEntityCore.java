@@ -124,8 +124,8 @@ public class LegacyEntityCore implements EntityCore {
                         } catch (final Exception ex) {
                             // could not be cast, ignore (intLevel = -1)
                         }
-                        final List<String> fieldsList = Arrays.asList(fields.split(","));
-                        final List<String> expandList = Arrays.asList(expand.split(","));
+                        final List<String> fieldsList = (fields != null) ? Arrays.asList(fields.split(",")) : null;
+                        final List<String> expandList = (expand != null) ? Arrays.asList(expand.split(",")) : null;
 
                         final ObjectNode node = (ObjectNode)MAPPER.reader()
                                     .readTree(metaObject.getBean().toJSONString(
@@ -208,7 +208,7 @@ public class LegacyEntityCore implements EntityCore {
 
                 for (final CidsBean tmpBean : list) {
                     newList.add(deepcloneCidsBean(tmpBean));
-                    }
+                }
                 targetBean.setProperty(propName, newList);
             } else if (o instanceof Geometry) {
                 targetBean.setProperty(propName, ((Geometry)o).clone());
