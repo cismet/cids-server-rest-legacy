@@ -39,6 +39,7 @@ import de.cismet.cids.server.api.types.User;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.EntityCore;
+import de.cismet.cids.server.data.RuntimeContainer;
 import de.cismet.cids.server.exceptions.InvalidClassKeyException;
 import de.cismet.cids.server.exceptions.InvalidRoleException;
 import de.cismet.cids.server.exceptions.InvalidUserException;
@@ -89,7 +90,7 @@ public class LegacyEntityCore implements EntityCore {
 
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
@@ -271,7 +272,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
@@ -318,7 +319,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
 
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
@@ -375,7 +376,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
@@ -439,7 +440,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
