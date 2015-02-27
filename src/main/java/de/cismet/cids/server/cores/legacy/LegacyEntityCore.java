@@ -179,67 +179,62 @@ public class LegacyEntityCore implements EntityCore {
             return null;
         }
 
+        final String primaryKeyFieldName = sourceBean.getPrimaryKeyFieldname().toLowerCase();
         for (final String propName : sourceBean.getPropertyNames()) {
             final Object o = sourceBean.getProperty(propName);
+            if (sourceBean.getMetaObject().getAttributeByFieldName(propName).isChanged()) {
+                if (propName.toLowerCase().equals(primaryKeyFieldName)) {
+                    final int id = (Integer)sourceBean.getProperty(primaryKeyFieldName);
+                    targetBean.setProperty(primaryKeyFieldName, id);
+                    targetBean.getMetaObject().setID(id);
+                } else if (o instanceof CidsBean) {
+                    final CidsBean sourceChild = (CidsBean)o;
+                    final CidsBean targetChild;
+                    if (cloneDeep) {
+                        targetChild = deepcloneCidsBean(sourceChild);
+                    } else if (targetBean.getProperty(propName) == null) {
+                        targetChild = deepcopyAllProperties(
+                                sourceChild,
+                                sourceChild.getMetaObject().getMetaClass().getEmptyInstance().getBean(),
+                                cloneDeep);
+                    } else {
+                        targetChild = deepcopyAllProperties(
+                                sourceChild,
+                                (CidsBean)targetBean.getProperty(propName),
+                                cloneDeep);
+                    }
+                    targetBean.setProperty(propName, targetChild);
+                } else if (o instanceof Collection) {
+                    final List<CidsBean> list = (List<CidsBean>)o;
+                    final List<CidsBean> newList = new ArrayList<CidsBean>();
 
-            if (propName.toLowerCase().equals("id")) {
-                final int id = (Integer)sourceBean.getProperty("id");
-                targetBean.setProperty("id", id);
-                targetBean.getMetaObject().setID(id);
-            } else if (o instanceof CidsBean) {
-                final CidsBean sourceChild = (CidsBean)o;
-                final CidsBean targetChild;
-                if (cloneDeep) {
-                    targetChild = deepcloneCidsBean(sourceChild);
-                } else if (targetBean.getProperty(propName) == null) {
-                    targetChild = deepcopyAllProperties(
-                            sourceChild,
-                            sourceChild.getMetaObject().getMetaClass().getEmptyInstance().getBean(),
-                            cloneDeep);
+                    for (final CidsBean tmpBean : list) {
+                        newList.add(deepcloneCidsBean(tmpBean));
+                    }
+                    targetBean.setProperty(propName, newList);
+                } else if (o instanceof Geometry) {
+                    targetBean.setProperty(propName, ((Geometry)o).clone());
+                } else if (o instanceof Float) {
+                    targetBean.setProperty(propName, new Float(o.toString()));
+                } else if (o instanceof Boolean) {
+                    targetBean.setProperty(propName, new Boolean(o.toString()));
+                } else if (o instanceof Long) {
+                    targetBean.setProperty(propName, new Long(o.toString()));
+                } else if (o instanceof Double) {
+                    targetBean.setProperty(propName, new Double(o.toString()));
+                } else if (o instanceof Integer) {
+                    targetBean.setProperty(propName, new Integer(o.toString()));
+                } else if (o instanceof Date) {
+                    targetBean.setProperty(propName, ((Date)o).clone());
+                } else if (o instanceof String) {
+                    targetBean.setProperty(propName, o);
                 } else {
-                    targetChild = deepcopyAllProperties(
-                            sourceChild,
-                            (CidsBean)targetBean.getProperty(propName),
-                            cloneDeep);
+                    if (o != null) {
+                        log.error("unknown property type: " + o.getClass().getName());
+                    }
+                    targetBean.setProperty(propName, o);
                 }
-                targetBean.setProperty(propName, targetChild);
-            } else if (o instanceof Collection) {
-                final List<CidsBean> list = (List<CidsBean>)o;
-                final List<CidsBean> newList = new ArrayList<CidsBean>();
-
-                for (final CidsBean tmpBean : list) {
-                    newList.add(deepcloneCidsBean(tmpBean));
-                }
-                targetBean.setProperty(propName, newList);
-            } else if (o instanceof Geometry) {
-                targetBean.setProperty(propName, ((Geometry)o).clone());
-            } else if (o instanceof Float) {
-                targetBean.setProperty(propName, new Float(o.toString()));
-            } else if (o instanceof Boolean) {
-                targetBean.setProperty(propName, new Boolean(o.toString()));
-            } else if (o instanceof Long) {
-                targetBean.setProperty(propName, new Long(o.toString()));
-            } else if (o instanceof Double) {
-                targetBean.setProperty(propName, new Double(o.toString()));
-            } else if (o instanceof Integer) {
-                targetBean.setProperty(propName, new Integer(o.toString()));
-            } else if (o instanceof Date) {
-                targetBean.setProperty(propName, ((Date)o).clone());
-            } else if (o instanceof String) {
-                targetBean.setProperty(propName, o);
-            } else {
-                if (o != null) {
-                    log.error("unknown property type: " + o.getClass().getName());
-                }
-                targetBean.setProperty(propName, o);
             }
-
-//            if (
-//                    (targetBean.getProperty(propName) != null && !targetBean.equals(sourceBean.getProperty(propName))) ||
-//                    (sourceBean.getProperty(propName) != null && !targetBean.equals(targetBean.getProperty(propName)))) {
-//                targetBean.getMetaObject().getAttributeByFieldName(propName).setChanged(true);
-//                targetBean.getMetaObject().setStatus(MetaObject.MODIFIED);
-//            }
         }
 
         return targetBean;
@@ -272,29 +267,48 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
 
-            final int cid = metaClass.getId();
-            final int oid = Integer.parseInt(objectId);
-            final CidsBean beanToUpdate = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getMetaObject(cidsUser, oid, cid, domain)
-                        .getBean();
-            final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
-            deepcopyAllProperties(beanNew, beanToUpdate, false);
-            beanToUpdate.getMOString();
-
+            final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
+//            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
+//            log.error("beanToUpdate:\n" + beanToUpdate.getMOString());
+
             if (requestResultingInstance) {
                 final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
                 return node;
             } else {
                 return null;
             }
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while updating Object", ex);
+        }
+    }
+
+    @Override
+    public ObjectNode patchObject(final User user,
+            final String classKey,
+            final String objectId,
+            final ObjectNode jsonObject,
+            final String role) {
+        try {
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            if (metaClass == null) {
+                throw new RuntimeException("classKey " + classKey + " no found");
+            }
+
+            final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), true);
+//            final CidsBean updatedBean = beanToUpdate;
+            final CidsBean updatedBean = beanToUpdate.persist();
+//            log.error("beanToUpdate:\n" + updatedBean.getMOString());
+
+            return null;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             throw new RuntimeException("error while updating Object", ex);
