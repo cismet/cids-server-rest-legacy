@@ -47,6 +47,7 @@ import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.api.types.User;
 import de.cismet.cids.server.cores.legacy.LegacyCidsServerCore;
+import de.cismet.cids.server.data.RuntimeContainer;
 import de.cismet.cids.server.data.configkeys.AttributeConfig;
 import de.cismet.cids.server.data.configkeys.CidsAttributeConfigurationFlagKey;
 import de.cismet.cids.server.data.configkeys.CidsAttributeConfigurationKey;
@@ -109,27 +110,13 @@ public class LegacyCoreBackend {
      */
     public MetaClass getMetaclassForClasskey(final String classKey, final Sirius.server.newuser.User cidsUser)
             throws RemoteException {
-        final String[] classKeySplitted = classKey.split("\\.");
-        final String domain = classKeySplitted[0];
-        final String tableName = classKeySplitted[1].toLowerCase();
+        final String tableName = classKey.toLowerCase();
+        final String domainName = RuntimeContainer.getServer().getDomainName();
 
         final MetaClass metaClass = LegacyCoreBackend.getInstance()
                     .getService()
-                    .getClassByTableName(cidsUser, tableName, domain);
+                    .getClassByTableName(cidsUser, tableName, domainName);
         return metaClass;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   classKey  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public String getDomainForClasskey(final String classKey) {
-        final String[] classKeySplitted = classKey.split("\\.");
-        final String domain = classKeySplitted[0];
-        return domain;
     }
 
     /**

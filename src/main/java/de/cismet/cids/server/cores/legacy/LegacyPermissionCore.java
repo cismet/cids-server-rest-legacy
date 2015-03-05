@@ -19,6 +19,7 @@ import de.cismet.cids.server.api.types.User;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.PermissionCore;
+import de.cismet.cids.server.data.RuntimeContainer;
 
 /**
  * DOCUMENT ME!
@@ -92,7 +93,7 @@ public class LegacyPermissionCore implements PermissionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final String domain = LegacyCoreBackend.getInstance().getDomainForClasskey(classKey);
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
