@@ -331,17 +331,10 @@ public class LegacyEntityCore implements EntityCore {
             throw new InvalidRoleException("role is empty");          // NOI18N
         }
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-
-            final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
-
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
-            final CidsBean beanToInsert = CidsBean.createNewCidsBeanFromTableName(domain, metaClass.getTableName());
-
             beanNew.getMetaObject().setStatus(MetaObject.NEW);
 
-            final CidsBean updatedBean = deepcopyAllProperties(beanNew, beanToInsert).persist();
+            final CidsBean updatedBean = beanNew.persist();
             if (requestResultingInstance) {
                 final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
                 return node;
