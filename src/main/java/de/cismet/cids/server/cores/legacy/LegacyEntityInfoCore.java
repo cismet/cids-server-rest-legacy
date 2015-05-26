@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.server.api.types.CidsAttribute;
+import de.cismet.cids.server.api.types.CidsClass;
 
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.EntityInfoCore;
-import de.cismet.cids.server.data.legacy.CidsAttribute;
-import de.cismet.cids.server.data.legacy.CidsClass;
 
 /**
  * DOCUMENT ME!
@@ -55,7 +56,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                         .getClasses(cidsUser, cidsUser.getDomain());
             if (metaClasses != null) {
                 for (final MetaClass metaClass : metaClasses) {
-                    final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+                    final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
                     final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
                     all.add(node);
                 }
@@ -78,7 +79,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
 
-            final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+            final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
             final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
             return node;
         } catch (final Exception ex) {
@@ -100,7 +101,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
 
-            final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+            final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
             final CidsAttribute cidsAttribute = cidsClass.getAttribute(attributeKey);
             final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsAttribute, ObjectNode.class);
             return node;
