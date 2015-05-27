@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.server.api.types.CidsAttribute;
 import de.cismet.cids.server.api.types.CidsClass;
-
 import de.cismet.cids.server.api.types.User;
 import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
@@ -56,7 +56,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                         .getClasses(cidsUser, cidsUser.getDomain());
             if (metaClasses != null) {
                 for (final MetaClass metaClass : metaClasses) {
-                    final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
+                    final CidsClass cidsClass = CidsClassFactory.getFactory()
+                                .restCidsClassFromLegacyCidsClass(metaClass);
                     final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
                     all.add(node);
                 }
