@@ -91,7 +91,7 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -267,7 +267,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -298,7 +298,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -384,7 +384,7 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -448,7 +448,7 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }

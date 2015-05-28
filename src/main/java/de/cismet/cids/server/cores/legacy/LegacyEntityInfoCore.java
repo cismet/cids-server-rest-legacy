@@ -50,16 +50,21 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     public List<ObjectNode> getAllClasses(final User user, final String role) {
         try {
             final List<ObjectNode> all = new ArrayList<ObjectNode>();
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getClasses(cidsUser, cidsUser.getDomain());
+                        .getClasses(legacyUser, legacyUser.getDomain());
             if (metaClasses != null) {
                 for (final MetaClass metaClass : metaClasses) {
                     final CidsClass cidsClass = CidsClassFactory.getFactory()
                                 .restCidsClassFromLegacyCidsClass(metaClass);
                     final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
                     all.add(node);
+                }
+
+                // fill the class key cache if required
+                if (!LegacyCoreBackend.getInstance().getClassNameCache().isDomainCached(role)) {
+                    LegacyCoreBackend.getInstance().getClassNameCache().fillCache(role, metaClasses);
                 }
             }
 
@@ -73,9 +78,9 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     @Override
     public ObjectNode getClass(final User user, final String classKey, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -95,9 +100,9 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final String attributeKey,
             final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -115,9 +120,9 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     @Override
     public ObjectNode emptyInstance(final User user, final String classKey, final String role) {
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }

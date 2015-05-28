@@ -51,7 +51,10 @@ public class LegacyNodeCore implements NodeCore {
 
             final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
             for (final Sirius.server.middleware.types.Node legacyNode : legacyNodes) {
-                final CidsNode node = CidsNodeFactory.getFactory().restCidsNodeFromLegacyCidsNode(legacyNode);
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameForClassId(user, legacyNode.getClassId());
+                final CidsNode node = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyNode, className);
                 nodes.add(MAPPER.convertValue(node, ObjectNode.class));
             }
 
@@ -69,8 +72,10 @@ public class LegacyNodeCore implements NodeCore {
             final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
-
-            final CidsNode restNode = CidsNodeFactory.getFactory().restCidsNodeFromLegacyCidsNode(legacyNode);
+            final String className = LegacyCoreBackend.getInstance()
+                        .getClassNameForClassId(user, legacyNode.getClassId());
+            final CidsNode restNode = CidsNodeFactory.getFactory()
+                        .restCidsNodeFromLegacyCidsNode(legacyNode, className);
             return MAPPER.convertValue(restNode, ObjectNode.class);
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
@@ -91,8 +96,10 @@ public class LegacyNodeCore implements NodeCore {
 
             final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameForClassId(user, legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
-                            .restCidsNodeFromLegacyCidsNode(legacyChildrenNode);
+                            .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
                 nodes.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
             }
 
@@ -115,8 +122,10 @@ public class LegacyNodeCore implements NodeCore {
 
             final List<ObjectNode> children = new ArrayList<ObjectNode>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : cidsChildren) {
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameForClassId(user, legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
-                            .restCidsNodeFromLegacyCidsNode(legacyChildrenNode);
+                            .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
                 children.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
             }
 

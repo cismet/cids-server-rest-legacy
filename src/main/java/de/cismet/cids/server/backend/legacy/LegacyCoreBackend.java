@@ -43,6 +43,7 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.ClassNameCache;
 import de.cismet.cids.server.cores.legacy.LegacyCidsServerCore;
 import de.cismet.cids.server.data.RuntimeContainer;
 import de.cismet.cids.server.search.CidsServerSearch;
@@ -59,7 +60,7 @@ public class LegacyCoreBackend {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final LegacyCoreBackend INSTANCE = new LegacyCoreBackend();
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LegacyCoreBackend.class);
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LegacyCoreBackend.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -70,6 +71,7 @@ public class LegacyCoreBackend {
     private final HashMap<String, HashMap<String, String>> serverSearchParamsMap =
         new HashMap<String, HashMap<String, String>>();
     private final HashMap<String, List<String>> serverSearchParamsListMap = new HashMap<String, List<String>>();
+    private final transient ClassNameCache classNameCache = new ClassNameCache();
 
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver());
     private boolean testModeEnabled = false;
@@ -90,16 +92,16 @@ public class LegacyCoreBackend {
     /**
      * DOCUMENT ME!
      *
-     * @param   classKey  DOCUMENT ME!
-     * @param   cidsUser  DOCUMENT ME!
+     * @param   className  DOCUMENT ME!
+     * @param   cidsUser   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public MetaClass getMetaclassForClasskey(final String classKey, final Sirius.server.newuser.User cidsUser)
+    public MetaClass getMetaclassForClassname(final String className, final Sirius.server.newuser.User cidsUser)
             throws RemoteException {
-        final String tableName = classKey.toLowerCase();
+        final String tableName = className.toLowerCase();
         final String domainName = RuntimeContainer.getServer().getDomainName();
 
         final MetaClass metaClass = LegacyCoreBackend.getInstance()
@@ -134,7 +136,7 @@ public class LegacyCoreBackend {
 
             ClassCacheMultiple.setInstance(user.getDomain());
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
+            LOG.error(ex.getMessage(), ex);
         }
     }
 
@@ -208,7 +210,7 @@ public class LegacyCoreBackend {
                     LegacyCidsServerCore.getTestUser(),
                     LegacyCidsServerCore.getTestPassword());
         } catch (final Exception ex) {
-            log.error(ex, ex);
+            LOG.error(ex, ex);
         }
     }
 
@@ -323,5 +325,60 @@ public class LegacyCoreBackend {
             }
         }
         return cidsUser;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ClassNameCache getClassNameCache() {
+        return classNameCache;
+    }
+
+    /**
+     * Returns the name (table name) of a legacy meta class with the specified id for the specified domain. If the class
+     * name cache is not yet filled, getClasses is invoked on the remote legacy rest server.
+     *
+     * @param   cidsUser  domain of the meta class
+     * @param   classId   legacy class id of the meta class
+     *
+     * @return  name (table name) of the legacy meta class or null if the id or domain is not cached
+     *
+     * @throws  Exception  java.rmi.RemoteException if any error occurs
+     */
+    public String getClassNameForClassId(final User cidsUser, final int classId) throws Exception {
+        if (classId != -1) {
+            if (!this.classNameCache.isDomainCached(cidsUser.getDomain())) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
+                                + "' to lookup class with legacy id '" + classId + "'");
+                }
+
+                final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);
+                final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
+                            .getService()
+                            .getClasses(legacyUser, cidsUser.getDomain());
+
+                if (metaClasses != null) {
+                    this.classNameCache.fillCache(cidsUser.getDomain(), metaClasses);
+                } else {
+                    final String message = "cannot lookup class name for class with id '"
+                                + "' and fill class name cache: no classes found at domain '" + cidsUser.getDomain()
+                                + "' for user '" + cidsUser.getUser() + "'";
+                    LOG.error(message);
+                    throw new Exception(message);
+                }
+            }
+
+            return this.classNameCache.getClassNameForClassId(
+                    cidsUser.getDomain(),
+                    classId);
+        } else {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("cannot lookup class name for class id: -1 is not valid clss id");
+            }
+            return null;
+        }
     }
 }
