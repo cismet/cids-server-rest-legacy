@@ -116,12 +116,15 @@ public class LegacyNodeCore implements NodeCore {
     public List<ObjectNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
         try {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final Sirius.server.middleware.types.Node[] cidsChildren = LegacyCoreBackend.getInstance()
+            final Sirius.server.middleware.types.Node legacyNode = CidsNodeFactory.getFactory()
+                        .createLegacyQueryNode(user.getDomain(), nodeQuery);
+
+            final Sirius.server.middleware.types.Node[] legacyChildrenNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(legacyUser, nodeQuery);
+                        .getChildren(legacyNode, legacyUser);
 
             final List<ObjectNode> children = new ArrayList<ObjectNode>();
-            for (final Sirius.server.middleware.types.Node legacyChildrenNode : cidsChildren) {
+            for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameForClassId(user, legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
