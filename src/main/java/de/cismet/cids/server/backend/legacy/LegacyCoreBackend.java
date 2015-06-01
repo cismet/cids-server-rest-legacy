@@ -343,7 +343,7 @@ public class LegacyCoreBackend {
      * @param   cidsUser  domain of the meta class
      * @param   classId   legacy class id of the meta class
      *
-     * @return  name (table name) of the legacy meta class or null if the id or domain is not cached
+     * @return  name (table name) of the legacy meta class or null if the name is not found
      *
      * @throws  Exception  java.rmi.RemoteException if any error occurs
      */
@@ -365,7 +365,7 @@ public class LegacyCoreBackend {
                 } else {
                     final String message = "cannot lookup class name for class with id '"
                                 + "' and fill class name cache: no classes found at domain '" + cidsUser.getDomain()
-                                + "' for user '" + cidsUser.getUser() + "'";
+                                + classId + "' for user '" + cidsUser.getUser() + "'";
                     LOG.error(message);
                     throw new Exception(message);
                 }
@@ -376,9 +376,47 @@ public class LegacyCoreBackend {
                     classId);
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("cannot lookup class name for class id: -1 is not valid clss id");
+                LOG.debug("cannot lookup class name for class id: -1 is not a valid class id");
             }
             return null;
         }
+    }
+    
+    /**
+     * Returns the id of a legacy meta class with the specified name for the specified domain. If the class
+     * name cache is not yet filled, getClasses is invoked on the remote legacy rest server.
+     *
+     * @param   cidsUser  domain of the meta class
+     * @param   className   legacy class id of the meta class
+     *
+     * @return  id of the legacy meta class or -1 if the id is not found
+     *
+     * @throws  Exception  java.rmi.RemoteException if any error occurs
+     */
+    public int getIdForClassName(final User cidsUser, final String className) throws Exception {
+        if (!this.classNameCache.isDomainCached(cidsUser.getDomain())) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
+                            + "' to lookup class with legacy name '" + className + "'");
+            }
+
+            final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);
+            final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .getClasses(legacyUser, cidsUser.getDomain());
+
+            if (metaClasses != null) {
+                this.classNameCache.fillCache(cidsUser.getDomain(), metaClasses);
+            } else {
+                final String message = "cannot lookup class id for class with name '"
+                            + "' and fill class name cache: no classes found at domain '" + cidsUser.getDomain()
+                            + "' for user '" + cidsUser.getUser() + "'";
+                LOG.error(message);
+                throw new Exception(message);
+            }
+        }
+
+        return this.classNameCache.getClassIdForClassName(
+                cidsUser.getDomain(),className);
     }
 }

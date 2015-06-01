@@ -93,7 +93,7 @@ public class LegacyEntityCore implements EntityCore {
             final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                throw new RuntimeException("classKey " + classKey + " not found");
             }
 
             final String query = "SELECT " + metaClass.getID() + ", " + metaClass.getTableName() + "."
@@ -452,7 +452,7 @@ public class LegacyEntityCore implements EntityCore {
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
-
+            
             final int cid = metaClass.getId();
 
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
