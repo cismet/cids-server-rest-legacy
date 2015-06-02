@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.io.IOUtils;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import java.io.InputStream;
@@ -132,6 +134,41 @@ public class LegacyActionCore implements ActionCore {
     }
 
     @Override
+    public GenericResourceWithContentType executeNewAction(final User user,
+            final String actionKey,
+            final ActionTask actionTask,
+            final String role,
+            final InputStream fileAttachement) {
+        final List<ServerActionParameter> cidsSAPs = new ArrayList<ServerActionParameter>();
+        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        final Map<String, Object> actionParameters = actionTask.getParameters();
+        if (actionParameters != null) {
+            for (final String parameterKey : actionParameters.keySet()) {
+                final Object parameterValue = actionParameters.get(parameterKey);
+                final ServerActionParameter cidsSAP = new ServerActionParameter(parameterKey, parameterValue);
+                cidsSAPs.add(cidsSAP);
+            }
+        }
+
+        try {
+            final byte[] body = IOUtils.toByteArray(fileAttachement);
+            final Object taskResult = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .executeTask(
+                            cidsUser,
+                            actionKey,
+                            cidsUser.getDomain(),
+                            body,
+                            cidsSAPs.toArray(new ServerActionParameter[0]));
+
+            return new GenericResourceWithContentType(STREAMTYPE_APPOCTETSTREAM, taskResult);
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while executing action task", ex);
+        }
+    }
+
+    @Override
     public ObjectNode createNewActionTask(final User user,
             final String actionKey,
             ActionTask actionTask,
@@ -171,17 +208,12 @@ public class LegacyActionCore implements ActionCore {
                     public void run() {
                         try {
                             finalTask.setStatus(ActionTask.Status.RUNNING);
-                            final Object taskResult = LegacyCoreBackend.getInstance()
-                                        .getService()
-                                        .executeTask(
-                                            cidsUser,
-                                            actionKey,
-                                            cidsUser.getDomain(),
-                                            null,
-                                            cidsSAPs.toArray(new ServerActionParameter[0]));
-                            final GenericResourceWithContentType grwct = new GenericResourceWithContentType(
-                                    STREAMTYPE_APPOCTETSTREAM,
-                                    taskResult);
+                            final GenericResourceWithContentType grwct = executeNewAction(
+                                    user,
+                                    actionKey,
+                                    finalTask,
+                                    role,
+                                    fileAttachement);
                             resultMap.put(finalTask.getKey(), grwct);
                             finalTask.setStatus(ActionTask.Status.FINISHED);
                         } catch (final Exception ex) {
@@ -203,15 +235,11 @@ public class LegacyActionCore implements ActionCore {
             throw new RuntimeException(ex);
         }
 
-        if (requestResultingInstance) {
-            try {
-                return (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
-            } catch (final Exception ex) {
-                log.error(ex.getMessage(), ex);
-                throw new RuntimeException("error while creating new action task", ex);
-            }
-        } else {
-            return null;
+        try {
+            return (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+            throw new RuntimeException("error while creating new action task", ex);
         }
     }
 
