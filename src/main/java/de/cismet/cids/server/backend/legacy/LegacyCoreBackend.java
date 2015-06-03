@@ -25,8 +25,6 @@ import Sirius.server.newuser.UserGroup;
 
 import org.openide.util.Lookup;
 
-import org.reflections.ReflectionUtils;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -66,11 +64,6 @@ public class LegacyCoreBackend {
 
     private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<User, Sirius.server.newuser.User>();
     private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
-    private final HashMap<String, Class<? extends CidsServerSearch>> serverSearchMap =
-        new HashMap<String, Class<? extends CidsServerSearch>>();
-    private final HashMap<String, HashMap<String, String>> serverSearchParamsMap =
-        new HashMap<String, HashMap<String, String>>();
-    private final HashMap<String, List<String>> serverSearchParamsListMap = new HashMap<String, List<String>>();
     private final transient ClassNameCache classNameCache = new ClassNameCache();
 
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver());
@@ -84,7 +77,6 @@ public class LegacyCoreBackend {
      */
     private LegacyCoreBackend() {
         loadServerActions();
-        loadServerSearches();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -152,51 +144,6 @@ public class LegacyCoreBackend {
 
     /**
      * DOCUMENT ME!
-     */
-    public final void loadServerSearches() {
-        final Collection<? extends CidsServerSearch> subTypes = Lookup.getDefault().lookupAll(CidsServerSearch.class);
-
-        for (final CidsServerSearch subType : subTypes) {
-            final Class<? extends CidsServerSearch> serverSearchClass = subType.getClass();
-            final Set<Method> setters = ReflectionUtils.getAllMethods(
-                    serverSearchClass,
-                    ReflectionUtils.withModifier(Modifier.PUBLIC),
-                    ReflectionUtils.withPrefix("set"));
-            final Set<Method> settersParent = ReflectionUtils.getAllMethods(
-                    CidsServerSearch.class,
-                    ReflectionUtils.withModifier(Modifier.PUBLIC),
-                    ReflectionUtils.withPrefix("set"));
-            final Collection<String> setterParentNames = new ArrayList<String>();
-            for (final Method setterParent : settersParent) {
-                setterParentNames.add(setterParent.getName());
-            }
-
-            final String searchKey = serverSearchClass.getName();
-            serverSearchMap.put(searchKey, serverSearchClass);
-            final HashMap<String, String> paramsMap = new HashMap<String, String>();
-            final List<String> paramsList = new ArrayList<String>();
-            for (final Method setter : setters) {
-                if (!setterParentNames.contains(setter.getName())) {
-                    final Class[] paramTypes = setter.getParameterTypes();
-                    for (int index = 0; index < paramTypes.length; index++) {
-                        final Class paramTyp = paramTypes[index];
-                        final String paramName = setter.getName().split("set")[1];
-                        paramsList.add(paramName);
-                        if (paramTypes.length > 1) {
-                            paramsMap.put(paramName + "[" + index + "]", paramTyp.getName());
-                        } else {
-                            paramsMap.put(paramName, paramTyp.getName());
-                        }
-                    }
-                }
-            }
-            serverSearchParamsMap.put(searchKey, paramsMap);
-            serverSearchParamsListMap.put(searchKey, paramsList);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
      *
      * @param  enabled  DOCUMENT ME!
      */
@@ -221,37 +168,6 @@ public class LegacyCoreBackend {
      */
     public HashMap<String, ServerAction> getServerActionMap() {
         return serverActionMap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public HashMap<String, Class<? extends CidsServerSearch>> getServerSearchMap() {
-        return serverSearchMap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   searchKey  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public HashMap<String, String> getServerSearchParamMap(final String searchKey) {
-        return serverSearchParamsMap.get(searchKey);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   searchKey  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public List<String> getServerSearchParamList(final String searchKey) {
-        return serverSearchParamsListMap.get(searchKey);
     }
 
     /**
@@ -381,13 +297,13 @@ public class LegacyCoreBackend {
             return null;
         }
     }
-    
+
     /**
-     * Returns the id of a legacy meta class with the specified name for the specified domain. If the class
-     * name cache is not yet filled, getClasses is invoked on the remote legacy rest server.
+     * Returns the id of a legacy meta class with the specified name for the specified domain. If the class name cache
+     * is not yet filled, getClasses is invoked on the remote legacy rest server.
      *
-     * @param   cidsUser  domain of the meta class
-     * @param   className   legacy class id of the meta class
+     * @param   cidsUser   domain of the meta class
+     * @param   className  legacy class id of the meta class
      *
      * @return  id of the legacy meta class or -1 if the id is not found
      *
@@ -417,6 +333,7 @@ public class LegacyCoreBackend {
         }
 
         return this.classNameCache.getClassIdForClassName(
-                cidsUser.getDomain(),className);
+                cidsUser.getDomain(),
+                className);
     }
 }

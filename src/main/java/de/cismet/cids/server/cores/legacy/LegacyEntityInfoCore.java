@@ -104,7 +104,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                throw new RuntimeException("classKey " + classKey + " not found");
             }
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);

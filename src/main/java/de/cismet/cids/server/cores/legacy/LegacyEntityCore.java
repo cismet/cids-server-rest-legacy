@@ -452,7 +452,7 @@ public class LegacyEntityCore implements EntityCore {
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
-            
+
             final int cid = metaClass.getId();
 
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
