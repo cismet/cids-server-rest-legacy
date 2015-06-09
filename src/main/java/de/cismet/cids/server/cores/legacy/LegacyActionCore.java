@@ -151,7 +151,7 @@ public class LegacyActionCore implements ActionCore {
         }
 
         try {
-            final byte[] body = IOUtils.toByteArray(fileAttachement);
+            final byte[] body = fileAttachement != null ? IOUtils.toByteArray(fileAttachement) : null;
             final Object taskResult = LegacyCoreBackend.getInstance()
                         .getService()
                         .executeTask(
