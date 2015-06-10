@@ -7,6 +7,11 @@
 ****************************************************/
 package de.cismet.cids.server.cores.legacy;
 
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,9 +24,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.server.api.types.CidsClass;
+import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
+import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
 import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
@@ -128,14 +139,74 @@ public class LegacySearchCore implements SearchCore {
                         .customServerSearch(cidsUser, cidsServerSearch);
 
             final List<ObjectNode> objectNodes = new ArrayList<ObjectNode>();
+
+            int i = 0;
+            boolean isMetaClass = false;
+            boolean isMetaObject = false;
+            boolean isLightwightMetaObject = false;
+            boolean isMetaNode = false;
+
             for (final Object searchResult : searchResults) {
-                final ObjectNode node = (ObjectNode)MAPPER.convertValue(searchResult, ObjectNode.class);
-                objectNodes.add(node);
+                final ObjectNode objectNode;
+                if (MetaClass.class.isAssignableFrom(searchResult.getClass())) {
+                    isMetaClass = true;
+                    final MetaClass metaClass = (MetaClass)searchResult;
+                    final CidsClass cidsClass = CidsClassFactory.getFactory()
+                                .restCidsClassFromLegacyCidsClass(metaClass);
+                    objectNode = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
+                } else if (MetaObject.class.isAssignableFrom(searchResult.getClass())) {
+                    isMetaObject = true;
+                    isLightwightMetaObject = LightweightMetaObject.class.isAssignableFrom(searchResult.getClass());
+                    final MetaObject metaObject = (MetaObject)searchResult;
+                    final CidsBean cidsBean = metaObject.getBean();
+                    objectNode = (ObjectNode)MAPPER.reader().readTree(cidsBean.toJSONString(false));
+                } else if (Node.class.isAssignableFrom(searchResult.getClass())) {
+                    isMetaNode = true;
+                    final Node legacyNode = (Node)searchResult;
+                    final String className = LegacyCoreBackend.getInstance()
+                                .getClassNameForClassId(user, legacyNode.getClassId());
+                    final CidsNode cidsNode = CidsNodeFactory.getFactory()
+                                .restCidsNodeFromLegacyCidsNode(legacyNode, className);
+                    objectNode = (ObjectNode)MAPPER.convertValue(cidsNode, ObjectNode.class);
+                } else {
+                    objectNode = (ObjectNode)MAPPER.convertValue(searchResult, ObjectNode.class);
+                }
+                objectNodes.add(objectNode);
+                i++;
             }
+
+            if (i > 0) {
+                if (isMetaClass) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(i + " meta classes (entity info) found and converted by cids server search '"
+                                    + searchKey + "'");
+                    }
+                } else if (isMetaObject) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(i + " meta objects (entities) found and converted by cids server search '" + searchKey
+                                    + "'");
+                    }
+                    // FIXME: Add Support for LWMO serialization/deserialization in CidsBean
+                    if (isLightwightMetaObject) {
+                        log.warn(i + " Lightwight Meta Objects converted to full Meta Objects");
+                    }
+                } else if (isMetaNode) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(i + " nodes found and converted by cids server search '" + searchKey + "'");
+                    }
+                } else {
+                    log.warn(i + " unsupported objects of type '"
+                                + searchResults.iterator().next().getClass().getName()
+                                + "' found by cids server search '" + searchKey + "'");
+                }
+            } else {
+                log.warn("cids server search '" + searchKey + "' did not return any results");
+            }
+
             return objectNodes;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while executing search: " + ex.getMessage(), ex);
+            throw new RuntimeException("error while executing search '" + searchKey + "': " + ex.getMessage(), ex);
         }
     }
 
