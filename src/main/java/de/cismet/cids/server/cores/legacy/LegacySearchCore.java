@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.cismet.cids.base.types.Type;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.api.types.CidsClass;
@@ -31,6 +33,7 @@ import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
 import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
 import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
@@ -138,69 +141,58 @@ public class LegacySearchCore implements SearchCore {
                         .getService()
                         .customServerSearch(cidsUser, cidsServerSearch);
 
-            final List<ObjectNode> objectNodes = new ArrayList<ObjectNode>();
+            final List<ObjectNode> objectNodes;
 
-            int i = 0;
-            boolean isMetaClass = false;
-            boolean isMetaObject = false;
-            boolean isLightwightMetaObject = false;
-            boolean isMetaNode = false;
-
-            for (final Object searchResult : searchResults) {
-                final ObjectNode objectNode;
-                if (MetaClass.class.isAssignableFrom(searchResult.getClass())) {
-                    isMetaClass = true;
-                    final MetaClass metaClass = (MetaClass)searchResult;
-                    final CidsClass cidsClass = CidsClassFactory.getFactory()
-                                .restCidsClassFromLegacyCidsClass(metaClass);
-                    objectNode = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
-                } else if (MetaObject.class.isAssignableFrom(searchResult.getClass())) {
-                    isMetaObject = true;
-                    isLightwightMetaObject = LightweightMetaObject.class.isAssignableFrom(searchResult.getClass());
-                    final MetaObject metaObject = (MetaObject)searchResult;
-                    final CidsBean cidsBean = metaObject.getBean();
-                    objectNode = (ObjectNode)MAPPER.reader().readTree(cidsBean.toJSONString(false));
-                } else if (Node.class.isAssignableFrom(searchResult.getClass())) {
-                    isMetaNode = true;
-                    final Node legacyNode = (Node)searchResult;
-                    final String className = LegacyCoreBackend.getInstance()
-                                .getClassNameForClassId(user, legacyNode.getClassId());
-                    final CidsNode cidsNode = CidsNodeFactory.getFactory()
-                                .restCidsNodeFromLegacyCidsNode(legacyNode, className);
-                    objectNode = (ObjectNode)MAPPER.convertValue(cidsNode, ObjectNode.class);
-                } else {
-                    objectNode = (ObjectNode)MAPPER.convertValue(searchResult, ObjectNode.class);
+            if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
+                if (log.isDebugEnabled()) {
+                    log.debug("search result of cids server search '"
+                                + searchKey + "' is a LightweightMetaObject, need to perform cutom conversion");
                 }
-                objectNodes.add(objectNode);
-                i++;
-            }
 
-            if (i > 0) {
-                if (isMetaClass) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(i + " meta classes (entity info) found and converted by cids server search '"
-                                    + searchKey + "'");
+                objectNodes = new ArrayList<ObjectNode>();
+                final int i = 0;
+                MetaClass metaClass = null;
+                for (final Object searchResult : searchResults) {
+                    if (LightweightMetaObject.class.isAssignableFrom(searchResult.getClass())) {
+                        final LightweightMetaObject lightweightMetaObject = (LightweightMetaObject)searchResult;
+
+                        // need to fetch the class only once.
+                        // we assume that the collection contains only objects same class ....
+                        if (metaClass == null) {
+                            final String className = LegacyCoreBackend.getInstance()
+                                        .getClassNameForClassId(user, lightweightMetaObject.getClassID());
+                            if (log.isDebugEnabled()) {
+                                log.debug(
+                                    "assuming that the seult collection contains only LightweightMetaObjects of type '"
+                                            + className
+                                            + "'");
+                            }
+                            metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(className, cidsUser);
+                        }
+
+                        final CidsBean cidsBean = CidsBeanFactory.getFactory()
+                                    .cidsBeanFromLightweightMetaObject(lightweightMetaObject, metaClass);
+                        final ObjectNode objectNode = (ObjectNode)MAPPER.reader()
+                                    .readTree(cidsBean.toJSONString(false));
+                        objectNodes.add(objectNode);
+                    } else {
+                        final String message = "cannot convert search result item #"
+                                    + i + " to LightweightMetaObject, wrong result type:'"
+                                    + searchResult.getClass().getSimpleName() + "' ";
+                        log.error(message);
+                        throw new RuntimeException(message);
                     }
-                } else if (isMetaObject) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(i + " meta objects (entities) found and converted by cids server search '" + searchKey
-                                    + "'");
-                    }
-                    // FIXME: Add Support for LWMO serialization/deserialization in CidsBean
-                    if (isLightwightMetaObject) {
-                        log.warn(i + " Lightwight Meta Objects converted to full Meta Objects");
-                    }
-                } else if (isMetaNode) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(i + " nodes found and converted by cids server search '" + searchKey + "'");
-                    }
-                } else {
-                    log.warn(i + " unsupported objects of type '"
-                                + searchResults.iterator().next().getClass().getName()
-                                + "' found by cids server search '" + searchKey + "'");
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug(i + "LightWightMetaObject (entities references) returned by cids server search '"
+                                + searchKey + "' and converted to entity references!");
                 }
             } else {
-                log.warn("cids server search '" + searchKey + "' did not return any results");
+                objectNodes = ServerSearchFactory.getFactory()
+                            .objectNodesFromResultCollection(
+                                    searchResults,
+                                    searchInfo,
+                                    LegacyCoreBackend.getInstance().getClassNameCache());
             }
 
             return objectNodes;

@@ -102,6 +102,9 @@ public class LegacyEntityCore implements EntityCore {
                         + metaClass.getPrimaryKey() + " ASC LIMIT " + limit + " OFFSET " + offset;
 
             if ("0".equals(level)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("level is 0, requesting creating LightweightMetaObjects");
+                }
                 final LightweightMetaObject[] lwmos = LegacyCoreBackend.getInstance()
                             .getService()
                             .getLightweightMetaObjectsByQuery(metaClass.getId(), cidsUser, query, new String[0]);
