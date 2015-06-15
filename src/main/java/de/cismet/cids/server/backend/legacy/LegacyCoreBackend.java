@@ -23,6 +23,7 @@ import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.UserGroup;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.lang.reflect.Method;
@@ -253,49 +254,44 @@ public class LegacyCoreBackend {
     }
 
     /**
-     * Returns the name (table name) of a legacy meta class with the specified id for the specified domain. If the class
-     * name cache is not yet filled, getClasses is invoked on the remote legacy rest server.
+     * If the class name cache is not yet filled for the specified domain, getClasses is invoked on the remote legacy
+     * rest server.
      *
-     * @param   cidsUser  domain of the meta class
-     * @param   classId   legacy class id of the meta class
+     * @param   domain    domain of the meta class
+     * @param   cidsUser  user performing the request
      *
-     * @return  name (table name) of the legacy meta class or null if the name is not found
+     * @return  true if the domain is cached
      *
-     * @throws  Exception  java.rmi.RemoteException if any error occurs
+     * @throws  RuntimeException  DOCUMENT ME!
      */
-    public String getClassNameForClassId(final User cidsUser, final int classId) throws Exception {
-        if (classId != -1) {
-            if (!this.classNameCache.isDomainCached(cidsUser.getDomain())) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
-                                + "' to lookup class with legacy id '" + classId + "'");
-                }
-
-                final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);
-                final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
-                            .getService()
-                            .getClasses(legacyUser, cidsUser.getDomain());
-
-                if (metaClasses != null) {
-                    this.classNameCache.fillCache(cidsUser.getDomain(), metaClasses);
-                } else {
-                    final String message = "cannot lookup class name for class with id '"
-                                + "' and fill class name cache: no classes found at domain '" + cidsUser.getDomain()
-                                + classId + "' for user '" + cidsUser.getUser() + "'";
-                    LOG.error(message);
-                    throw new Exception(message);
-                }
-            }
-
-            return this.classNameCache.getClassNameForClassId(
-                    cidsUser.getDomain(),
-                    classId);
-        } else {
+    public boolean ensureDomainCached(final String domain, final User cidsUser) {
+        if (!this.classNameCache.isDomainCached(domain)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("cannot lookup class name for class id: -1 is not a valid class id");
+                LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
+                            + "' to lookup class with legacy ids.");
             }
-            return null;
+
+            final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);
+            final MetaClass[] metaClasses;
+            try {
+                metaClasses = LegacyCoreBackend.getInstance().getService().getClasses(legacyUser, cidsUser.getDomain());
+            } catch (RemoteException ex) {
+                LOG.error(ex.getMessage(), ex);
+                throw new RuntimeException(ex.getMessage(), ex);
+            }
+
+            if (metaClasses != null) {
+                this.classNameCache.fillCache(cidsUser.getDomain(), metaClasses);
+            } else {
+                final String message = "cannot lookup class name for class with id '"
+                            + "' and fill class name cache: no classes found at domain '" + domain
+                            + "' for user '" + cidsUser.getUser() + "'";
+                LOG.error(message);
+                throw new RuntimeException(message);
+            }
         }
+
+        return this.classNameCache.isDomainCached(domain);
     }
 
     /**

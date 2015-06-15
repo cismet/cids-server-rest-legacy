@@ -120,6 +120,9 @@ public class LegacySearchCore implements SearchCore {
             final String role) {
         log.info("executing cids server search '" + searchKey + "' with "
                     + searchParameters.size() + " search parameters");
+
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
         final Class<? extends CidsServerSearch> serverSearchClass = ServerSearchFactory.getFactory()
@@ -143,27 +146,31 @@ public class LegacySearchCore implements SearchCore {
 
             final List<ObjectNode> objectNodes;
 
+            // LightweightMetaObject needs special treatment that cannot be performed
+            // in ServerSearchFactory.
+            // .................................................................
             if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
                 if (log.isDebugEnabled()) {
                     log.debug("search result of cids server search '"
-                                + searchKey + "' is a LightweightMetaObject, need to perform cutom conversion");
+                                + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
                 }
 
                 objectNodes = new ArrayList<ObjectNode>();
-                final int i = 0;
+                int i = 0;
                 MetaClass metaClass = null;
                 for (final Object searchResult : searchResults) {
                     if (LightweightMetaObject.class.isAssignableFrom(searchResult.getClass())) {
                         final LightweightMetaObject lightweightMetaObject = (LightweightMetaObject)searchResult;
 
                         // need to fetch the class only once.
-                        // we assume that the collection contains only objects same class ....
+                        // we assume that the collection contains only objects of the same class ....
                         if (metaClass == null) {
                             final String className = LegacyCoreBackend.getInstance()
-                                        .getClassNameForClassId(user, lightweightMetaObject.getClassID());
+                                        .getClassNameCache()
+                                        .getClassNameForClassId(user.getDomain(), lightweightMetaObject.getClassID());
                             if (log.isDebugEnabled()) {
                                 log.debug(
-                                    "assuming that the seult collection contains only LightweightMetaObjects of type '"
+                                    "assuming that the result collection contains only LightweightMetaObjects of type '"
                                             + className
                                             + "'");
                             }
@@ -175,6 +182,7 @@ public class LegacySearchCore implements SearchCore {
                         final ObjectNode objectNode = (ObjectNode)MAPPER.reader()
                                     .readTree(cidsBean.toJSONString(false));
                         objectNodes.add(objectNode);
+                        i++;
                     } else {
                         final String message = "cannot convert search result item #"
                                     + i + " to LightweightMetaObject, wrong result type:'"
@@ -184,10 +192,12 @@ public class LegacySearchCore implements SearchCore {
                     }
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug(i + "LightWightMetaObject (entities references) returned by cids server search '"
+                    log.debug(i + " LightWightMetaObjects returned by cids server search '"
                                 + searchKey + "' and converted to entity references!");
                 }
+                // .................................................................
             } else {
+                // delegate object conversion to ServerSearchFactory
                 objectNodes = ServerSearchFactory.getFactory()
                             .objectNodesFromResultCollection(
                                     searchResults,

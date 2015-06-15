@@ -43,6 +43,8 @@ public class LegacyNodeCore implements NodeCore {
 
     @Override
     public List<ObjectNode> getRootNodes(final User user, final String role) {
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         try {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node[] legacyNodes = LegacyCoreBackend.getInstance()
@@ -52,7 +54,8 @@ public class LegacyNodeCore implements NodeCore {
             final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
             for (final Sirius.server.middleware.types.Node legacyNode : legacyNodes) {
                 final String className = LegacyCoreBackend.getInstance()
-                            .getClassNameForClassId(user, legacyNode.getClassId());
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
                 final CidsNode node = CidsNodeFactory.getFactory()
                             .restCidsNodeFromLegacyCidsNode(legacyNode, className);
                 nodes.add(MAPPER.convertValue(node, ObjectNode.class));
@@ -67,13 +70,16 @@ public class LegacyNodeCore implements NodeCore {
 
     @Override
     public ObjectNode getNode(final User user, final String nodeKey, final String role) {
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         try {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
             final String className = LegacyCoreBackend.getInstance()
-                        .getClassNameForClassId(user, legacyNode.getClassId());
+                        .getClassNameCache()
+                        .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
             final CidsNode restNode = CidsNodeFactory.getFactory()
                         .restCidsNodeFromLegacyCidsNode(legacyNode, className);
             return MAPPER.convertValue(restNode, ObjectNode.class);
@@ -85,6 +91,8 @@ public class LegacyNodeCore implements NodeCore {
 
     @Override
     public List<ObjectNode> getChildren(final User user, final String nodeKey, final String role) {
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         try {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
@@ -97,7 +105,8 @@ public class LegacyNodeCore implements NodeCore {
             final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
-                            .getClassNameForClassId(user, legacyChildrenNode.getClassId());
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
                             .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
                 nodes.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
@@ -114,6 +123,8 @@ public class LegacyNodeCore implements NodeCore {
 
     @Override
     public List<ObjectNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         try {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node legacyNode = CidsNodeFactory.getFactory()
@@ -126,7 +137,8 @@ public class LegacyNodeCore implements NodeCore {
             final List<ObjectNode> children = new ArrayList<ObjectNode>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
-                            .getClassNameForClassId(user, legacyChildrenNode.getClassId());
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
                             .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
                 children.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
