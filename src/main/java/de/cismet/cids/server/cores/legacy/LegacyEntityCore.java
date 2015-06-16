@@ -103,8 +103,14 @@ public class LegacyEntityCore implements EntityCore {
 
             if ("0".equals(level)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("level is 0, requesting creating LightweightMetaObjects");
+                    log.debug("level is 0, requesting creating LightweightMetaObjects without any attributes");
                 }
+
+                if ((fields != null) || (expand != null)) {
+                    log.warn("level is 0, ignoring fields '" + fields + "' and expand '"
+                                + expand + "' parameters!");
+                }
+
                 final LightweightMetaObject[] lwmos = LegacyCoreBackend.getInstance()
                             .getService()
                             .getLightweightMetaObjectsByQuery(metaClass.getId(), cidsUser, query, new String[0]);

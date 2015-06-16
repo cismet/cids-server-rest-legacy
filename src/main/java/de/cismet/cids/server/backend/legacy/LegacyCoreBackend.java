@@ -268,7 +268,7 @@ public class LegacyCoreBackend {
         if (!this.classNameCache.isDomainCached(domain)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
-                            + "' to lookup class with legacy ids.");
+                            + "' to loockup class with legacy ids.");
             }
 
             final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);

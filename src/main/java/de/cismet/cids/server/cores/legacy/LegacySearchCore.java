@@ -9,8 +9,6 @@ package de.cismet.cids.server.cores.legacy;
 
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
-import Sirius.server.middleware.types.MetaObject;
-import Sirius.server.middleware.types.Node;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,14 +26,10 @@ import de.cismet.cids.base.types.Type;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cids.server.api.types.CidsClass;
-import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
 import de.cismet.cids.server.api.types.User;
 import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
-import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
-import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
 import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
@@ -121,7 +115,8 @@ public class LegacySearchCore implements SearchCore {
         log.info("executing cids server search '" + searchKey + "' with "
                     + searchParameters.size() + " search parameters");
 
-        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+        final String domain = user.getDomain();
+        LegacyCoreBackend.getInstance().ensureDomainCached(domain, user);
 
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
@@ -157,16 +152,14 @@ public class LegacySearchCore implements SearchCore {
 
                 objectNodes = new ArrayList<ObjectNode>();
                 int i = 0;
-                MetaClass metaClass = null;
+                String className = null;
                 for (final Object searchResult : searchResults) {
                     if (LightweightMetaObject.class.isAssignableFrom(searchResult.getClass())) {
                         final LightweightMetaObject lightweightMetaObject = (LightweightMetaObject)searchResult;
-
-                        // need to fetch the class only once.
+                        // need to fetch the class name only once.
                         // we assume that the collection contains only objects of the same class ....
-                        if (metaClass == null) {
-                            final String className = LegacyCoreBackend.getInstance()
-                                        .getClassNameCache()
+                        if (className == null) {
+                            className = LegacyCoreBackend.getInstance().getClassNameCache()
                                         .getClassNameForClassId(user.getDomain(), lightweightMetaObject.getClassID());
                             if (log.isDebugEnabled()) {
                                 log.debug(
@@ -174,13 +167,10 @@ public class LegacySearchCore implements SearchCore {
                                             + className
                                             + "'");
                             }
-                            metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(className, cidsUser);
                         }
 
-                        final CidsBean cidsBean = CidsBeanFactory.getFactory()
-                                    .cidsBeanFromLightweightMetaObject(lightweightMetaObject, metaClass);
-                        final ObjectNode objectNode = (ObjectNode)MAPPER.reader()
-                                    .readTree(cidsBean.toJSONString(false));
+                        final ObjectNode objectNode = CidsBeanFactory.getFactory()
+                                    .objectNodeFromLightweightMetaObject(lightweightMetaObject, className, domain);
                         objectNodes.add(objectNode);
                         i++;
                     } else {
