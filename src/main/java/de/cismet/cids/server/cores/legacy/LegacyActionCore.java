@@ -70,6 +70,10 @@ public class LegacyActionCore implements ActionCore {
 
     @Override
     public List<ObjectNode> getAllActions(final User user, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAllActions");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             cidsUser.setUserGroup(null);
@@ -91,13 +95,18 @@ public class LegacyActionCore implements ActionCore {
             }
             return taskNameNodes;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting all actions", ex);
+            final String message = "error while getting all actions: " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public ObjectNode getAction(final User user, final String actionKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAction with actionKey '" + actionKey + "'");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final HashMap<String, ServerAction> serverActionMap = LegacyCoreBackend.getInstance().getServerActionMap();
@@ -116,13 +125,19 @@ public class LegacyActionCore implements ActionCore {
                 return null;
             }
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting action", ex);
+            final String message = "error while getting action with actionKey '"
+                        + actionKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public List<ObjectNode> getAllTasks(final User user, final String actionKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAllTasks with actionKey '" + actionKey + "'");
+        }
+
         final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
         for (final ActionTask actionTask : taskMap.values()) {
             if ((actionTask != null) && actionTask.getActionKey().equals(actionKey)) {
@@ -139,6 +154,10 @@ public class LegacyActionCore implements ActionCore {
             final ActionTask actionTask,
             final String role,
             final InputStream fileAttachement) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAllTasks with actionKey '" + actionKey + "'");
+        }
+
         final List<ServerActionParameter> cidsSAPs = new ArrayList<ServerActionParameter>();
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         final Map<String, Object> actionParameters = actionTask.getParameters();
@@ -151,7 +170,7 @@ public class LegacyActionCore implements ActionCore {
         }
 
         try {
-            final byte[] body = fileAttachement != null ? IOUtils.toByteArray(fileAttachement) : null;
+            final byte[] body = (fileAttachement != null) ? IOUtils.toByteArray(fileAttachement) : null;
             final Object taskResult = LegacyCoreBackend.getInstance()
                         .getService()
                         .executeTask(
@@ -163,8 +182,10 @@ public class LegacyActionCore implements ActionCore {
 
             return new GenericResourceWithContentType(STREAMTYPE_APPOCTETSTREAM, taskResult);
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while executing action task", ex);
+            final String message = "error while executing action task with actionKey '"
+                        + actionKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
@@ -175,6 +196,10 @@ public class LegacyActionCore implements ActionCore {
             final String role,
             final boolean requestResultingInstance,
             final InputStream fileAttachement) {
+        if (log.isDebugEnabled()) {
+            log.debug("createNewActionTask with actionKey '" + actionKey + "'");
+        }
+
         if (actionTask == null) {
             actionTask = new ActionTask();
         }
@@ -232,24 +257,34 @@ public class LegacyActionCore implements ActionCore {
 
             taskMap.put(actionTask.getKey(), finalTask);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            final String message = "error while creating new action task with actionKey '"
+                        + actionKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
 
         try {
             return (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while creating new action task", ex);
+            final String message = "error while creating new action task with actionKey '"
+                        + actionKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public ObjectNode getTask(final User user, final String actionKey, final String taskKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getTask with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
+        }
+
         final ActionTask actionTask = taskMap.get(taskKey);
         if (actionTask != null) {
             final ObjectNode on = (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
             return on;
         } else {
+            log.warn("no taks for actionKey '" + actionKey + "' and taskKey '" + taskKey + "' found, returning null!");
             return null;
         }
     }
@@ -259,6 +294,10 @@ public class LegacyActionCore implements ActionCore {
             final String actionKey,
             final String taskKey,
             final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getResults with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
+        }
+
         final GenericResourceWithContentType result = resultMap.get(taskKey);
         final ActionTask actionTask = taskMap.get(taskKey);
         final List<ActionResultInfo> ariList = new LinkedList<ActionResultInfo>();
@@ -270,15 +309,24 @@ public class LegacyActionCore implements ActionCore {
                     STREAMTYPE_APPOCTETSTREAM,
                     actionTask.getParameters());
             ariList.add(ari);
+        } else {
+            log.warn("no results for actionKey '" + actionKey + "' and taskKey '" + taskKey
+                        + "' found, returning null!");
         }
         return ariList;
     }
 
     @Override
     public void deleteTask(final User user, final String actionKey, final String taskKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("deleteTask with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
+        }
+
         if (taskMap.containsKey(taskKey)) {
             taskMap.remove(taskKey);
             resultMap.remove(taskKey);
+        } else {
+            log.warn("could not delete task with '" + actionKey + "' and taskKey '" + taskKey + "': task not found");
         }
     }
 
@@ -288,6 +336,16 @@ public class LegacyActionCore implements ActionCore {
             final String taskKey,
             final String resultKey,
             final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getResult with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
+        }
+
+        if (!resultMap.containsKey(taskKey)) {
+            log.warn("could not get result for task with '" + actionKey + "' and taskKey '" + taskKey
+                        + "': task not found");
+            return null;
+        }
+
         final GenericResourceWithContentType result = resultMap.get(taskKey);
         return result;
     }

@@ -44,6 +44,9 @@ public class LegacyNodeCore implements NodeCore {
     @Override
     public List<ObjectNode> getRootNodes(final User user, final String role) {
         LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+        if (log.isDebugEnabled()) {
+            log.debug("getRootNodes");
+        }
 
         try {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
@@ -63,13 +66,18 @@ public class LegacyNodeCore implements NodeCore {
 
             return nodes;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting root nodes: " + ex.getMessage(), ex);
+            final String message = "error while getting root nodes: " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public ObjectNode getNode(final User user, final String nodeKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getNode with nodeKey '" + nodeKey + "'.");
+        }
+
         LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
 
         try {
@@ -84,13 +92,19 @@ public class LegacyNodeCore implements NodeCore {
                         .restCidsNodeFromLegacyCidsNode(legacyNode, className);
             return MAPPER.convertValue(restNode, ObjectNode.class);
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting node", ex);
+            final String message = "error while getting a node with nodeKey '"
+                        + nodeKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public List<ObjectNode> getChildren(final User user, final String nodeKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getChildren with nodeKey '" + nodeKey + "'.");
+        }
+
         LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
 
         try {
@@ -114,15 +128,19 @@ public class LegacyNodeCore implements NodeCore {
 
             return nodes;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting children of node '"
-                        + nodeKey + "': " + ex.getMessage(),
-                ex);
+            final String message = "error while getting children of node '"
+                        + nodeKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public List<ObjectNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getChildrenByQuery with nodeQuery '" + nodeQuery + "'.");
+        }
+
         LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
 
         try {
@@ -146,8 +164,10 @@ public class LegacyNodeCore implements NodeCore {
 
             return children;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting children by query: " + ex.getMessage(), ex);
+            final String message = "error while getting children by query '"
+                        + nodeQuery + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 

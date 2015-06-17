@@ -40,6 +40,10 @@ public class LegacyUserCore implements UserCore {
 
     @Override
     public User validate(final User user) {
+        if (log.isDebugEnabled()) {
+            log.debug("validate with user '" + user.getUser() + "'.");
+        }
+
         System.setProperty("sun.rmi.transport.connectionTimeout", "15");
         final String username = user.getUser();
         final String password = user.getPass();
@@ -56,7 +60,8 @@ public class LegacyUserCore implements UserCore {
             LegacyCoreBackend.getInstance().registerUser(cidsUser, user);
             user.setValidated(true);
         } catch (final Exception ex) {
-            log.error("Fehler beim Anmelden", ex);
+            log.error("Could not validate user '" + user.getUser() + "': "
+                        + ex.getMessage(), ex);
             user.setValidated(false);
         }
         return user;

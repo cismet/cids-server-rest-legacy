@@ -54,12 +54,20 @@ public class LegacySearchCore implements SearchCore {
 
     @Override
     public List<SearchInfo> getAllSearches(final User user, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAllSearches");
+        }
+
         // TODO: user and role ignored!
         return ServerSearchFactory.getFactory().getServerSearchInfos();
     }
 
     @Override
     public SearchInfo getSearch(final User user, final String searchKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getSearch with searchKey '" + searchKey + "'.");
+        }
+
         // TODO: user and role ignored!
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
 
@@ -112,8 +120,10 @@ public class LegacySearchCore implements SearchCore {
             final int limit,
             final int offset,
             final String role) {
-        log.info("executing cids server search '" + searchKey + "' with "
-                    + searchParameters.size() + " search parameters");
+        if (log.isDebugEnabled()) {
+            log.debug("executing cids server search '" + searchKey + "' with "
+                        + searchParameters.size() + " search parameters.");
+        }
 
         final String domain = user.getDomain();
         LegacyCoreBackend.getInstance().ensureDomainCached(domain, user);
