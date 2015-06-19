@@ -91,6 +91,13 @@ public class LegacyActionCore implements ActionCore {
                             null,
                             null);
                     taskNameNodes.add(MAPPER.convertValue(actionTask, ObjectNode.class));
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("user '" + user.getUser() + "' with role '"
+                                    + role + "' does not have the permission to get the Action with actionKey '"
+                                    + actionKey + "': Config Attribute '" + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX
+                                    + actionKey + "' not available for user. ");
+                    }
                 }
             }
             return taskNameNodes;
@@ -122,6 +129,10 @@ public class LegacyActionCore implements ActionCore {
                         null);
                 return MAPPER.convertValue(actionTask, ObjectNode.class);
             } else {
+                log.warn("user '" + user.getUser() + "' with role '"
+                            + role + "' does not have the permission to get the Action with actionKey '"
+                            + actionKey + "': Config Attribute '" + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX
+                            + actionKey + "' not found! ");
                 return null;
             }
         } catch (final Exception ex) {
@@ -155,22 +166,40 @@ public class LegacyActionCore implements ActionCore {
             final String role,
             final InputStream fileAttachement) {
         if (log.isDebugEnabled()) {
-            log.debug("getAllTasks with actionKey '" + actionKey + "'");
+            log.info("executeNewAction with actionKey '" + actionKey + "'");
         }
 
         final List<ServerActionParameter> cidsSAPs = new ArrayList<ServerActionParameter>();
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-        final Map<String, Object> actionParameters = actionTask.getParameters();
-        if (actionParameters != null) {
+        if ((actionTask != null) && (actionTask.getParameters() != null)
+                    && !actionTask.getParameters().isEmpty()) {
+            final Map<String, Object> actionParameters = actionTask.getParameters();
             for (final String parameterKey : actionParameters.keySet()) {
                 final Object parameterValue = actionParameters.get(parameterKey);
                 final ServerActionParameter cidsSAP = new ServerActionParameter(parameterKey, parameterValue);
                 cidsSAPs.add(cidsSAP);
+                if (log.isDebugEnabled()) {
+                    log.debug("processing server action parameter '" + cidsSAP.toString() + "'");
+                }
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("no server action parameters provided!");
             }
         }
 
         try {
             final byte[] body = (fileAttachement != null) ? IOUtils.toByteArray(fileAttachement) : null;
+            if (body != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("sending binary body (e.g. file) of length " + body.length);
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("no binary body (e.g. file) parameter provided!");
+                }
+            }
+
             final Object taskResult = LegacyCoreBackend.getInstance()
                         .getService()
                         .executeTask(
@@ -337,12 +366,13 @@ public class LegacyActionCore implements ActionCore {
             final String resultKey,
             final String role) {
         if (log.isDebugEnabled()) {
-            log.debug("getResult with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
+            log.debug("getResult with actionKey '" + actionKey + "', taskKey '"
+                        + taskKey + "' and resultKey '" + resultKey + "'");
         }
 
         if (!resultMap.containsKey(taskKey)) {
-            log.warn("could not get result for task with '" + actionKey + "' and taskKey '" + taskKey
-                        + "': task not found");
+            log.warn("could not get result for task with '" + actionKey + ", taskKey '"
+                        + taskKey + "' and resultKey '" + resultKey + "': task not found");
             return null;
         }
 
