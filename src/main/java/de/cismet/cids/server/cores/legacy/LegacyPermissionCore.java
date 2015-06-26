@@ -35,10 +35,14 @@ public class LegacyPermissionCore implements PermissionCore {
 
     @Override
     public boolean hasClassReadPermission(final User user, final String role, final String classKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasClassReadPermission with classKey '" + classKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -53,10 +57,14 @@ public class LegacyPermissionCore implements PermissionCore {
 
     @Override
     public boolean hasClassWritePermission(final User user, final String role, final String classKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasClassWritePermission with classKey '" + classKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -71,6 +79,10 @@ public class LegacyPermissionCore implements PermissionCore {
 
     @Override
     public boolean isCustomObjectPermissionEnabled(final String classKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("isCustomObjectPermissionEnabled with classKey '" + classKey + "'.");
+        }
+
         // TODO
         return true;
     }
@@ -80,6 +92,11 @@ public class LegacyPermissionCore implements PermissionCore {
             final String role,
             final String classKey,
             final String objectKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasObjectReadPermission with classKey '" + classKey
+                        + "' and objectKey '" + objectKey + "'.");
+        }
+
         // Tools | Templates.
         // TODO
         return false;
@@ -90,11 +107,16 @@ public class LegacyPermissionCore implements PermissionCore {
             final String role,
             final String classKey,
             final String objectKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasObjectWritePermission with classKey '" + classKey
+                        + "' and objectKey '" + objectKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -117,10 +139,15 @@ public class LegacyPermissionCore implements PermissionCore {
             final String role,
             final String classKey,
             final String attributeKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasAttributeReadPermission with classKey '" + classKey
+                        + "' and attributte key '" + attributeKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -138,10 +165,15 @@ public class LegacyPermissionCore implements PermissionCore {
             final String role,
             final String classKey,
             final String attributeKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasAttributeWritePermission with classKey '" + classKey
+                        + "' and attributte key '" + attributeKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -157,6 +189,10 @@ public class LegacyPermissionCore implements PermissionCore {
 
     @Override
     public boolean hasNodeReadPermission(final User user, final String role, final String nodeKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasNodeReadPermission with nodeKey '" + nodeKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
@@ -173,6 +209,10 @@ public class LegacyPermissionCore implements PermissionCore {
 
     @Override
     public boolean hasNodeWritePermission(final User user, final String role, final String nodeKey) {
+        if (log.isDebugEnabled()) {
+            log.debug("hasNodeWritePermission with nodeKey '" + nodeKey + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()

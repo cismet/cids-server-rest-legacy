@@ -75,14 +75,27 @@ public class LegacyEntityCore implements EntityCore {
             final String filter,
             final boolean omitNullValues,
             final boolean deduplicate) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAllObjects with classKey '" + classKey + "'.");
+        }
+
         if (!user.isValidated()) {
-            throw new InvalidUserException("user is not validated");  // NOI18N
+            final String message = "error while getting all objects with classKey '"
+                        + classKey + "': user '" + user.getUser() + "' is not validated!";
+            log.error(message);
+            throw new InvalidUserException(message);     // NOI18N
         }
         if (classKey.isEmpty()) {
-            throw new InvalidClassKeyException("class key is empty"); // NOI18N
+            final String message = "error while getting all objects with classKey '"
+                        + classKey + "': classKey is empty!";
+            log.error(message);
+            throw new InvalidClassKeyException(message); // NOI18N
         }
         if (role.isEmpty()) {
-            throw new InvalidRoleException("role is empty");          // NOI18N
+            final String message = "error while getting all objects with classKey '"
+                        + classKey + "': role is empty!";
+            log.error(message);
+            throw new InvalidRoleException(message);     // NOI18N
         }
 
         try {
@@ -91,9 +104,9 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                throw new RuntimeException("classKey " + classKey + " not found");
             }
 
             final String query = "SELECT " + metaClass.getID() + ", " + metaClass.getTableName() + "."
@@ -102,6 +115,16 @@ public class LegacyEntityCore implements EntityCore {
                         + metaClass.getPrimaryKey() + " ASC LIMIT " + limit + " OFFSET " + offset;
 
             if ("0".equals(level)) {
+                if (log.isDebugEnabled()) {
+                    log.debug(
+                        "getAllObjects: level is 0, requesting creating LightweightMetaObjects without any attributes");
+                }
+
+                if ((fields != null) || (expand != null)) {
+                    log.warn("getAllObjects: level is 0, ignoring fields '" + fields + "' and expand '"
+                                + expand + "' parameters!");
+                }
+
                 final LightweightMetaObject[] lwmos = LegacyCoreBackend.getInstance()
                             .getService()
                             .getLightweightMetaObjectsByQuery(metaClass.getId(), cidsUser, query, new String[0]);
@@ -141,8 +164,10 @@ public class LegacyEntityCore implements EntityCore {
             }
             return all;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting all Objects", ex);
+            final String message = "error while getting all objects with classKey '"
+                        + classKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
@@ -264,10 +289,14 @@ public class LegacyEntityCore implements EntityCore {
             final ObjectNode jsonObject,
             final String role,
             final boolean requestResultingInstance) {
+        if (log.isDebugEnabled()) {
+            log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 throw new RuntimeException("classKey " + classKey + " no found");
             }
@@ -295,12 +324,19 @@ public class LegacyEntityCore implements EntityCore {
             final String objectId,
             final ObjectNode jsonObject,
             final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("patchObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "error while patching an object with classKey '"
+                            + classKey + "' and objectId '" + objectId + "': class for class key not found!";
+                log.error(message);
+                throw new RuntimeException(message);
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), true);
@@ -310,8 +346,10 @@ public class LegacyEntityCore implements EntityCore {
 
             return null;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while updating Object", ex);
+            final String message = "error while updating an object with classKey '"
+                        + classKey + "' and objectId '" + objectId + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
@@ -321,14 +359,26 @@ public class LegacyEntityCore implements EntityCore {
             @NonNull final ObjectNode jsonObject,
             @NonNull final String role,
             final boolean requestResultingInstance) {
+        if (log.isDebugEnabled()) {
+            log.debug("createObject with classKey '" + classKey + "'.");
+        }
+
         if (!user.isValidated()) {
-            throw new InvalidUserException("user is not validated");  // NOI18N
+            final String message = "error while creating an object with classKey '"
+                        + classKey + "': user '" + user.getUser() + "' is not validated!";
+            log.error(message);
+            throw new InvalidUserException(message);     // NOI18N
         }
         if (classKey.isEmpty()) {
-            throw new InvalidClassKeyException("class key is empty"); // NOI18N
+            final String message = "error while creating an object: class key is empty!";
+            log.error(message);
+            throw new InvalidClassKeyException(message); // NOI18N
         }
         if (role.isEmpty()) {
-            throw new InvalidRoleException("role is empty");          // NOI18N
+            final String message = "error while creating an object with classKey '"
+                        + classKey + "': role is empty!";
+            log.error(message);
+            throw new InvalidRoleException(message);     // NOI18N
         }
         try {
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
@@ -342,8 +392,10 @@ public class LegacyEntityCore implements EntityCore {
                 return null;
             }
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while creating Object", ex);
+            final String message = "error while creating an object with classKey '"
+                        + classKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
@@ -353,7 +405,13 @@ public class LegacyEntityCore implements EntityCore {
             final String role,
             final int limit,
             final int offset) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+        if (log.isDebugEnabled()) {
+            log.warn("getObjectsByQuery with query '" + query + "'.");
+        }
+
+        final String message = "The operation getObjectsByQuery is currently not supported";
+        log.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     @Override
@@ -368,25 +426,44 @@ public class LegacyEntityCore implements EntityCore {
             @NonNull final String role,
             final boolean omitNullValues,
             final boolean deduplicate) {
+        if (log.isDebugEnabled()) {
+            log.debug("getObject with classKey '" + classKey + "' and objectId '" + objectId + "'");
+        }
+
         if (!user.isValidated()) {
-            throw new InvalidUserException("user is not validated");  // NOI18N
+            final String message = "error while getting an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': user '" + user.getUser() + "' is not validated!";
+            log.error(message);
+            throw new InvalidUserException(message);     // NOI18N
         }
         if (classKey.isEmpty()) {
-            throw new InvalidClassKeyException("class key is empty"); // NOI18N
+            final String message = "error while getting an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': class key is empty!";
+            log.error(message);
+            throw new InvalidClassKeyException(message); // NOI18N
         }
         if (objectId.isEmpty()) {
-            throw new IllegalArgumentException("objectId is empty");  // NOI18N
+            final String message = "error while getting an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': objectId is empty!";
+            log.error(message);
+            throw new IllegalArgumentException(message); // NOI18N
         }
         if (role.isEmpty()) {
-            throw new InvalidRoleException("role is empty");          // NOI18N
+            final String message = "error while getting an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': role is empty!";
+            log.error(message);
+            throw new InvalidRoleException(message);     // NOI18N
         }
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "error while getting an object with classKey '" + classKey
+                            + "' and objectId '" + objectId + "': class for class key not found!";
+                log.error(message);
+                throw new RuntimeException(message);
             }
 
             final int cid = metaClass.getId();
@@ -421,8 +498,10 @@ public class LegacyEntityCore implements EntityCore {
                 return null;
             }
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting Object", ex);
+            final String message = "error while getting an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
@@ -431,26 +510,50 @@ public class LegacyEntityCore implements EntityCore {
             @NonNull final String classKey,
             @NonNull final String objectId,
             @NonNull final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("deleteObject with classKey '" + classKey + "' and objectId '" + objectId + "'");
+        }
+
         if (!user.isValidated()) {
-            throw new InvalidUserException("user is not validated");  // NOI18N
+            final String message = "error while deleting an object with classKey '"
+                        + classKey + "' and objectId '" + objectId
+                        + "': user '" + user.getUser() + "' is not validated!";
+            log.error(message);
+            throw new InvalidUserException(message);     // NOI18N
         }
         if (classKey.isEmpty()) {
-            throw new InvalidClassKeyException("class key is empty"); // NOI18N
+            final String message = "error while deleting an object with classKey '"
+                        + classKey + "' and objectId '" + objectId
+                        + "': classKey is empty!";
+            log.error(message);
+            throw new InvalidClassKeyException(message); // NOI18N
         }
         if (objectId.isEmpty()) {
-            throw new IllegalArgumentException("objectId is empty");  // NOI18N
+            final String message = "error while deleting an object with classKey '"
+                        + classKey + "' and objectId '" + objectId
+                        + "': objectId is empty!";
+            log.error(message);
+            throw new IllegalArgumentException(message); // NOI18N
         }
         if (role.isEmpty()) {
-            throw new InvalidRoleException("role is empty");          // NOI18N
+            final String message = "error while deleting an object with classKey '"
+                        + classKey + "' and objectId '" + objectId
+                        + "': role is empty!";
+            log.error(message);
+            throw new InvalidRoleException(message);     // NOI18N
         }
 
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "error while deleting an object with classKey '"
+                            + classKey + "' and objectId '" + objectId
+                            + "': class for classKey not found!";
+                log.error(message);
+                throw new RuntimeException(message);
             }
 
             final int cid = metaClass.getId();
@@ -465,7 +568,10 @@ public class LegacyEntityCore implements EntityCore {
             final int ret = LegacyCoreBackend.getInstance().getService().deleteMetaObject(cidsUser, metaObject, domain);
             return (ret > 100);
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
+            final String message = "error while deleting an object with classKey '"
+                        + classKey + "' and objectId '" + objectId + "': "
+                        + ex.getMessage();
+            log.error(message, ex);
             return false; // Tools | Templates.
         }
     }
@@ -487,17 +593,23 @@ public class LegacyEntityCore implements EntityCore {
             if (matcher.find()) {
                 return matcher.group(1);
             } else {
-                throw new Error("Object with malformed self reference: " + jsonObject.get("$self"));
+                final String message = "Object with malformed $self reference: " + jsonObject.get("$self");
+                log.error(message);
+                throw new Error(message);
             }
         } else if (jsonObject.hasNonNull("$ref")) {
             final Matcher matcher = CLASSKEY_PATTERN.matcher(jsonObject.get("$ref").asText());
             if (matcher.find()) {
                 return matcher.group(1);
             } else {
-                throw new Error("Object with malformed reference: " + jsonObject.get("$ref"));
+                final String message = "Object with malformed $ref reference: " + jsonObject.get("$ref");
+                log.error(message);
+                throw new Error(message);
             }
         } else {
-            throw new Error("Object without (self) reference is invalid!");
+            final String message = "Object without ($self or $ref) reference is invalid!";
+            log.error(message);
+            throw new Error(message);
         }
     }
 
@@ -520,17 +632,21 @@ public class LegacyEntityCore implements EntityCore {
             if (matcher.find()) {
                 return matcher.group(1);
             } else {
-                throw new Error("Object with malformed self reference: " + jsonObject.get("$ref"));
+                final String message = "Object with malformed $self reference: " + jsonObject.get("$self");
+                log.error(message);
+                throw new Error(message);
             }
         } else if (jsonObject.hasNonNull("$ref")) {
             final Matcher matcher = OBJECTID_PATTERN.matcher(jsonObject.get("$ref").asText());
             if (matcher.find()) {
                 return matcher.group(1);
             } else {
-                throw new Error("Object with malformed reference: " + jsonObject.get("$ref"));
+                final String message = "Object with malformed $ref reference: " + jsonObject.get("$ref");
+                log.error(message);
+                throw new Error(message);
             }
-        }
-        {
+        } else {
+            log.warn("Object without id, $self or $ref! returning -1 as id");
             return "-1";
         }
     }

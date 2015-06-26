@@ -22,12 +22,13 @@ import java.util.List;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cids.server.api.types.CidsAttribute;
+import de.cismet.cids.server.api.types.CidsClass;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.EntityInfoCore;
-import de.cismet.cids.server.data.legacy.CidsAttribute;
-import de.cismet.cids.server.data.legacy.CidsClass;
 
 /**
  * DOCUMENT ME!
@@ -47,43 +48,63 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
 
     @Override
     public List<ObjectNode> getAllClasses(final User user, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getAllClasses");
+        }
+
         try {
             final List<ObjectNode> all = new ArrayList<ObjectNode>();
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getClasses(cidsUser, cidsUser.getDomain());
+                        .getClasses(legacyUser, legacyUser.getDomain());
             if (metaClasses != null) {
                 for (final MetaClass metaClass : metaClasses) {
-                    final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+                    final CidsClass cidsClass = CidsClassFactory.getFactory()
+                                .restCidsClassFromLegacyCidsClass(metaClass);
                     final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
                     all.add(node);
+                }
+
+                // fill the class key cache if required
+                if (!LegacyCoreBackend.getInstance().getClassNameCache().isDomainCached(role)) {
+                    LegacyCoreBackend.getInstance().getClassNameCache().fillCache(role, metaClasses);
                 }
             }
 
             return all;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting all classes", ex);
+            final String message = "error while getting all classes: " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public ObjectNode getClass(final User user, final String classKey, final String role) {
-        try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        if (log.isDebugEnabled()) {
+            log.debug("getClass with classKey '" + classKey + "'.");
+        }
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+        try {
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "error while getting class with classKey '" + classKey
+                            + "': class not found!";
+                log.error(message);
+                throw new RuntimeException(message);
             }
 
-            final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+            final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
             final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
             return node;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while gett class", ex);
+            final String message = "error while getting class with classKey '" + classKey
+                        + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
@@ -92,40 +113,58 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final String classKey,
             final String attributeKey,
             final String role) {
-        try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        if (log.isDebugEnabled()) {
+            log.debug("getAttribute with classKey '" + classKey + "' and attributeKey '" + attributeKey + "'.");
+        }
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+        try {
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "error while getting attribute with classKey '" + classKey
+                            + "' and attributeKey '" + attributeKey + "': class not found!";
+                log.error(message);
+                throw new RuntimeException(message);
             }
 
-            final CidsClass cidsClass = LegacyCoreBackend.getInstance().createCidsClass(metaClass);
+            final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
             final CidsAttribute cidsAttribute = cidsClass.getAttribute(attributeKey);
             final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsAttribute, ObjectNode.class);
             return node;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting all classes", ex);
+            final String message = "error while getting attribute with classKey '" + classKey
+                        + "' and attributeKey '" + attributeKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public ObjectNode emptyInstance(final User user, final String classKey, final String role) {
-        try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        if (log.isDebugEnabled()) {
+            log.debug("emptyInstance with classKey '" + classKey + "'.");
+        }
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClasskey(classKey, cidsUser);
+        try {
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "error while getting empty instance with classKey '" + classKey
+                            + "': class not found!";
+                log.error(message);
+                throw new RuntimeException(message);
             }
 
             final CidsBean beanNew = metaClass.getEmptyInstance().getBean();
             final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(beanNew.toJSONString(true));
             return node;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while creating empty instance", ex);
+            final String message = "error while getting empty instance with classKey '" + classKey
+                        + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 

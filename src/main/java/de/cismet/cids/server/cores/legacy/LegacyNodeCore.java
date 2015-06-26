@@ -18,8 +18,9 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.cismet.cids.server.api.types.Node;
+import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.NodeCore;
@@ -42,115 +43,131 @@ public class LegacyNodeCore implements NodeCore {
 
     @Override
     public List<ObjectNode> getRootNodes(final User user, final String role) {
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+        if (log.isDebugEnabled()) {
+            log.debug("getRootNodes");
+        }
+
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final Sirius.server.middleware.types.Node[] cidsNodes = LegacyCoreBackend.getInstance()
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.middleware.types.Node[] legacyNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getRoots(cidsUser);
+                        .getRoots(legacyUser);
 
             final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
-            for (final Sirius.server.middleware.types.Node cidsNode : cidsNodes) {
-                final Node node = createCidsNode(cidsNode);
+            for (final Sirius.server.middleware.types.Node legacyNode : legacyNodes) {
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
+                final CidsNode node = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyNode, className);
                 nodes.add(MAPPER.convertValue(node, ObjectNode.class));
             }
 
             return nodes;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting root nodes", ex);
+            final String message = "error while getting root nodes: " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsNode  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static Node createCidsNode(final Sirius.server.middleware.types.Node cidsNode) {
-        final String key = Integer.toString(cidsNode.getId());
-        final String name = cidsNode.getName();
-        final String objectKey = Integer.toString(cidsNode.getClassId());
-        final String dynamicChildren = cidsNode.getDynamicChildrenStatement();
-        final boolean clientSort = cidsNode.isSqlSort();
-        final boolean derivePermissionsFromClass = cidsNode.isDerivePermissionsFromClass();
-        final boolean isLeaf = cidsNode.isLeaf();
-        final String icon = cidsNode.getIconString();
-        final String iconFactory = null;
-        final String policy = cidsNode.getPermissions().getPolicy().getName();
-        final Node node = new Node(
-                key,
-                name,
-                objectKey,
-                dynamicChildren,
-                clientSort,
-                derivePermissionsFromClass,
-                isLeaf,
-                icon,
-                iconFactory,
-                policy);
-        return node;
     }
 
     @Override
     public ObjectNode getNode(final User user, final String nodeKey, final String role) {
-        try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
+        if (log.isDebugEnabled()) {
+            log.debug("getNode with nodeKey '" + nodeKey + "'.");
+        }
 
-            final Node node = createCidsNode(cidsNode);
-            return MAPPER.convertValue(node, ObjectNode.class);
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
+        try {
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
+            final String className = LegacyCoreBackend.getInstance()
+                        .getClassNameCache()
+                        .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
+            final CidsNode restNode = CidsNodeFactory.getFactory()
+                        .restCidsNodeFromLegacyCidsNode(legacyNode, className);
+            return MAPPER.convertValue(restNode, ObjectNode.class);
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting node", ex);
+            final String message = "error while getting a node with nodeKey '"
+                        + nodeKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public List<ObjectNode> getChildren(final User user, final String nodeKey, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getChildren with nodeKey '" + nodeKey + "'.");
+        }
+
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
-            final Sirius.server.middleware.types.Node[] cidsChildrenNodes = LegacyCoreBackend.getInstance()
+                        .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
+            final Sirius.server.middleware.types.Node[] legacyChildrenNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getChildren(cidsNode, cidsUser);
+                        .getChildren(legacyNode, legacyUser);
 
             final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
-            for (final Sirius.server.middleware.types.Node cidsChildrenNode : cidsChildrenNodes) {
-                final Node childrenNode = createCidsNode(cidsChildrenNode);
+            for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyChildrenNode.getClassId());
+                final CidsNode childrenNode = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
                 nodes.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
             }
 
             return nodes;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting children", ex);
+            final String message = "error while getting children of node '"
+                        + nodeKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 
     @Override
     public List<ObjectNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
+        if (log.isDebugEnabled()) {
+            log.debug("getChildrenByQuery with nodeQuery '" + nodeQuery + "'.");
+        }
+
+        LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
+
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final Sirius.server.middleware.types.Node[] cidsChildren = LegacyCoreBackend.getInstance()
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.middleware.types.Node legacyNode = CidsNodeFactory.getFactory()
+                        .createLegacyQueryNode(user.getDomain(), nodeQuery);
+
+            final Sirius.server.middleware.types.Node[] legacyChildrenNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(cidsUser, nodeQuery);
+                        .getChildren(legacyNode, legacyUser);
 
             final List<ObjectNode> children = new ArrayList<ObjectNode>();
-            for (final Sirius.server.middleware.types.Node cidsChildrenNode : cidsChildren) {
-                final Node childrenNode = createCidsNode(cidsChildrenNode);
+            for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyChildrenNode.getClassId());
+                final CidsNode childrenNode = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
                 children.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
             }
 
             return children;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting children by query", ex);
+            final String message = "error while getting children by query '"
+                        + nodeQuery + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new RuntimeException(message, ex);
         }
     }
 

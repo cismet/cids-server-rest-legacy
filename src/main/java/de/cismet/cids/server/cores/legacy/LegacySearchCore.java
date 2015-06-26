@@ -7,33 +7,30 @@
 ****************************************************/
 package de.cismet.cids.server.cores.legacy;
 
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.ClassUtils;
-
 import org.openide.util.lookup.ServiceProvider;
-
-import org.postgresql.util.Base64;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
+
+import de.cismet.cids.base.types.Type;
+
+import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
 import de.cismet.cids.server.api.types.User;
+import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
+import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cids.server.cores.CidsServerCore;
 import de.cismet.cids.server.cores.SearchCore;
@@ -57,79 +54,28 @@ public class LegacySearchCore implements SearchCore {
 
     @Override
     public List<SearchInfo> getAllSearches(final User user, final String role) {
-        try {
-            final List<SearchInfo> searchInfos = new ArrayList<SearchInfo>();
-            final HashMap<String, Class<? extends CidsServerSearch>> serverSearchMap = LegacyCoreBackend.getInstance()
-                        .getServerSearchMap();
-            for (final String searchClassName : serverSearchMap.keySet()) {
-                final HashMap<String, String> serverSearchParamMap = LegacyCoreBackend.getInstance()
-                            .getServerSearchParamMap(searchClassName);
-
-                final Class cidsServerSearchClass = serverSearchMap.get(searchClassName);
-                final SearchInfo searchInfo = new SearchInfo();
-                searchInfo.setKey(searchClassName);
-                searchInfo.setName(cidsServerSearchClass.getSimpleName());
-                searchInfo.setDescription("legacy cidsServerSearch");
-                searchInfo.setParameterDescription(serverSearchParamMap);
-                searchInfos.add(searchInfo);
-            }
-            return searchInfos;
-        } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while getting all searches", ex);
+        if (log.isDebugEnabled()) {
+            log.debug("getAllSearches");
         }
+
+        // TODO: user and role ignored!
+        return ServerSearchFactory.getFactory().getServerSearchInfos();
     }
 
     @Override
     public SearchInfo getSearch(final User user, final String searchKey, final String role) {
-        final HashMap<String, String> serverSearchParamMap = LegacyCoreBackend.getInstance()
-                    .getServerSearchParamMap(
-                        searchKey);
-        final HashMap<String, Class<? extends CidsServerSearch>> serverSearchMap = LegacyCoreBackend.getInstance()
-                    .getServerSearchMap();
+        if (log.isDebugEnabled()) {
+            log.debug("getSearch with searchKey '" + searchKey + "'.");
+        }
 
-        final Class cidsServerSearchClass = serverSearchMap.get(searchKey);
-        final SearchInfo searchInfo = new SearchInfo();
-        searchInfo.setKey(searchKey);
-        searchInfo.setName(cidsServerSearchClass.getSimpleName());
-        searchInfo.setDescription("legacy cidsServerSearch");
-        searchInfo.setParameterDescription(serverSearchParamMap);
+        // TODO: user and role ignored!
+        final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
+
+        if (searchInfo == null) {
+            throw new RuntimeException("searchKey '" + searchKey + "' not found");
+        }
+
         return searchInfo;
-    }
-
-    /**
-     * Write the object to a Base64 string.
-     *
-     * @param   o  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException  DOCUMENT ME!
-     */
-    private static String toString(final Serializable o) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(o);
-        oos.close();
-        return Base64.encodeBytes(baos.toByteArray());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   s  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private static Object fromString(final String s) throws IOException, ClassNotFoundException {
-        final byte[] data = Base64.decode(s);
-        final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-        final Object o = ois.readObject();
-        ois.close();
-        return o;
     }
 
     // curl -F
@@ -170,82 +116,99 @@ public class LegacySearchCore implements SearchCore {
     @Override
     public List<ObjectNode> executeSearch(final User user,
             final String searchKey,
-            final List<SearchParameter> params,
+            final List<SearchParameter> searchParameters,
             final int limit,
             final int offset,
             final String role) {
-        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-        try {
-            final Class<? extends CidsServerSearch> searchClass = LegacyCoreBackend.getInstance()
-                        .getServerSearchMap()
-                        .get(searchKey);
-            final CidsServerSearch cidsServerSearch = searchClass.newInstance();
-            for (final SearchParameter param : params) {
-                final String paramKey = param.getKey();
-                final Class paramClass = ClassUtils.getClass(LegacyCoreBackend.getInstance().getServerSearchParamMap(
-                            searchKey).get(paramKey));
+        if (log.isDebugEnabled()) {
+            log.debug("executing cids server search '" + searchKey + "' with "
+                        + searchParameters.size() + " search parameters.");
+        }
 
-                final Object paramValue;
-                final String rawParamValue = param.getValue();
-                if (paramClass.isPrimitive()) {
-                    if (paramClass.equals(byte.class)) {
-                        paramValue = Byte.valueOf(rawParamValue);
-                    } else if (paramClass.equals(short.class)) {
-                        paramValue = Short.valueOf(rawParamValue);
-                    } else if (paramClass.equals(int.class)) {
-                        paramValue = Integer.valueOf(rawParamValue);
-                    } else if (paramClass.equals(long.class)) {
-                        paramValue = Long.valueOf(rawParamValue);
-                    } else if (paramClass.equals(float.class)) {
-                        paramValue = Float.valueOf(rawParamValue);
-                    } else if (paramClass.equals(double.class)) {
-                        paramValue = Double.valueOf(rawParamValue);
-                    } else if (paramClass.equals(boolean.class)) {
-                        paramValue = Boolean.valueOf(rawParamValue);
-                    } else if (paramClass.equals(char.class)) {
-                        paramValue = rawParamValue.toCharArray()[0];
-                    } else {
-                        paramValue = null; // should not be possible
-                    }
-                } else {
-                    if (paramClass.equals(Byte.class)) {
-                        paramValue = Byte.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Short.class)) {
-                        paramValue = Short.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Integer.class)) {
-                        paramValue = Integer.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Long.class)) {
-                        paramValue = Long.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Float.class)) {
-                        paramValue = Float.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Double.class)) {
-                        paramValue = Double.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Boolean.class)) {
-                        paramValue = Boolean.valueOf(rawParamValue);
-                    } else if (paramClass.equals(Character.class)) {
-                        paramValue = rawParamValue.toCharArray()[0];
-                    } else if (paramClass.equals(String.class)) {
-                        paramValue = param.getValue();
-                    } else {
-                        paramValue = fromString(param.getValue());
-                    }
-                }
-                cidsServerSearch.getClass()
-                        .getMethod("set" + paramKey, paramClass)
-                        .invoke(cidsServerSearch, paramValue);
-            }
+        final String domain = user.getDomain();
+        LegacyCoreBackend.getInstance().ensureDomainCached(domain, user);
+
+        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
+        final Class<? extends CidsServerSearch> serverSearchClass = ServerSearchFactory.getFactory()
+                    .getServerSearchClass(searchKey);
+
+        if ((searchInfo == null) || (serverSearchClass == null)) {
+            final String message = "could not find cids server search  '" + searchKey + "'";
+            log.error(message);
+            throw new RuntimeException(message);
+        }
+
+        try {
+            final CidsServerSearch cidsServerSearch = ServerSearchFactory.getFactory()
+                        .serverSearchInstanceFromSearchParameters(
+                            searchInfo,
+                            searchParameters);
+
             final Collection searchResults = LegacyCoreBackend.getInstance()
                         .getService()
                         .customServerSearch(cidsUser, cidsServerSearch);
-            final List<ObjectNode> all = new ArrayList<ObjectNode>();
-            for (final Object searchResult : searchResults) {
-                final ObjectNode node = (ObjectNode)MAPPER.convertValue(searchResult, ObjectNode.class);
-                all.add(node);
+
+            final List<ObjectNode> objectNodes;
+
+            // LightweightMetaObject needs special treatment that cannot be performed
+            // in ServerSearchFactory.
+            // .................................................................
+            if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
+                if (log.isDebugEnabled()) {
+                    log.debug("search result of cids server search '"
+                                + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
+                }
+
+                objectNodes = new ArrayList<ObjectNode>();
+                int i = 0;
+                String className = null;
+                for (final Object searchResult : searchResults) {
+                    if (LightweightMetaObject.class.isAssignableFrom(searchResult.getClass())) {
+                        final LightweightMetaObject lightweightMetaObject = (LightweightMetaObject)searchResult;
+                        // need to fetch the class name only once.
+                        // we assume that the collection contains only objects of the same class ....
+                        if (className == null) {
+                            className = LegacyCoreBackend.getInstance().getClassNameCache()
+                                        .getClassNameForClassId(user.getDomain(), lightweightMetaObject.getClassID());
+                            if (log.isDebugEnabled()) {
+                                log.debug(
+                                    "assuming that the result collection contains only LightweightMetaObjects of type '"
+                                            + className
+                                            + "'");
+                            }
+                        }
+
+                        final ObjectNode objectNode = CidsBeanFactory.getFactory()
+                                    .objectNodeFromLightweightMetaObject(lightweightMetaObject, className, domain);
+                        objectNodes.add(objectNode);
+                        i++;
+                    } else {
+                        final String message = "cannot convert search result item #"
+                                    + i + " to LightweightMetaObject, wrong result type:'"
+                                    + searchResult.getClass().getSimpleName() + "' ";
+                        log.error(message);
+                        throw new RuntimeException(message);
+                    }
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug(i + " LightWightMetaObjects returned by cids server search '"
+                                + searchKey + "' and converted to entity references!");
+                }
+                // .................................................................
+            } else {
+                // delegate object conversion to ServerSearchFactory
+                objectNodes = ServerSearchFactory.getFactory()
+                            .objectNodesFromResultCollection(
+                                    searchResults,
+                                    searchInfo,
+                                    LegacyCoreBackend.getInstance().getClassNameCache());
             }
-            return all;
+
+            return objectNodes;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while executing search", ex);
+            throw new RuntimeException("error while executing search '" + searchKey + "': " + ex.getMessage(), ex);
         }
     }
 
