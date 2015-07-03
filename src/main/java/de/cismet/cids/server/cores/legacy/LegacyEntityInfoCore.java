@@ -10,8 +10,8 @@ package de.cismet.cids.server.cores.legacy;
 import Sirius.server.middleware.types.MetaClass;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,13 +47,13 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public List<ObjectNode> getAllClasses(final User user, final String role) {
+    public List<JsonNode> getAllClasses(final User user, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getAllClasses");
         }
 
         try {
-            final List<ObjectNode> all = new ArrayList<ObjectNode>();
+            final List<JsonNode> all = new ArrayList<JsonNode>();
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
                         .getService()
@@ -62,7 +62,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 for (final MetaClass metaClass : metaClasses) {
                     final CidsClass cidsClass = CidsClassFactory.getFactory()
                                 .restCidsClassFromLegacyCidsClass(metaClass);
-                    final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
+                    final JsonNode node = (JsonNode)MAPPER.convertValue(cidsClass, JsonNode.class);
                     all.add(node);
                 }
 
@@ -81,7 +81,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     }
 
     @Override
-    public ObjectNode getClass(final User user, final String classKey, final String role) {
+    public JsonNode getClass(final User user, final String classKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getClass with classKey '" + classKey + "'.");
         }
@@ -98,7 +98,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             }
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
-            final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsClass, ObjectNode.class);
+            final JsonNode node = MAPPER.convertValue(cidsClass, JsonNode.class);
             return node;
         } catch (final Exception ex) {
             final String message = "error while getting class with classKey '" + classKey
@@ -109,7 +109,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     }
 
     @Override
-    public ObjectNode getAttribute(final User user,
+    public JsonNode getAttribute(final User user,
             final String classKey,
             final String attributeKey,
             final String role) {
@@ -130,7 +130,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
             final CidsAttribute cidsAttribute = cidsClass.getAttribute(attributeKey);
-            final ObjectNode node = (ObjectNode)MAPPER.convertValue(cidsAttribute, ObjectNode.class);
+            final JsonNode node = MAPPER.convertValue(cidsAttribute, JsonNode.class);
             return node;
         } catch (final Exception ex) {
             final String message = "error while getting attribute with classKey '" + classKey
@@ -141,7 +141,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
     }
 
     @Override
-    public ObjectNode emptyInstance(final User user, final String classKey, final String role) {
+    public JsonNode emptyInstance(final User user, final String classKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("emptyInstance with classKey '" + classKey + "'.");
         }
@@ -158,7 +158,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             }
 
             final CidsBean beanNew = metaClass.getEmptyInstance().getBean();
-            final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(beanNew.toJSONString(true));
+            final JsonNode node = MAPPER.reader().readTree(beanNew.toJSONString(true));
             return node;
         } catch (final Exception ex) {
             final String message = "error while getting empty instance with classKey '" + classKey

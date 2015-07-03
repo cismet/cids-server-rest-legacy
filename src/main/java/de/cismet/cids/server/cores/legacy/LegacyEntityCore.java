@@ -12,8 +12,8 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -63,7 +63,7 @@ public class LegacyEntityCore implements EntityCore {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public List<ObjectNode> getAllObjects(@NonNull final User user,
+    public List<JsonNode> getAllObjects(@NonNull final User user,
             @NonNull final String classKey,
             @NonNull final String role,
             final int limit,
@@ -99,7 +99,7 @@ public class LegacyEntityCore implements EntityCore {
         }
 
         try {
-            final List<ObjectNode> all = new ArrayList<ObjectNode>();
+            final List<JsonNode> all = new ArrayList<JsonNode>();
 
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
@@ -131,7 +131,7 @@ public class LegacyEntityCore implements EntityCore {
                 for (final LightweightMetaObject lwmo : lwmos) {
                     final String selfString = "{\"$self\":\"/" + metaClass.getDomain() + "." + metaClass.getTableName()
                                 + "/" + lwmo.getId() + "\"}";
-                    final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(selfString);
+                    final JsonNode node = MAPPER.reader().readTree(selfString);
                     all.add(node);
                 }
             } else {
@@ -151,13 +151,13 @@ public class LegacyEntityCore implements EntityCore {
                         final List<String> fieldsList = (fields != null) ? Arrays.asList(fields.split(",")) : null;
                         final List<String> expandList = (expand != null) ? Arrays.asList(expand.split(",")) : null;
 
-                        final ObjectNode node = (ObjectNode)MAPPER.reader()
+                        final JsonNode node = MAPPER.reader()
                                     .readTree(metaObject.getBean().toJSONString(
-                                                deduplicate,
-                                                omitNullValues,
-                                                intLevel,
-                                                fieldsList,
-                                                expandList));
+                                            deduplicate,
+                                            omitNullValues,
+                                            intLevel,
+                                            fieldsList,
+                                            expandList));
                         all.add(node);
                     }
                 }
@@ -283,10 +283,10 @@ public class LegacyEntityCore implements EntityCore {
     }
 
     @Override
-    public ObjectNode updateObject(final User user,
+    public JsonNode updateObject(final User user,
             final String classKey,
             final String objectId,
-            final ObjectNode jsonObject,
+            final JsonNode jsonObject,
             final String role,
             final boolean requestResultingInstance) {
         if (log.isDebugEnabled()) {
@@ -307,7 +307,7 @@ public class LegacyEntityCore implements EntityCore {
 //            log.error("beanToUpdate:\n" + beanToUpdate.getMOString());
 
             if (requestResultingInstance) {
-                final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                final JsonNode node = MAPPER.reader().readTree(updatedBean.toJSONString(true));
                 return node;
             } else {
                 return null;
@@ -319,10 +319,10 @@ public class LegacyEntityCore implements EntityCore {
     }
 
     @Override
-    public ObjectNode patchObject(final User user,
+    public JsonNode patchObject(final User user,
             final String classKey,
             final String objectId,
-            final ObjectNode jsonObject,
+            final JsonNode jsonObject,
             final String role) {
         if (log.isDebugEnabled()) {
             log.debug("patchObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
@@ -344,7 +344,7 @@ public class LegacyEntityCore implements EntityCore {
             final CidsBean updatedBean = beanToUpdate.persist();
 //            log.error("beanToUpdate:\n" + updatedBean.getMOString());
 
-            return null;
+            return null; // <-- why ???
         } catch (final Exception ex) {
             final String message = "error while updating an object with classKey '"
                         + classKey + "' and objectId '" + objectId + "': " + ex.getMessage();
@@ -354,9 +354,9 @@ public class LegacyEntityCore implements EntityCore {
     }
 
     @Override
-    public ObjectNode createObject(@NonNull final User user,
+    public JsonNode createObject(@NonNull final User user,
             @NonNull final String classKey,
-            @NonNull final ObjectNode jsonObject,
+            @NonNull final JsonNode jsonObject,
             @NonNull final String role,
             final boolean requestResultingInstance) {
         if (log.isDebugEnabled()) {
@@ -386,7 +386,7 @@ public class LegacyEntityCore implements EntityCore {
 
             final CidsBean updatedBean = beanNew.persist();
             if (requestResultingInstance) {
-                final ObjectNode node = (ObjectNode)MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                final JsonNode node = MAPPER.reader().readTree(updatedBean.toJSONString(true));
                 return node;
             } else {
                 return null;
@@ -400,7 +400,7 @@ public class LegacyEntityCore implements EntityCore {
     }
 
     @Override
-    public ObjectNode getObjectsByQuery(final User user,
+    public JsonNode getObjectsByQuery(final User user,
             final SimpleObjectQuery query,
             final String role,
             final int limit,
@@ -415,7 +415,7 @@ public class LegacyEntityCore implements EntityCore {
     }
 
     @Override
-    public ObjectNode getObject(@NonNull final User user,
+    public JsonNode getObject(@NonNull final User user,
             @NonNull final String classKey,
             @NonNull final String objectId,
             final String version,
@@ -486,13 +486,13 @@ public class LegacyEntityCore implements EntityCore {
                 final List<String> fieldsList = (fields != null) ? Arrays.asList(fields.split(",")) : null;
                 final List<String> expandList = (expand != null) ? Arrays.asList(expand.split(",")) : null;
 
-                final ObjectNode node = (ObjectNode)MAPPER.reader()
+                final JsonNode node = MAPPER.reader()
                             .readTree(metaObject.getBean().toJSONString(
-                                        deduplicate,
-                                        omitNullValues,
-                                        intLevel,
-                                        fieldsList,
-                                        expandList));
+                                    deduplicate,
+                                    omitNullValues,
+                                    intLevel,
+                                    fieldsList,
+                                    expandList));
                 return node;
             } else {
                 return null;
@@ -587,7 +587,7 @@ public class LegacyEntityCore implements EntityCore {
      * @throws  Error  DOCUMENT ME!
      */
     @Override
-    public String getClassKey(final ObjectNode jsonObject) {
+    public String getClassKey(final JsonNode jsonObject) {
         if (jsonObject.hasNonNull("$self")) {
             final Matcher matcher = CLASSKEY_PATTERN.matcher(jsonObject.get("$self").asText());
             if (matcher.find()) {
@@ -624,7 +624,7 @@ public class LegacyEntityCore implements EntityCore {
      * @throws  Error  DOCUMENT ME!
      */
     @Override
-    public String getObjectId(final ObjectNode jsonObject) {
+    public String getObjectId(final JsonNode jsonObject) {
         if (jsonObject.hasNonNull("id")) {
             return jsonObject.get("id").asText();
         } else if (jsonObject.hasNonNull("$self")) {

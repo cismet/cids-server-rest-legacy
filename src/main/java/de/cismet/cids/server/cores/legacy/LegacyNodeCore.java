@@ -8,8 +8,8 @@
 package de.cismet.cids.server.cores.legacy;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +42,7 @@ public class LegacyNodeCore implements NodeCore {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public List<ObjectNode> getRootNodes(final User user, final String role) {
+    public List<JsonNode> getRootNodes(final User user, final String role) {
         LegacyCoreBackend.getInstance().ensureDomainCached(user.getDomain(), user);
         if (log.isDebugEnabled()) {
             log.debug("getRootNodes");
@@ -54,14 +54,14 @@ public class LegacyNodeCore implements NodeCore {
                         .getService()
                         .getRoots(legacyUser);
 
-            final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
+            final List<JsonNode> nodes = new ArrayList<JsonNode>();
             for (final Sirius.server.middleware.types.Node legacyNode : legacyNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameCache()
                             .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
                 final CidsNode node = CidsNodeFactory.getFactory()
                             .restCidsNodeFromLegacyCidsNode(legacyNode, className);
-                nodes.add(MAPPER.convertValue(node, ObjectNode.class));
+                nodes.add(MAPPER.convertValue(node, JsonNode.class));
             }
 
             return nodes;
@@ -73,7 +73,7 @@ public class LegacyNodeCore implements NodeCore {
     }
 
     @Override
-    public ObjectNode getNode(final User user, final String nodeKey, final String role) {
+    public JsonNode getNode(final User user, final String nodeKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getNode with nodeKey '" + nodeKey + "'.");
         }
@@ -90,7 +90,7 @@ public class LegacyNodeCore implements NodeCore {
                         .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
             final CidsNode restNode = CidsNodeFactory.getFactory()
                         .restCidsNodeFromLegacyCidsNode(legacyNode, className);
-            return MAPPER.convertValue(restNode, ObjectNode.class);
+            return MAPPER.convertValue(restNode, JsonNode.class);
         } catch (final Exception ex) {
             final String message = "error while getting a node with nodeKey '"
                         + nodeKey + "': " + ex.getMessage();
@@ -100,7 +100,7 @@ public class LegacyNodeCore implements NodeCore {
     }
 
     @Override
-    public List<ObjectNode> getChildren(final User user, final String nodeKey, final String role) {
+    public List<JsonNode> getChildren(final User user, final String nodeKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getChildren with nodeKey '" + nodeKey + "'.");
         }
@@ -116,14 +116,14 @@ public class LegacyNodeCore implements NodeCore {
                         .getService()
                         .getChildren(legacyNode, legacyUser);
 
-            final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
+            final List<JsonNode> nodes = new ArrayList<JsonNode>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameCache()
                             .getClassNameForClassId(user.getDomain(), legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
                             .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
-                nodes.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
+                nodes.add(MAPPER.convertValue(childrenNode, JsonNode.class));
             }
 
             return nodes;
@@ -136,7 +136,7 @@ public class LegacyNodeCore implements NodeCore {
     }
 
     @Override
-    public List<ObjectNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
+    public List<JsonNode> getChildrenByQuery(final User user, final String nodeQuery, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getChildrenByQuery with nodeQuery '" + nodeQuery + "'.");
         }
@@ -152,14 +152,14 @@ public class LegacyNodeCore implements NodeCore {
                         .getService()
                         .getChildren(legacyNode, legacyUser);
 
-            final List<ObjectNode> children = new ArrayList<ObjectNode>();
+            final List<JsonNode> children = new ArrayList<JsonNode>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameCache()
                             .getClassNameForClassId(user.getDomain(), legacyChildrenNode.getClassId());
                 final CidsNode childrenNode = CidsNodeFactory.getFactory()
                             .restCidsNodeFromLegacyCidsNode(legacyChildrenNode, className);
-                children.add(MAPPER.convertValue(childrenNode, ObjectNode.class));
+                children.add(MAPPER.convertValue(childrenNode, JsonNode.class));
             }
 
             return children;

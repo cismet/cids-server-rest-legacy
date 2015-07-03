@@ -8,8 +8,8 @@
 package de.cismet.cids.server.cores.legacy;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,7 +69,7 @@ public class LegacyActionCore implements ActionCore {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public List<ObjectNode> getAllActions(final User user, final String role) {
+    public List<JsonNode> getAllActions(final User user, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getAllActions");
         }
@@ -77,7 +77,7 @@ public class LegacyActionCore implements ActionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             cidsUser.setUserGroup(null);
-            final List<ObjectNode> taskNameNodes = new ArrayList<ObjectNode>();
+            final List<JsonNode> taskNameNodes = new ArrayList<JsonNode>();
             final HashMap<String, ServerAction> serverActionMap = LegacyCoreBackend.getInstance().getServerActionMap();
             for (final String actionKey : serverActionMap.keySet()) {
                 if (LegacyCoreBackend.getInstance().getService().hasConfigAttr(
@@ -90,7 +90,7 @@ public class LegacyActionCore implements ActionCore {
                             "legacy ServerAction",
                             null,
                             null);
-                    taskNameNodes.add(MAPPER.convertValue(actionTask, ObjectNode.class));
+                    taskNameNodes.add(MAPPER.convertValue(actionTask, JsonNode.class));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("user '" + user.getUser() + "' with role '"
@@ -109,7 +109,7 @@ public class LegacyActionCore implements ActionCore {
     }
 
     @Override
-    public ObjectNode getAction(final User user, final String actionKey, final String role) {
+    public JsonNode getAction(final User user, final String actionKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getAction with actionKey '" + actionKey + "'");
         }
@@ -127,7 +127,7 @@ public class LegacyActionCore implements ActionCore {
                         "legacy ServerAction",
                         null,
                         null);
-                return MAPPER.convertValue(actionTask, ObjectNode.class);
+                return MAPPER.convertValue(actionTask, JsonNode.class);
             } else {
                 log.warn("user '" + user.getUser() + "' with role '"
                             + role + "' does not have the permission to get the Action with actionKey '"
@@ -144,15 +144,15 @@ public class LegacyActionCore implements ActionCore {
     }
 
     @Override
-    public List<ObjectNode> getAllTasks(final User user, final String actionKey, final String role) {
+    public List<JsonNode> getAllTasks(final User user, final String actionKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getAllTasks with actionKey '" + actionKey + "'");
         }
 
-        final List<ObjectNode> nodes = new ArrayList<ObjectNode>();
+        final List<JsonNode> nodes = new ArrayList<JsonNode>();
         for (final ActionTask actionTask : taskMap.values()) {
             if ((actionTask != null) && actionTask.getActionKey().equals(actionKey)) {
-                final ObjectNode on = (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
+                final JsonNode on = MAPPER.convertValue(actionTask, JsonNode.class);
                 nodes.add(on);
             }
         }
@@ -219,7 +219,7 @@ public class LegacyActionCore implements ActionCore {
     }
 
     @Override
-    public ObjectNode createNewActionTask(final User user,
+    public JsonNode createNewActionTask(final User user,
             final String actionKey,
             ActionTask actionTask,
             final String role,
@@ -293,7 +293,7 @@ public class LegacyActionCore implements ActionCore {
         }
 
         try {
-            return (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
+            return (JsonNode)MAPPER.convertValue(actionTask, JsonNode.class);
         } catch (final Exception ex) {
             final String message = "error while creating new action task with actionKey '"
                         + actionKey + "': " + ex.getMessage();
@@ -303,14 +303,14 @@ public class LegacyActionCore implements ActionCore {
     }
 
     @Override
-    public ObjectNode getTask(final User user, final String actionKey, final String taskKey, final String role) {
+    public JsonNode getTask(final User user, final String actionKey, final String taskKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getTask with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
         }
 
         final ActionTask actionTask = taskMap.get(taskKey);
         if (actionTask != null) {
-            final ObjectNode on = (ObjectNode)MAPPER.convertValue(actionTask, ObjectNode.class);
+            final JsonNode on = MAPPER.convertValue(actionTask, JsonNode.class);
             return on;
         } else {
             log.warn("no taks for actionKey '" + actionKey + "' and taskKey '" + taskKey + "' found, returning null!");

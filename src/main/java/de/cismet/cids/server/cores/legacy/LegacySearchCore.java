@@ -8,12 +8,10 @@
 package de.cismet.cids.server.cores.legacy;
 
 import Sirius.server.middleware.types.LightweightMetaObject;
-import Sirius.server.middleware.types.MetaClass;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +22,6 @@ import java.util.Collection;
 import java.util.List;
 
 import de.cismet.cids.base.types.Type;
-
-import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
@@ -180,8 +176,8 @@ public class LegacySearchCore implements SearchCore {
                             }
                         }
 
-                        final ObjectNode objectNode = CidsBeanFactory.getFactory()
-                                    .objectNodeFromLightweightMetaObject(lightweightMetaObject, className, domain);
+                        final JsonNode objectNode = CidsBeanFactory.getFactory()
+                                    .jsonNodeFromLightweightMetaObject(lightweightMetaObject, className, domain);
                         jsonNodes.add(objectNode);
                         i++;
                     } else {
