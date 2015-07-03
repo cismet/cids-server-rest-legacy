@@ -8,11 +8,10 @@
 package de.cismet.cids.server.cores.legacy;
 
 import Sirius.server.middleware.types.LightweightMetaObject;
-import Sirius.server.middleware.types.MetaClass;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,8 +22,6 @@ import java.util.Collection;
 import java.util.List;
 
 import de.cismet.cids.base.types.Type;
-
-import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
@@ -114,7 +111,7 @@ public class LegacySearchCore implements SearchCore {
     // BkxBVayJuRNB9H/4AAAAAAAA\"}]};type=application/json"
     // http://localhost:8890/searches/WUNDA_BLAU.de.cismet.cids.custom.wunda_blau.search.server.CidsAlkisSearchStatement/results?limit=100&offset=0
     @Override
-    public List<ObjectNode> executeSearch(final User user,
+    public List<JsonNode> executeSearch(final User user,
             final String searchKey,
             final List<SearchParameter> searchParameters,
             final int limit,
@@ -149,7 +146,7 @@ public class LegacySearchCore implements SearchCore {
                         .getService()
                         .customServerSearch(cidsUser, cidsServerSearch);
 
-            final List<ObjectNode> objectNodes;
+            final List<JsonNode> jsonNodes;
 
             // LightweightMetaObject needs special treatment that cannot be performed
             // in ServerSearchFactory.
@@ -160,7 +157,7 @@ public class LegacySearchCore implements SearchCore {
                                 + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
                 }
 
-                objectNodes = new ArrayList<ObjectNode>();
+                jsonNodes = new ArrayList<JsonNode>();
                 int i = 0;
                 String className = null;
                 for (final Object searchResult : searchResults) {
@@ -179,9 +176,9 @@ public class LegacySearchCore implements SearchCore {
                             }
                         }
 
-                        final ObjectNode objectNode = CidsBeanFactory.getFactory()
-                                    .objectNodeFromLightweightMetaObject(lightweightMetaObject, className, domain);
-                        objectNodes.add(objectNode);
+                        final JsonNode objectNode = CidsBeanFactory.getFactory()
+                                    .jsonNodeFromLightweightMetaObject(lightweightMetaObject, className, domain);
+                        jsonNodes.add(objectNode);
                         i++;
                     } else {
                         final String message = "cannot convert search result item #"
@@ -198,14 +195,14 @@ public class LegacySearchCore implements SearchCore {
                 // .................................................................
             } else {
                 // delegate object conversion to ServerSearchFactory
-                objectNodes = ServerSearchFactory.getFactory()
-                            .objectNodesFromResultCollection(
+                jsonNodes = ServerSearchFactory.getFactory()
+                            .jsonNodesFromResultCollection(
                                     searchResults,
                                     searchInfo,
                                     LegacyCoreBackend.getInstance().getClassNameCache());
             }
 
-            return objectNodes;
+            return jsonNodes;
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             throw new RuntimeException("error while executing search '" + searchKey + "': " + ex.getMessage(), ex);
