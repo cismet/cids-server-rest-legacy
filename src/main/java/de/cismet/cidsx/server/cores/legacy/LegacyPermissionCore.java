@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.middleware.types.MetaClass;
@@ -15,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cids.server.cores.CidsServerCore;
-import de.cismet.cids.server.cores.PermissionCore;
-import de.cismet.cids.server.data.RuntimeContainer;
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
+import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.cores.PermissionCore;
+import de.cismet.cidsx.server.data.RuntimeContainer;
 
 /**
  * DOCUMENT ME!

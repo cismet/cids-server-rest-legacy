@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import Sirius.server.middleware.types.LightweightMetaObject;
 
@@ -21,17 +21,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import de.cismet.cids.base.types.Type;
-
-import de.cismet.cids.server.api.types.SearchInfo;
-import de.cismet.cids.server.api.types.SearchParameter;
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
-import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
-import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cids.server.cores.CidsServerCore;
-import de.cismet.cids.server.cores.SearchCore;
 import de.cismet.cids.server.search.CidsServerSearch;
+
+import de.cismet.cidsx.base.types.Type;
+
+import de.cismet.cidsx.server.api.types.SearchInfo;
+import de.cismet.cidsx.server.api.types.SearchParameter;
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.api.types.legacy.CidsBeanFactory;
+import de.cismet.cidsx.server.api.types.legacy.ServerSearchFactory;
+import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
+import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.cores.SearchCore;
 
 /**
  * DOCUMENT ME!
@@ -42,10 +43,6 @@ import de.cismet.cids.server.search.CidsServerSearch;
 @Slf4j
 @ServiceProvider(service = CidsServerCore.class)
 public class LegacySearchCore implements SearchCore {
-
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
 
     //~ Methods ----------------------------------------------------------------
 

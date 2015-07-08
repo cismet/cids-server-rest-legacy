@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import de.cismet.cids.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.cores.CidsServerCore;
 
 /**
  * DOCUMENT ME!

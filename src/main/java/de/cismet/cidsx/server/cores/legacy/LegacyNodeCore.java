@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,12 +18,12 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.cismet.cids.server.api.types.CidsNode;
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
-import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cids.server.cores.CidsServerCore;
-import de.cismet.cids.server.cores.NodeCore;
+import de.cismet.cidsx.server.api.types.CidsNode;
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.api.types.legacy.CidsNodeFactory;
+import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
+import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.cores.NodeCore;
 
 /**
  * DOCUMENT ME!

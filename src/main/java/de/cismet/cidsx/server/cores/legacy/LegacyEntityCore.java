@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
@@ -34,15 +34,15 @@ import java.util.regex.Pattern;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cids.server.api.types.SimpleObjectQuery;
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cids.server.cores.CidsServerCore;
-import de.cismet.cids.server.cores.EntityCore;
-import de.cismet.cids.server.data.RuntimeContainer;
-import de.cismet.cids.server.exceptions.InvalidClassKeyException;
-import de.cismet.cids.server.exceptions.InvalidRoleException;
-import de.cismet.cids.server.exceptions.InvalidUserException;
+import de.cismet.cidsx.server.api.types.SimpleObjectQuery;
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
+import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.cores.EntityCore;
+import de.cismet.cidsx.server.data.RuntimeContainer;
+import de.cismet.cidsx.server.exceptions.InvalidClassKeyException;
+import de.cismet.cidsx.server.exceptions.InvalidRoleException;
+import de.cismet.cidsx.server.exceptions.InvalidUserException;
 
 /**
  * DOCUMENT ME!
