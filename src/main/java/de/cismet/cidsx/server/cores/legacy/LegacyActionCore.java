@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,13 +30,14 @@ import java.util.concurrent.ExecutorService;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
-import de.cismet.cids.server.api.types.ActionResultInfo;
-import de.cismet.cids.server.api.types.ActionTask;
-import de.cismet.cids.server.api.types.GenericResourceWithContentType;
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cids.server.cores.ActionCore;
-import de.cismet.cids.server.cores.CidsServerCore;
+
+import de.cismet.cidsx.server.api.types.ActionResultInfo;
+import de.cismet.cidsx.server.api.types.ActionTask;
+import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
+import de.cismet.cidsx.server.cores.ActionCore;
+import de.cismet.cidsx.server.cores.CidsServerCore;
 
 import de.cismet.commons.concurrency.CismetExecutors;
 
@@ -57,7 +58,7 @@ public class LegacyActionCore implements ActionCore {
     private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
     private static final String STREAMTYPE_APPOCTETSTREAM = "application/octet-stream";
 
-    private static ConcurrentHashMap<String, ExecutorService> actionExecutorServices =
+    private static final ConcurrentHashMap<String, ExecutorService> actionExecutorServices =
         new ConcurrentHashMap<String, ExecutorService>();
 
     //~ Instance fields --------------------------------------------------------

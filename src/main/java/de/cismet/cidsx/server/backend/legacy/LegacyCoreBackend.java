@@ -9,7 +9,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.server.backend.legacy;
+package de.cismet.cidsx.server.backend.legacy;
 
 import Sirius.navigator.connection.Connection;
 import Sirius.navigator.connection.ConnectionFactory;
@@ -23,30 +23,23 @@ import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.UserGroup;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import java.rmi.RemoteException;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerAction;
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.api.types.legacy.ClassNameCache;
-import de.cismet.cids.server.cores.legacy.LegacyCidsServerCore;
-import de.cismet.cids.server.data.RuntimeContainer;
-import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.api.types.legacy.ClassNameCache;
+import de.cismet.cidsx.server.cores.legacy.LegacyCidsServerCore;
+import de.cismet.cidsx.server.data.RuntimeContainer;
 
 /**
  * DOCUMENT ME!

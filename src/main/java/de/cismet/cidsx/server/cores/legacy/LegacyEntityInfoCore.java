@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.cores.legacy;
+package de.cismet.cidsx.server.cores.legacy;
 
 import Sirius.server.middleware.types.MetaClass;
 
@@ -22,13 +22,13 @@ import java.util.List;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cids.server.api.types.CidsAttribute;
-import de.cismet.cids.server.api.types.CidsClass;
-import de.cismet.cids.server.api.types.User;
-import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
-import de.cismet.cids.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cids.server.cores.CidsServerCore;
-import de.cismet.cids.server.cores.EntityInfoCore;
+import de.cismet.cidsx.server.api.types.CidsAttribute;
+import de.cismet.cidsx.server.api.types.CidsClass;
+import de.cismet.cidsx.server.api.types.User;
+import de.cismet.cidsx.server.api.types.legacy.CidsClassFactory;
+import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
+import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.cores.EntityInfoCore;
 
 /**
  * DOCUMENT ME!
