@@ -34,6 +34,8 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerAction;
+import de.cismet.cids.server.ws.SSLConfig;
+import de.cismet.cids.server.ws.SSLConfigProvider;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 
 import de.cismet.cidsx.server.api.types.User;
@@ -56,11 +58,13 @@ public class LegacyCoreBackend {
 
     //~ Instance fields --------------------------------------------------------
 
+    final SSLConfigProvider sslConfigProvider = Lookup.getDefault().lookup(SSLConfigProvider.class);
+    final SSLConfig sslConfig = (sslConfigProvider == null) ? null : sslConfigProvider.getSSLConfig();
     private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<User, Sirius.server.newuser.User>();
     private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final transient ClassNameCache classNameCache = new ClassNameCache();
-
-    private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver());
+    private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver(),
+            sslConfig);
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
 
