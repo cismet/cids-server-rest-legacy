@@ -42,6 +42,7 @@ import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.api.types.legacy.ClassNameCache;
 import de.cismet.cidsx.server.cores.legacy.LegacyCidsServerCore;
 import de.cismet.cidsx.server.data.RuntimeContainer;
+import de.cismet.cidsx.server.data.StatusHolder;
 
 /**
  * DOCUMENT ME!
@@ -196,6 +197,7 @@ public class LegacyCoreBackend {
         if (!userMap.containsKey(user)) {
             initProxy(user);
             userMap.put(user, cidsUser);
+            StatusHolder.getInstance().putStatus("cachedUsers", String.valueOf(userMap.size()));
         }
     }
 
@@ -279,6 +281,8 @@ public class LegacyCoreBackend {
 
             if (metaClasses != null) {
                 this.classNameCache.fillCache(cidsUser.getDomain(), metaClasses);
+                // TODO: report cached classes per domain
+                StatusHolder.getInstance().putStatus("cachedClasses", String.valueOf(metaClasses.length));
             } else {
                 final String message = "cannot lookup class name for class with id '"
                             + "' and fill class name cache: no classes found at domain '" + domain
