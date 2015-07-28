@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletResponse;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cidsx.server.api.types.SimpleObjectQuery;
@@ -40,7 +42,10 @@ import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.CidsServerCore;
 import de.cismet.cidsx.server.cores.EntityCore;
 import de.cismet.cidsx.server.data.RuntimeContainer;
+import de.cismet.cidsx.server.exceptions.CidsServerException;
 import de.cismet.cidsx.server.exceptions.InvalidClassKeyException;
+import de.cismet.cidsx.server.exceptions.InvalidEntityException;
+import de.cismet.cidsx.server.exceptions.InvalidParameterException;
 import de.cismet.cidsx.server.exceptions.InvalidRoleException;
 import de.cismet.cidsx.server.exceptions.InvalidUserException;
 
@@ -106,7 +111,10 @@ public class LegacyEntityCore implements EntityCore {
             final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " not found");
+                final String message = "classKey " + classKey + " not found";
+                log.error(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final String query = "SELECT " + metaClass.getID() + ", " + metaClass.getTableName() + "."
@@ -167,7 +175,8 @@ public class LegacyEntityCore implements EntityCore {
             final String message = "error while getting all objects with classKey '"
                         + classKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -298,7 +307,10 @@ public class LegacyEntityCore implements EntityCore {
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                throw new RuntimeException("classKey " + classKey + " no found");
+                final String message = "classKey " + classKey + " no found";
+                log.error(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
@@ -313,8 +325,10 @@ public class LegacyEntityCore implements EntityCore {
                 return null;
             }
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while updating Object", ex);
+            final String message = "error while updating entity with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new InvalidEntityException(message, ex, jsonObject);
         }
     }
 
@@ -336,7 +350,8 @@ public class LegacyEntityCore implements EntityCore {
                 final String message = "error while patching an object with classKey '"
                             + classKey + "' and objectId '" + objectId + "': class for class key not found!";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), true);
@@ -349,7 +364,7 @@ public class LegacyEntityCore implements EntityCore {
             final String message = "error while updating an object with classKey '"
                         + classKey + "' and objectId '" + objectId + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new InvalidEntityException(message, ex, jsonObject);
         }
     }
 
@@ -395,7 +410,7 @@ public class LegacyEntityCore implements EntityCore {
             final String message = "error while creating an object with classKey '"
                         + classKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new InvalidEntityException(message, ex, jsonObject);
         }
     }
 
@@ -434,25 +449,25 @@ public class LegacyEntityCore implements EntityCore {
             final String message = "error while getting an object with classKey '" + classKey
                         + "' and objectId '" + objectId + "': user '" + user.getUser() + "' is not validated!";
             log.error(message);
-            throw new InvalidUserException(message);     // NOI18N
+            throw new InvalidUserException(message);                          // NOI18N
         }
         if (classKey.isEmpty()) {
             final String message = "error while getting an object with classKey '" + classKey
                         + "' and objectId '" + objectId + "': class key is empty!";
             log.error(message);
-            throw new InvalidClassKeyException(message); // NOI18N
+            throw new InvalidClassKeyException(message);                      // NOI18N
         }
         if (objectId.isEmpty()) {
             final String message = "error while getting an object with classKey '" + classKey
                         + "' and objectId '" + objectId + "': objectId is empty!";
             log.error(message);
-            throw new IllegalArgumentException(message); // NOI18N
+            throw new InvalidParameterException(message, "objectId", "null"); // NOI18N
         }
         if (role.isEmpty()) {
             final String message = "error while getting an object with classKey '" + classKey
                         + "' and objectId '" + objectId + "': role is empty!";
             log.error(message);
-            throw new InvalidRoleException(message);     // NOI18N
+            throw new InvalidRoleException(message);                          // NOI18N
         }
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
@@ -463,7 +478,8 @@ public class LegacyEntityCore implements EntityCore {
                 final String message = "error while getting an object with classKey '" + classKey
                             + "' and objectId '" + objectId + "': class for class key not found!";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final int cid = metaClass.getId();
@@ -501,7 +517,8 @@ public class LegacyEntityCore implements EntityCore {
             final String message = "error while getting an object with classKey '" + classKey
                         + "' and objectId '" + objectId + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_BAD_REQUEST, ex);
         }
     }
 
@@ -533,7 +550,7 @@ public class LegacyEntityCore implements EntityCore {
                         + classKey + "' and objectId '" + objectId
                         + "': objectId is empty!";
             log.error(message);
-            throw new IllegalArgumentException(message); // NOI18N
+            throw new InvalidParameterException(message, "objectId", "null");
         }
         if (role.isEmpty()) {
             final String message = "error while deleting an object with classKey '"
@@ -553,7 +570,8 @@ public class LegacyEntityCore implements EntityCore {
                             + classKey + "' and objectId '" + objectId
                             + "': class for classKey not found!";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final int cid = metaClass.getId();

@@ -18,12 +18,15 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import de.cismet.cidsx.server.api.types.CidsNode;
 import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.api.types.legacy.CidsNodeFactory;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.CidsServerCore;
 import de.cismet.cidsx.server.cores.NodeCore;
+import de.cismet.cidsx.server.exceptions.CidsServerException;
 
 /**
  * DOCUMENT ME!
@@ -68,7 +71,8 @@ public class LegacyNodeCore implements NodeCore {
         } catch (final Exception ex) {
             final String message = "error while getting root nodes: " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -95,7 +99,8 @@ public class LegacyNodeCore implements NodeCore {
             final String message = "error while getting a node with nodeKey '"
                         + nodeKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -131,7 +136,8 @@ public class LegacyNodeCore implements NodeCore {
             final String message = "error while getting children of node '"
                         + nodeKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -167,7 +173,8 @@ public class LegacyNodeCore implements NodeCore {
             final String message = "error while getting children by query '"
                         + nodeQuery + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 

@@ -20,6 +20,10 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.MediaType;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cidsx.server.api.types.CidsAttribute;
@@ -29,6 +33,7 @@ import de.cismet.cidsx.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.CidsServerCore;
 import de.cismet.cidsx.server.cores.EntityInfoCore;
+import de.cismet.cidsx.server.exceptions.CidsServerException;
 
 /**
  * DOCUMENT ME!
@@ -76,7 +81,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
         } catch (final Exception ex) {
             final String message = "error while getting all classes: " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -94,7 +100,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 final String message = "error while getting class with classKey '" + classKey
                             + "': class not found!";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
@@ -104,7 +111,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final String message = "error while getting class with classKey '" + classKey
                         + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -125,7 +133,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 final String message = "error while getting attribute with classKey '" + classKey
                             + "' and attributeKey '" + attributeKey + "': class not found!";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new CidsServerException(message, message,
+                    HttpServletResponse.SC_NOT_FOUND);
             }
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
@@ -136,7 +145,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final String message = "error while getting attribute with classKey '" + classKey
                         + "' and attributeKey '" + attributeKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -154,7 +164,7 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
                 final String message = "error while getting empty instance with classKey '" + classKey
                             + "': class not found!";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new CidsServerException(message, message, HttpServletResponse.SC_FOUND);
             }
 
             final CidsBean beanNew = metaClass.getEmptyInstance().getBean();
@@ -164,12 +174,25 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             final String message = "error while getting empty instance with classKey '" + classKey
                         + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
     @Override
     public String getCoreKey() {
         return "core.legacy.entityInfo"; // NOI18N
+    }
+
+    @Override
+    public byte[] getIcon(final MediaType mediaType, final User user, final String classKey, final String role) {
+        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
+                                                                          // Tools | Templates.
+
+//        BufferedImage BI = ImageIO.read(new File("D:\\work\\temp\\image.png"));
+//                    ImageIO.write(BI, "png", output);
+//                    output.flush();
+//                    output.close();
+
     }
 }
