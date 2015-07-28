@@ -23,6 +23,10 @@ import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.UserGroup;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import lombok.Getter;
+
 import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
@@ -68,6 +72,18 @@ public class LegacyCoreBackend {
             sslConfig);
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
+
+    /** Class Cache: Domain, classKey, Class (JsonNode) */
+    @Getter
+    private final HashMap<String, JsonNode> classCache = new HashMap<String, JsonNode>();
+
+    /** Class Icon Cache: Domain, classKey, byte[] icon */
+    @Getter
+    private final HashMap<String, byte[]> classIconCache = new HashMap<String, byte[]>();
+
+    /** Object Icon Cache: Domain, classKey, byte[] icon */
+    @Getter
+    private final HashMap<String, byte[]> objectIconCache = new HashMap<String, byte[]>();
 
     //~ Constructors -----------------------------------------------------------
 

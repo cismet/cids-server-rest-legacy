@@ -43,6 +43,7 @@ import de.cismet.cidsx.server.cores.CidsServerCore;
 import de.cismet.cidsx.server.cores.EntityCore;
 import de.cismet.cidsx.server.data.RuntimeContainer;
 import de.cismet.cidsx.server.exceptions.CidsServerException;
+import de.cismet.cidsx.server.exceptions.EntityInfoNotFoundException;
 import de.cismet.cidsx.server.exceptions.InvalidClassKeyException;
 import de.cismet.cidsx.server.exceptions.InvalidEntityException;
 import de.cismet.cidsx.server.exceptions.InvalidParameterException;
@@ -112,9 +113,8 @@ public class LegacyEntityCore implements EntityCore {
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
             final String query = "SELECT " + metaClass.getID() + ", " + metaClass.getTableName() + "."
@@ -308,9 +308,8 @@ public class LegacyEntityCore implements EntityCore {
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " no found";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
@@ -349,9 +348,8 @@ public class LegacyEntityCore implements EntityCore {
             if (metaClass == null) {
                 final String message = "error while patching an object with classKey '"
                             + classKey + "' and objectId '" + objectId + "': class for class key not found!";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), true);
@@ -477,11 +475,11 @@ public class LegacyEntityCore implements EntityCore {
             if (metaClass == null) {
                 final String message = "error while getting an object with classKey '" + classKey
                             + "' and objectId '" + objectId + "': class for class key not found!";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
+            // FIXME: getLightwight MetaObject if level = 0
             final int cid = metaClass.getId();
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
                         .getService()
@@ -569,9 +567,8 @@ public class LegacyEntityCore implements EntityCore {
                 final String message = "error while deleting an object with classKey '"
                             + classKey + "' and objectId '" + objectId
                             + "': class for classKey not found!";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
             final int cid = metaClass.getId();

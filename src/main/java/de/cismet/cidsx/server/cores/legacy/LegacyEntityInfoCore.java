@@ -17,14 +17,26 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+
+import java.io.ByteArrayOutputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import javax.servlet.http.HttpServletResponse;
+
+import javax.swing.ImageIcon;
 
 import javax.ws.rs.core.MediaType;
 
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cidsx.base.types.MediaTypes;
 
 import de.cismet.cidsx.server.api.types.CidsAttribute;
 import de.cismet.cidsx.server.api.types.CidsClass;
@@ -34,6 +46,7 @@ import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.CidsServerCore;
 import de.cismet.cidsx.server.cores.EntityInfoCore;
 import de.cismet.cidsx.server.exceptions.CidsServerException;
+import de.cismet.cidsx.server.exceptions.EntityInfoNotFoundException;
 
 /**
  * DOCUMENT ME!
@@ -93,19 +106,30 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
         }
 
         try {
+            if (LegacyCoreBackend.getInstance().getClassCache().containsKey(classKey)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("loading class with classKey '" + classKey + "' from class cache");
+                }
+                return LegacyCoreBackend.getInstance().getClassCache().get(classKey);
+            }
+
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
             if (metaClass == null) {
                 final String message = "error while getting class with classKey '" + classKey
                             + "': class not found!";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
             final JsonNode node = MAPPER.convertValue(cidsClass, JsonNode.class);
+            if (log.isDebugEnabled()) {
+                log.debug("adding class with classKey '" + classKey + "' to class cache");
+            }
+            LegacyCoreBackend.getInstance().getClassCache().put(classKey, node);
+
             return node;
         } catch (final Exception ex) {
             final String message = "error while getting class with classKey '" + classKey
@@ -132,9 +156,8 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
             if (metaClass == null) {
                 final String message = "error while getting attribute with classKey '" + classKey
                             + "' and attributeKey '" + attributeKey + "': class not found!";
-                log.error(message);
-                throw new CidsServerException(message, message,
-                    HttpServletResponse.SC_NOT_FOUND);
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
             }
 
             final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
@@ -186,13 +209,73 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
 
     @Override
     public byte[] getIcon(final MediaType mediaType, final User user, final String classKey, final String role) {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        if (log.isDebugEnabled()) {
+            log.debug("getIcon with classKey '" + classKey + "' and mediaType '"
+                        + mediaType + "'.");
+        }
 
-//        BufferedImage BI = ImageIO.read(new File("D:\\work\\temp\\image.png"));
-//                    ImageIO.write(BI, "png", output);
-//                    output.flush();
-//                    output.close();
+        if (!mediaType.equals(MediaTypes.APPLICATION_X_CIDS_CLASS_ICON_TYPE)
+                    && !mediaType.equals(MediaTypes.APPLICATION_X_CIDS_OBJECT_ICON_TYPE)
+                    && !mediaType.equals(MediaTypes.IMAGE_PNG_TYPE)) {
+            final String message = "error while getting icon for class '" + classKey
+                        + "': unsupported mediaType '" + mediaType + "'";
+            log.error(message);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+        }
 
+        try {
+            // check the cache!
+            if (mediaType.equals(MediaTypes.APPLICATION_X_CIDS_OBJECT_ICON_TYPE)
+                        && LegacyCoreBackend.getInstance().getObjectIconCache().containsKey(classKey)) {
+                return LegacyCoreBackend.getInstance().getObjectIconCache().get(classKey);
+            } else if (LegacyCoreBackend.getInstance().getClassIconCache().containsKey(classKey)) {
+                return LegacyCoreBackend.getInstance().getClassIconCache().get(classKey);
+            }
+
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, legacyUser);
+            if (metaClass == null) {
+                final String message = "error while getting class with classKey '" + classKey
+                            + "': class not found!";
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
+            }
+
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final byte[] iconData;
+            if (mediaType.equals(MediaTypes.APPLICATION_X_CIDS_OBJECT_ICON_TYPE)) {
+                iconData = metaClass.getObjectIconData();
+            } else {
+                iconData = metaClass.getIconData();
+            }
+
+            // FIXME: byte to icon to byte ?!
+            final Image image = new ImageIcon(iconData).getImage();
+            final BufferedImage bimage = new BufferedImage(image.getWidth(null),
+                    image.getHeight(null),
+                    BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D bGr = bimage.createGraphics();
+            bGr.drawImage(image, 0, 0, null);
+            bGr.dispose();
+            ImageIO.write(bimage, "png", bos);
+            bos.flush();
+            bos.close();
+            final byte[] icon = bos.toByteArray();
+
+            if (mediaType.equals(MediaTypes.APPLICATION_X_CIDS_OBJECT_ICON_TYPE)) {
+                LegacyCoreBackend.getInstance().getObjectIconCache().put(classKey, icon);
+            } else {
+                LegacyCoreBackend.getInstance().getClassIconCache().put(classKey, icon);
+            }
+
+            return icon;
+        } catch (final Exception ex) {
+            final String message = "error while getting icon for class '" + classKey
+                        + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
+        }
     }
 }
