@@ -89,12 +89,17 @@ public class LegacyNodeCore implements NodeCore {
             final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
                         .getService()
                         .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
-            final String className = LegacyCoreBackend.getInstance()
-                        .getClassNameCache()
-                        .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
-            final CidsNode restNode = CidsNodeFactory.getFactory()
-                        .restCidsNodeFromLegacyCidsNode(legacyNode, className);
-            return MAPPER.convertValue(restNode, JsonNode.class);
+
+            if (legacyNode != null) {
+                final String className = LegacyCoreBackend.getInstance()
+                            .getClassNameCache()
+                            .getClassNameForClassId(user.getDomain(), legacyNode.getClassId());
+                final CidsNode restNode = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyNode, className);
+                return MAPPER.convertValue(restNode, JsonNode.class);
+            } else {
+                return null;
+            }
         } catch (final Exception ex) {
             final String message = "error while getting a node with nodeKey '"
                         + nodeKey + "': " + ex.getMessage();
@@ -181,5 +186,51 @@ public class LegacyNodeCore implements NodeCore {
     @Override
     public String getCoreKey() {
         return "core.legacy.node"; // NOI18N
+    }
+
+    @Override
+    public byte[] getLeafIcon(final User user, final String nodeKey, final String role) {
+        final JsonNode node = this.getNode(user, nodeKey, role);
+        if (node != null) {
+            final JsonNode iconString = node.get("icon");
+            if (iconString != null) {
+                return LegacyCoreBackend.getInstance().getNodeIcon(
+                        iconString.textValue(),
+                        CidsNode.IconType.LEAF_ICON);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public byte[] getOpenIcon(final User user, final String nodeKey, final String role) {
+        final JsonNode node = this.getNode(user, nodeKey, role);
+        if (node != null) {
+            final JsonNode iconString = node.get("icon");
+            if (iconString != null) {
+                return LegacyCoreBackend.getInstance().getNodeIcon(
+                        iconString.textValue(),
+                        CidsNode.IconType.OPEN_ICON);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public byte[] getClosedIcon(final User user, final String nodeKey, final String role) {
+        final JsonNode node = this.getNode(user, nodeKey, role);
+        if (node != null) {
+            final JsonNode iconString = node.get("icon");
+            if (iconString != null) {
+                return LegacyCoreBackend.getInstance()
+                            .getNodeIcon(
+                                iconString.textValue(),
+                                CidsNode.IconType.CLOSED_ICON);
+            }
+        }
+
+        return null;
     }
 }

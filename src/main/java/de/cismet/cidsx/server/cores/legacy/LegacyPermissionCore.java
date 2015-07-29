@@ -45,7 +45,7 @@ public class LegacyPermissionCore implements PermissionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.error(message);
@@ -71,7 +71,7 @@ public class LegacyPermissionCore implements PermissionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.error(message);
@@ -127,7 +127,7 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.error(message);
@@ -163,7 +163,7 @@ public class LegacyPermissionCore implements PermissionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.error(message);
@@ -194,7 +194,7 @@ public class LegacyPermissionCore implements PermissionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.error(message);

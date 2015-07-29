@@ -23,6 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+
+import java.io.ByteArrayOutputStream;
+
 import java.sql.Date;
 
 import java.util.ArrayList;
@@ -32,7 +38,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+
 import javax.servlet.http.HttpServletResponse;
+
+import javax.swing.ImageIcon;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -110,7 +120,7 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.warn(message);
@@ -305,7 +315,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " no found";
                 log.warn(message);
@@ -344,7 +354,7 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "error while patching an object with classKey '"
                             + classKey + "' and objectId '" + objectId + "': class for class key not found!";
@@ -471,7 +481,7 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "error while getting an object with classKey '" + classKey
                             + "' and objectId '" + objectId + "': class for class key not found!";
@@ -562,7 +572,7 @@ public class LegacyEntityCore implements EntityCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaclassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "error while deleting an object with classKey '"
                             + classKey + "' and objectId '" + objectId
@@ -669,5 +679,58 @@ public class LegacyEntityCore implements EntityCore {
     @Override
     public String getCoreKey() {
         return "core.legacy.entity"; // NOI18N
+    }
+
+    @Override
+    public byte[] getObjectIcon(final User user, final String classKey, final String objectId, final String role) {
+        if (log.isDebugEnabled()) {
+            log.warn("getObjectIcon with classKey '" + classKey + "' and object id '"
+                        + objectId + "' returns only the default object icon of the class!");
+        }
+
+        // FIXME: currently returns only the default object icon of the class,
+        // what about custom Icon Factory???
+
+        // check the cache!
+        if (LegacyCoreBackend.getInstance().getObjectIconCache().containsKey(classKey)) {
+            return LegacyCoreBackend.getInstance().getObjectIconCache().get(classKey);
+        }
+
+        try {
+            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, legacyUser);
+            if (metaClass == null) {
+                final String message = "error while getting class with classKey '" + classKey
+                            + "': class not found!";
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
+            }
+
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final byte[] iconData = metaClass.getObjectIconData();
+
+            // FIXME: byte to icon to byte ?!
+            final Image image = new ImageIcon(iconData).getImage();
+            final BufferedImage bimage = new BufferedImage(image.getWidth(null),
+                    image.getHeight(null),
+                    BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D bGr = bimage.createGraphics();
+            bGr.drawImage(image, 0, 0, null);
+            bGr.dispose();
+            ImageIO.write(bimage, "png", bos);
+            bos.flush();
+            bos.close();
+            final byte[] icon = bos.toByteArray();
+
+            LegacyCoreBackend.getInstance().getObjectIconCache().put(classKey, icon);
+
+            return icon;
+        } catch (final Exception ex) {
+            final String message = "error while getting object icon for object '" + objectId
+                        + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
+        }
     }
 }
