@@ -9,9 +9,7 @@ package de.cismet.cidsx.server.cores.legacy;
 
 import Sirius.server.middleware.types.LightweightMetaObject;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +18,8 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import de.cismet.cids.server.search.CidsServerSearch;
 
@@ -33,6 +33,7 @@ import de.cismet.cidsx.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.CidsServerCore;
 import de.cismet.cidsx.server.cores.SearchCore;
+import de.cismet.cidsx.server.exceptions.CidsServerException;
 
 /**
  * DOCUMENT ME!
@@ -66,7 +67,10 @@ public class LegacySearchCore implements SearchCore {
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
 
         if (searchInfo == null) {
-            throw new RuntimeException("searchKey '" + searchKey + "' not found");
+            final String message = "searchKey " + searchKey + " not found";
+            log.error(message);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_NOT_FOUND);
         }
 
         return searchInfo;
@@ -130,7 +134,8 @@ public class LegacySearchCore implements SearchCore {
         if ((searchInfo == null) || (serverSearchClass == null)) {
             final String message = "could not find cids server search  '" + searchKey + "'";
             log.error(message);
-            throw new RuntimeException(message);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_NOT_FOUND);
         }
 
         try {
@@ -182,7 +187,8 @@ public class LegacySearchCore implements SearchCore {
                                     + i + " to LightweightMetaObject, wrong result type:'"
                                     + searchResult.getClass().getSimpleName() + "' ";
                         log.error(message);
-                        throw new RuntimeException(message);
+                        throw new CidsServerException(message, message,
+                            HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     }
                 }
                 if (log.isDebugEnabled()) {
@@ -201,8 +207,10 @@ public class LegacySearchCore implements SearchCore {
 
             return jsonNodes;
         } catch (final Exception ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException("error while executing search '" + searchKey + "': " + ex.getMessage(), ex);
+            final String message = "error while executing search '" + searchKey + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 

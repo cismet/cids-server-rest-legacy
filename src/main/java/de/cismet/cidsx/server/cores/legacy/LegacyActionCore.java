@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
+import javax.servlet.http.HttpServletResponse;
+
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 
@@ -38,6 +40,7 @@ import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.ActionCore;
 import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.exceptions.CidsServerException;
 
 import de.cismet.commons.concurrency.CismetExecutors;
 
@@ -105,7 +108,8 @@ public class LegacyActionCore implements ActionCore {
         } catch (final Exception ex) {
             final String message = "error while getting all actions: " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -140,7 +144,8 @@ public class LegacyActionCore implements ActionCore {
             final String message = "error while getting action with actionKey '"
                         + actionKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -215,7 +220,8 @@ public class LegacyActionCore implements ActionCore {
             final String message = "error while executing action task with actionKey '"
                         + actionKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -290,7 +296,8 @@ public class LegacyActionCore implements ActionCore {
             final String message = "error while creating new action task with actionKey '"
                         + actionKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
 
         try {
@@ -299,7 +306,8 @@ public class LegacyActionCore implements ActionCore {
             final String message = "error while creating new action task with actionKey '"
                         + actionKey + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new RuntimeException(message, ex);
+            throw new CidsServerException(message, message,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
     }
 

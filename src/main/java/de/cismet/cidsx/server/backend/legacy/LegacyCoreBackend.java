@@ -23,12 +23,25 @@ import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.UserGroup;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import lombok.Getter;
+
 import org.openide.util.Lookup;
+
+import java.awt.image.BufferedImage;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import java.net.URL;
 
 import java.rmi.RemoteException;
 
 import java.util.Collection;
 import java.util.HashMap;
+
+import javax.imageio.ImageIO;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
@@ -38,11 +51,15 @@ import de.cismet.cids.server.ws.SSLConfig;
 import de.cismet.cids.server.ws.SSLConfigProvider;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 
+import de.cismet.cidsx.base.types.Key;
+
+import de.cismet.cidsx.server.api.types.CidsNode;
 import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.api.types.legacy.ClassNameCache;
 import de.cismet.cidsx.server.cores.legacy.LegacyCidsServerCore;
 import de.cismet.cidsx.server.data.RuntimeContainer;
 import de.cismet.cidsx.server.data.StatusHolder;
+import de.cismet.cidsx.server.exceptions.CidsServerException;
 
 /**
  * DOCUMENT ME!
@@ -69,6 +86,22 @@ public class LegacyCoreBackend {
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
 
+    /** Class Cache: Domain, classKey, Class (JsonNode) */
+    @Getter
+    private final HashMap<String, JsonNode> classCache = new HashMap<String, JsonNode>();
+
+    /** Class Icon Cache: Domain, classKey, byte[] icon */
+    @Getter
+    private final HashMap<String, byte[]> classIconCache = new HashMap<String, byte[]>();
+
+    /** Object Icon Cache: Domain, classKey, byte[] icon */
+    @Getter
+    private final HashMap<String, byte[]> objectIconCache = new HashMap<String, byte[]>();
+
+    /** Object Icon Cache: Domain, classKey, byte[] icon */
+    @Getter
+    private final HashMap<String, byte[]> nodeIconCache = new HashMap<String, byte[]>();
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -90,7 +123,7 @@ public class LegacyCoreBackend {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public MetaClass getMetaclassForClassname(final String className, final Sirius.server.newuser.User cidsUser)
+    public MetaClass getMetaClassForClassname(final String className, final Sirius.server.newuser.User cidsUser)
             throws RemoteException {
         final String tableName = className.toLowerCase();
         final String domainName = RuntimeContainer.getServer().getDomainName();
@@ -332,5 +365,70 @@ public class LegacyCoreBackend {
         return this.classNameCache.getClassIdForClassName(
                 cidsUser.getDomain(),
                 className);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   baseIconString  DOCUMENT ME!
+     * @param   iconType        DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  CidsServerException  DOCUMENT ME!
+     */
+    public byte[] getNodeIcon(final String baseIconString, final CidsNode.IconType iconType) {
+        if ((baseIconString != null) && !baseIconString.isEmpty() && (baseIconString.lastIndexOf(".") != -1)) {
+            final String iconString;
+
+            if (iconType != null) {
+                iconString = baseIconString.substring(0, baseIconString.lastIndexOf(".")) + iconType.getKey()
+                            + baseIconString.substring(baseIconString.lastIndexOf("."));
+            } else {
+                iconString = baseIconString;
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("searching for icon '" + iconString + "'");
+            }
+            if (this.nodeIconCache.containsKey(iconString)) {
+                return this.nodeIconCache.get(iconString);
+            }
+
+            final URL iconUrl = this.getClass().getResource(iconString);
+            if (iconUrl != null) {
+                try {
+                    final BufferedImage iconImage = ImageIO.read(iconUrl);
+
+                    if (iconImage != null) {
+                        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        ImageIO.write(iconImage, "png", bos);
+                        bos.flush();
+                        bos.close();
+                        final byte[] icon = bos.toByteArray();
+
+                        this.nodeIconCache.put(iconString, icon);
+                        return icon;
+                    }
+                } catch (IOException ex) {
+                    final String message = "Could not load icon '" + iconString + "': "
+                                + ex.getMessage();
+                    LOG.error(message, ex);
+                    throw new CidsServerException(message, ex);
+                }
+            } else if (iconType != null) {
+                // use the base icon instead!
+                final byte[] icon = this.getNodeIcon(baseIconString, null);
+
+                // cache the (base) icon also if it is null!
+                this.nodeIconCache.put(iconString, icon);
+                return icon;
+            } else {
+                // cache the base icon also if it is null to avoid unecessary lookups
+                this.nodeIconCache.put(iconString, null);
+            }
+        } else {
+            LOG.warn("invalid base icon string: '" + baseIconString + "'");
+        }
+        return null;
     }
 }
