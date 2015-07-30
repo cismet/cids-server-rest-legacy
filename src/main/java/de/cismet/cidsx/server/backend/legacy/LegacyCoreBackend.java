@@ -79,7 +79,6 @@ public class LegacyCoreBackend {
     final SSLConfigProvider sslConfigProvider = Lookup.getDefault().lookup(SSLConfigProvider.class);
     final SSLConfig sslConfig = (sslConfigProvider == null) ? null : sslConfigProvider.getSSLConfig();
     private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<User, Sirius.server.newuser.User>();
-    private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final transient ClassNameCache classNameCache = new ClassNameCache();
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver(),
             sslConfig);
@@ -104,7 +103,6 @@ public class LegacyCoreBackend {
      * Creates a new ConnectorHelper object.
      */
     private LegacyCoreBackend() {
-        loadServerActions();
         log.info("LegacyCoreBackend initialized with " + this.serverActionMap.size() + " server actions");
     }
 
@@ -163,16 +161,6 @@ public class LegacyCoreBackend {
 
     /**
      * DOCUMENT ME!
-     */
-    public final void loadServerActions() {
-        final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
-        for (final ServerAction serverAction : serverActions) {
-            serverActionMap.put(serverAction.getTaskName(), serverAction);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
      *
      * @param  enabled  DOCUMENT ME!
      */
@@ -188,15 +176,6 @@ public class LegacyCoreBackend {
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public HashMap<String, ServerAction> getServerActionMap() {
-        return serverActionMap;
     }
 
     /**
