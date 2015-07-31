@@ -13,8 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.io.IOUtils;
-
 import org.openide.util.lookup.ServiceProvider;
 
 import java.io.InputStream;
@@ -30,11 +28,9 @@ import java.util.concurrent.ExecutorService;
 
 import javax.servlet.http.HttpServletResponse;
 
-import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 
 import de.cismet.cidsx.base.types.MediaTypes;
-import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.api.types.ActionInfo;
 import de.cismet.cidsx.server.api.types.ActionResultInfo;
@@ -170,7 +166,7 @@ public class LegacyActionCore implements ActionCore {
             final String actionKey,
             final ActionTask actionTask,
             final String role,
-            final InputStream fileAttachement) {
+            final GenericResourceWithContentType<InputStream> bodyResource) {
         if (log.isDebugEnabled()) {
             log.info("executeNewAction with actionKey '" + actionKey + "'");
         }
@@ -211,27 +207,41 @@ public class LegacyActionCore implements ActionCore {
 
             // procress the (binary) attachment
 
-            final Object body;
-            if (fileAttachement != null) {
+            final Object bodyObject;
+            if (bodyResource != null) {
                 final ParameterInfo bodyDescription;
-                if ((actionTask != null) && (actionTask.getBodyDescription() == null)) {
+                if ((actionTask != null) && (actionTask.getBodyDescription() != null)
+                            && (actionTask.getBodyDescription().getMediaType() != null)) {
                     bodyDescription = actionTask.getBodyDescription();
-                } else if (actionInfo.getBodyDescription() != null) {
+                } else if ((actionInfo.getBodyDescription() != null)
+                            && (actionInfo.getBodyDescription().getMediaType() != null)) {
                     log.warn(
                         "client did not send body parameter info, trying to load them from local action info cache");
                     bodyDescription = actionInfo.getBodyDescription();
                 } else {
                     log.warn(
                         "body parameter description not found in local action info cache, assuming body content is JAVA_SERIALIZED_OBJECT");
-                    bodyDescription = null;
+                    bodyDescription = ServerActionFactory.getFactory().getDefaultBodyDescription();
                 }
 
-                body = ServerActionFactory.getFactory().bodyObjectFromFileAttachment(fileAttachement, bodyDescription);
+                if ((bodyResource.getContentType() != null)
+                            && !bodyResource.getContentType().equalsIgnoreCase(bodyDescription.getMediaType())) {
+                    final String message = "The client provided an action body parameter of type '"
+                                + bodyResource.getContentType() + "', but the Server Action '"
+                                + actionKey + "' accepts only '" + bodyDescription.getMediaType() + "'";
+                    log.error(message);
+
+                    throw new CidsServerException(message, message,
+                        HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+                }
+
+                bodyObject = ServerActionFactory.getFactory()
+                            .bodyObjectFromFileAttachment(bodyResource.getRes(), bodyDescription);
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("no body parameter provided!");
                 }
-                body = null;
+                bodyObject = null;
             }
 
             final Object taskResult = LegacyCoreBackend.getInstance()
@@ -240,7 +250,7 @@ public class LegacyActionCore implements ActionCore {
                             cidsUser,
                             actionKey,
                             cidsUser.getDomain(),
-                            body,
+                            bodyObject,
                             serverActionParameters);
 
             if (taskResult != null) {
@@ -284,7 +294,7 @@ public class LegacyActionCore implements ActionCore {
             ActionTask actionTask,
             final String role,
             final boolean requestResultingInstance,
-            final InputStream fileAttachement) {
+            final GenericResourceWithContentType<InputStream> bodyResource) {
         if (log.isDebugEnabled()) {
             log.debug("createNewActionTask with actionKey '" + actionKey + "'");
         }
@@ -324,7 +334,7 @@ public class LegacyActionCore implements ActionCore {
                                     actionKey,
                                     finalTask,
                                     role,
-                                    fileAttachement);
+                                    bodyResource);
                             resultMap.put(finalTask.getKey(), grwct);
                             finalTask.setStatus(ActionTask.Status.FINISHED);
                         } catch (final Exception ex) {
