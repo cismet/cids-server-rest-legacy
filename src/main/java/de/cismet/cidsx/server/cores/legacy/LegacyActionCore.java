@@ -206,7 +206,6 @@ public class LegacyActionCore implements ActionCore {
             }
 
             // procress the (binary) attachment
-
             final Object bodyObject;
             if (bodyResource != null) {
                 final ParameterInfo bodyDescription;
@@ -244,6 +243,7 @@ public class LegacyActionCore implements ActionCore {
                 bodyObject = null;
             }
 
+            // execute the action on the remote server
             final Object taskResult = LegacyCoreBackend.getInstance()
                         .getService()
                         .executeTask(
@@ -255,12 +255,14 @@ public class LegacyActionCore implements ActionCore {
 
             if (taskResult != null) {
                 if (GenericResourceWithContentType.class.isAssignableFrom(taskResult.getClass())) {
+                    log.info("Action  '" + actionKey + "' completed, result of type '" + ((GenericResourceWithContentType)taskResult).getContentType() + "' generated");
                     return (GenericResourceWithContentType)taskResult;
                 } else if ((actionTask != null) && (actionTask.getResultDescription() != null)) {
                     if (log.isDebugEnabled()) {
                         log.debug(
                             "server action did not provide actual content type of result, trying to use default content type provided by client");
                     }
+                    log.info("Action  '" + actionKey + "' completed, result of default type '" + actionTask.getResultDescription().getMediaType() + "' generated");
                     return new GenericResourceWithContentType(actionTask.getResultDescription().getMediaType(),
                             taskResult);
                 } else if (actionInfo.getResultDescription() != null) {
