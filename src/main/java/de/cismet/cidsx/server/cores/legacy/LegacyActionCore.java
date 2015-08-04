@@ -37,12 +37,13 @@ import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.ActionResultInfo;
 import de.cismet.cidsx.server.api.types.ActionTask;
 import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.api.types.legacy.ServerActionFactory;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
 import de.cismet.cidsx.server.cores.ActionCore;
 import de.cismet.cidsx.server.cores.CidsServerCore;
+import de.cismet.cidsx.server.exceptions.ActionNotFoundException;
+import de.cismet.cidsx.server.exceptions.ActionTaskNotFoundException;
 import de.cismet.cidsx.server.exceptions.CidsServerException;
 import de.cismet.cidsx.server.exceptions.InvalidParameterException;
 
@@ -63,7 +64,6 @@ public class LegacyActionCore implements ActionCore {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
-    private static final String STREAMTYPE_APPOCTETSTREAM = "application/octet-stream";
 
     private static final ConcurrentHashMap<String, ExecutorService> actionExecutorServices =
         new ConcurrentHashMap<String, ExecutorService>();
@@ -150,6 +150,12 @@ public class LegacyActionCore implements ActionCore {
     public List<JsonNode> getAllTasks(final User user, final String actionKey, final String role) {
         if (log.isDebugEnabled()) {
             log.debug("getAllTasks with actionKey '" + actionKey + "'");
+        }
+
+        if (ServerActionFactory.getFactory().getServerAction(actionKey) == null) {
+            final String message = "Action '" + actionKey + " could not be found!";
+            log.warn(message);
+            throw new ActionNotFoundException(message, actionKey);
         }
 
         final List<JsonNode> nodes = new ArrayList<JsonNode>();
@@ -318,7 +324,6 @@ public class LegacyActionCore implements ActionCore {
 
         try {
             actionTask.setStatus(ActionTask.Status.STARTING);
-
             ExecutorService es = actionExecutorServices.get(actionKey);
             if (es == null) {
                 actionExecutorServices.putIfAbsent(
@@ -333,6 +338,7 @@ public class LegacyActionCore implements ActionCore {
                     @Override
                     public void run() {
                         try {
+                            final long start = System.currentTimeMillis();
                             finalTask.setStatus(ActionTask.Status.RUNNING);
                             final GenericResourceWithContentType grwct = executeNewAction(
                                     user,
@@ -342,20 +348,27 @@ public class LegacyActionCore implements ActionCore {
                                     bodyResource);
                             resultMap.put(finalTask.getKey(), grwct);
                             finalTask.setStatus(ActionTask.Status.FINISHED);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Action Task '" + finalTask.getKey() + "' of Action '"
+                                            + finalTask.getActionKey() + "' successfully completed in "
+                                            + (start - System.currentTimeMillis()) + "ms.");
+                            }
                         } catch (final Exception ex) {
                             log.error(ex.getMessage(), ex);
                             finalTask.setStatus(ActionTask.Status.ERROR);
-                        } finally {
-                            taskMap.remove(finalTask.getKey());
                         }
                     }
                 };
+
             if (actionTask.getKey() == null) {
                 actionTask.setKey(actionKey + ":" + String.valueOf(System.currentTimeMillis()));
             }
 
             es.execute(actionRunner);
-
+            if (log.isDebugEnabled()) {
+                log.debug("Action Task '" + finalTask.getKey() + "' of Action '"
+                            + finalTask.getActionKey() + "' executed");
+            }
             taskMap.put(actionTask.getKey(), finalTask);
         } catch (Exception ex) {
             final String message = "error while creating new action task with actionKey '"
@@ -382,6 +395,12 @@ public class LegacyActionCore implements ActionCore {
             log.debug("getTask with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
         }
 
+        if (ServerActionFactory.getFactory().getServerAction(actionKey) == null) {
+            final String message = "Action '" + actionKey + " could not be found!";
+            log.warn(message);
+            throw new ActionNotFoundException(message, actionKey);
+        }
+
         final ActionTask actionTask = taskMap.get(taskKey);
         if (actionTask != null) {
             final JsonNode on = MAPPER.convertValue(actionTask, JsonNode.class);
@@ -401,21 +420,35 @@ public class LegacyActionCore implements ActionCore {
             log.debug("getResults with actionKey '" + actionKey + "' and taskKey '" + taskKey + "'");
         }
 
-        final GenericResourceWithContentType result = resultMap.get(taskKey);
-        final ActionTask actionTask = taskMap.get(taskKey);
-        final List<ActionResultInfo> ariList = new LinkedList<ActionResultInfo>();
-        if (result != null) {
-            final ActionResultInfo ari = new ActionResultInfo(
-                    actionTask.getKey(),
-                    actionTask.getActionKey(),
-                    actionTask.getDescription(),
-                    STREAMTYPE_APPOCTETSTREAM,
-                    actionTask.getParameters());
-            ariList.add(ari);
-        } else {
-            log.warn("no results for actionKey '" + actionKey + "' and taskKey '" + taskKey
-                        + "' found, returning null!");
+        if (ServerActionFactory.getFactory().getServerAction(actionKey) == null) {
+            final String message = "Action '" + actionKey + " could not be found!";
+            log.warn(message);
+            throw new ActionNotFoundException(message, actionKey);
         }
+
+        final ActionTask actionTask = taskMap.get(taskKey);
+        if (actionTask == null) {
+            final String message = "The Task '" + taskKey + "' of Action '"
+                        + actionKey + " could not be found!";
+            log.warn(message);
+            throw new ActionTaskNotFoundException(message, taskKey);
+        }
+
+        final GenericResourceWithContentType result = resultMap.get(taskKey);
+        if ((result == null) || (result.getRes() == null)) {
+            log.warn("No results for  Task '" + taskKey + "' of Action '"
+                        + actionKey + " found!");
+            return null;
+        }
+
+        final List<ActionResultInfo> ariList = new LinkedList<ActionResultInfo>();
+        final ActionResultInfo ari = new ActionResultInfo(
+                actionTask.getKey(),
+                actionTask.getActionKey(),
+                actionTask.getDescription(),
+                result.getContentType(),
+                actionTask.getParameters());
+        ariList.add(ari);
         return ariList;
     }
 
@@ -444,13 +477,27 @@ public class LegacyActionCore implements ActionCore {
                         + taskKey + "' and resultKey '" + resultKey + "'");
         }
 
-        if (!resultMap.containsKey(taskKey)) {
-            log.warn("could not get result for task with '" + actionKey + ", taskKey '"
-                        + taskKey + "' and resultKey '" + resultKey + "': task not found");
-            return null;
+        if (ServerActionFactory.getFactory().getServerAction(actionKey) == null) {
+            final String message = "Action '" + actionKey + " could not be found!";
+            log.warn(message);
+            throw new ActionNotFoundException(message, actionKey);
+        }
+
+        final ActionTask actionTask = taskMap.get(taskKey);
+        if (actionTask == null) {
+            final String message = "The Task '" + taskKey + "' of Action '"
+                        + actionKey + " could not be found!";
+            log.warn(message);
+            throw new ActionTaskNotFoundException(message, taskKey);
         }
 
         final GenericResourceWithContentType result = resultMap.get(taskKey);
+        if ((result == null) || (result.getRes() == null)) {
+            log.warn("No results for  Task '" + taskKey + "' of Action '"
+                        + actionKey + " found!");
+            return null;
+        }
+
         return result;
     }
 
