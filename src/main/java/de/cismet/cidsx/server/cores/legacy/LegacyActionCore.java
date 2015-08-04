@@ -33,6 +33,7 @@ import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cidsx.base.types.MediaTypes;
 
 import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.ActionResultInfo;
 import de.cismet.cidsx.server.api.types.ActionTask;
 import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
@@ -208,7 +209,7 @@ public class LegacyActionCore implements ActionCore {
             // procress the (binary) attachment
             final Object bodyObject;
             if (bodyResource != null) {
-                final ParameterInfo bodyDescription;
+                final ActionParameterInfo bodyDescription;
                 if ((actionTask != null) && (actionTask.getBodyDescription() != null)
                             && (actionTask.getBodyDescription().getMediaType() != null)) {
                     bodyDescription = actionTask.getBodyDescription();
@@ -255,14 +256,16 @@ public class LegacyActionCore implements ActionCore {
 
             if (taskResult != null) {
                 if (GenericResourceWithContentType.class.isAssignableFrom(taskResult.getClass())) {
-                    log.info("Action  '" + actionKey + "' completed, result of type '" + ((GenericResourceWithContentType)taskResult).getContentType() + "' generated");
+                    log.info("Action  '" + actionKey + "' completed, result of type '"
+                                + ((GenericResourceWithContentType)taskResult).getContentType() + "' generated");
                     return (GenericResourceWithContentType)taskResult;
                 } else if ((actionTask != null) && (actionTask.getResultDescription() != null)) {
                     if (log.isDebugEnabled()) {
                         log.debug(
                             "server action did not provide actual content type of result, trying to use default content type provided by client");
                     }
-                    log.info("Action  '" + actionKey + "' completed, result of default type '" + actionTask.getResultDescription().getMediaType() + "' generated");
+                    log.info("Action  '" + actionKey + "' completed, result of default type '"
+                                + actionTask.getResultDescription().getMediaType() + "' generated");
                     return new GenericResourceWithContentType(actionTask.getResultDescription().getMediaType(),
                             taskResult);
                 } else if (actionInfo.getResultDescription() != null) {
