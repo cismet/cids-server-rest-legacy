@@ -308,8 +308,10 @@ public class LegacyEntityCore implements EntityCore {
             final JsonNode jsonObject,
             final String role,
             final boolean requestResultingInstance) {
+        final long current = System.currentTimeMillis();
+
         if (log.isDebugEnabled()) {
-            log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
+            log.info("updateObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
         }
 
         try {
@@ -323,14 +325,25 @@ public class LegacyEntityCore implements EntityCore {
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
+            LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanToUpdate, true);
 //            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
 //            log.error("beanToUpdate:\n" + beanToUpdate.getMOString());
 
             if (requestResultingInstance) {
                 final JsonNode node = MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                if (log.isDebugEnabled()) {
+                    log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId
+                                + "' completed in "
+                                + (System.currentTimeMillis() - current) + "ms.");
+                }
                 return node;
             } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId
+                                + "' completed in "
+                                + (System.currentTimeMillis() - current) + "ms.");
+                }
                 return null;
             }
         } catch (final Exception ex) {
@@ -347,6 +360,8 @@ public class LegacyEntityCore implements EntityCore {
             final String objectId,
             final JsonNode jsonObject,
             final String role) {
+        final long current = System.currentTimeMillis();
+
         if (log.isDebugEnabled()) {
             log.debug("patchObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
         }
@@ -366,6 +381,10 @@ public class LegacyEntityCore implements EntityCore {
 //            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
 //            log.error("beanToUpdate:\n" + updatedBean.getMOString());
+            if (log.isDebugEnabled()) {
+                log.debug("patchObject with classKey '" + classKey + "' and objectId '" + objectId + "' completed in "
+                            + (System.currentTimeMillis() - current) + "ms.");
+            }
 
             return null; // <-- why ???
         } catch (final Exception ex) {
@@ -382,8 +401,10 @@ public class LegacyEntityCore implements EntityCore {
             @NonNull final JsonNode jsonObject,
             @NonNull final String role,
             final boolean requestResultingInstance) {
+        final long current = System.currentTimeMillis();
+
         if (log.isDebugEnabled()) {
-            log.debug("createObject with classKey '" + classKey + "'.");
+            log.info("createObject with classKey '" + classKey + "'.");
         }
 
         if (!user.isValidated()) {
@@ -405,13 +426,21 @@ public class LegacyEntityCore implements EntityCore {
         }
         try {
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
-            beanNew.getMetaObject().setStatus(MetaObject.NEW);
+            LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanNew, false);
 
             final CidsBean updatedBean = beanNew.persist();
             if (requestResultingInstance) {
                 final JsonNode node = MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                if (log.isDebugEnabled()) {
+                    log.debug("createObject with classKey '" + classKey + "' completed in "
+                                + (System.currentTimeMillis() - current) + "ms.");
+                }
                 return node;
             } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("createObject with classKey '" + classKey + "' completed in "
+                                + (System.currentTimeMillis() - current) + "ms.");
+                }
                 return null;
             }
         } catch (final Exception ex) {
