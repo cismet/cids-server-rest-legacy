@@ -20,7 +20,9 @@ import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.connection.proxy.ConnectionProxy;
 import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.UserGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,6 +45,8 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.CallServerService;
@@ -50,8 +54,6 @@ import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.ws.SSLConfig;
 import de.cismet.cids.server.ws.SSLConfigProvider;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
-
-import de.cismet.cidsx.base.types.Key;
 
 import de.cismet.cidsx.server.api.types.CidsNode;
 import de.cismet.cidsx.server.api.types.User;
@@ -87,20 +89,16 @@ public class LegacyCoreBackend {
     private Sirius.server.newuser.User testUser = null;
 
     /** Class Cache: Domain, classKey, Class (JsonNode) */
-    @Getter
-    private final HashMap<String, JsonNode> classCache = new HashMap<String, JsonNode>();
+    @Getter private final HashMap<String, JsonNode> classCache = new HashMap<String, JsonNode>();
 
     /** Class Icon Cache: Domain, classKey, byte[] icon */
-    @Getter
-    private final HashMap<String, byte[]> classIconCache = new HashMap<String, byte[]>();
+    @Getter private final HashMap<String, byte[]> classIconCache = new HashMap<String, byte[]>();
 
     /** Object Icon Cache: Domain, classKey, byte[] icon */
-    @Getter
-    private final HashMap<String, byte[]> objectIconCache = new HashMap<String, byte[]>();
+    @Getter private final HashMap<String, byte[]> objectIconCache = new HashMap<String, byte[]>();
 
     /** Object Icon Cache: Domain, classKey, byte[] icon */
-    @Getter
-    private final HashMap<String, byte[]> nodeIconCache = new HashMap<String, byte[]>();
+    @Getter private final HashMap<String, byte[]> nodeIconCache = new HashMap<String, byte[]>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -430,5 +428,55 @@ public class LegacyCoreBackend {
             LOG.warn("invalid base icon string: '" + baseIconString + "'");
         }
         return null;
+    }
+
+    /**
+     * Recursively applies the update status of a CidsBeans MetaObject and all descendant MetaObject Attributes
+     * according to the following rules:
+     *
+     * <p>If the id of the CidsBean / MetObject is -1, the status of the MetObject ist set to MetaObject.NEW. Otherwise,
+     * the status is the to MetaObject.MODIFIED if the setChanged parameter is true.</p>
+     *
+     * @param  cidsBean    DOCUMENT ME!
+     * @param  setChanged  Apply MetaObject.MODIFIED to all metaObject Attributes
+     */
+    public void applyCidsBeanUpdateStatus(final CidsBean cidsBean, final boolean setChanged) {
+        if (cidsBean.getPrimaryKeyValue() == -1) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("applying update status to NEW CidsBean '"
+                            + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
+            }
+        } else {
+            if (cidsBean.getPrimaryKeyValue() == -1) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("applying update status to UPDATED CidsBean '"
+                                + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
+                }
+            }
+        }
+
+        this.applyMetaObjectUpdateStatus(cidsBean.getMetaObject(), setChanged);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  metaObject  DOCUMENT ME!
+     * @param  setChanged  DOCUMENT ME!
+     */
+    private void applyMetaObjectUpdateStatus(final MetaObject metaObject, final boolean setChanged) {
+        if (metaObject.getID() == -1) {
+            metaObject.setStatus(MetaObject.NEW);
+        } else if (setChanged) {
+            metaObject.setStatus(MetaObject.MODIFIED);
+        }
+
+        for (final ObjectAttribute objectAttribute : metaObject.getAttribs()) {
+            if (objectAttribute.referencesObject() && (objectAttribute.getValue() != null)) {
+                final MetaObject attributeMetaObject = (MetaObject)objectAttribute.getValue();
+                attributeMetaObject.setChanged(true);
+                this.applyMetaObjectUpdateStatus(attributeMetaObject, setChanged);
+            }
+        }
     }
 }
