@@ -105,6 +105,7 @@ public class LegacyCoreBackend {
      */
     private LegacyCoreBackend() {
         loadServerActions();
+        log.info("LegacyCoreBackend initialized with " + this.serverActionMap.size() + " server actions");
     }
 
     //~ Methods ----------------------------------------------------------------
