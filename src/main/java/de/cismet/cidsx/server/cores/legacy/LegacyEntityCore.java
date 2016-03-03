@@ -73,8 +73,9 @@ public class LegacyEntityCore implements EntityCore {
     //~ Static fields/initializers ---------------------------------------------
 
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
-    private static final Pattern CLASSKEY_PATTERN = Pattern.compile("^/([^/]*)/");
-    private static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
+    protected static final Pattern CLASSKEY_PATTERN = Pattern.compile("^/([^/]*)/");
+    protected static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
+    protected static final LegacyCoreBackend BACKEND = LegacyCoreBackend.getInstance();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -117,10 +118,10 @@ public class LegacyEntityCore implements EntityCore {
         try {
             final List<JsonNode> all = new ArrayList<JsonNode>();
 
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User cidsUser = BACKEND.getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = BACKEND.getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " not found";
                 log.warn(message);
@@ -143,8 +144,7 @@ public class LegacyEntityCore implements EntityCore {
                                 + expand + "' parameters!");
                 }
 
-                final LightweightMetaObject[] lwmos = LegacyCoreBackend.getInstance()
-                            .getService()
+                final LightweightMetaObject[] lwmos = BACKEND.getService()
                             .getLightweightMetaObjectsByQuery(metaClass.getId(), cidsUser, query, new String[0]);
                 for (final LightweightMetaObject lwmo : lwmos) {
                     final String selfString = "{\"$self\":\"/" + metaClass.getDomain() + "." + metaClass.getTableName()
@@ -153,9 +153,7 @@ public class LegacyEntityCore implements EntityCore {
                     all.add(node);
                 }
             } else {
-                final MetaObject[] metaObjects = LegacyCoreBackend.getInstance()
-                            .getService()
-                            .getMetaObject(cidsUser, query, domain);
+                final MetaObject[] metaObjects = BACKEND.getService().getMetaObject(cidsUser, query, domain);
 
                 if (metaObjects != null) {
                     for (final MetaObject metaObject : metaObjects) {
@@ -315,9 +313,9 @@ public class LegacyEntityCore implements EntityCore {
         }
 
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User cidsUser = BACKEND.getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = BACKEND.getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "classKey " + classKey + " no found";
                 log.warn(message);
@@ -325,7 +323,7 @@ public class LegacyEntityCore implements EntityCore {
             }
 
             final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
-            LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanToUpdate, true);
+            BACKEND.applyCidsBeanUpdateStatus(beanToUpdate, true);
 //            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
 //            log.error("beanToUpdate:\n" + beanToUpdate.getMOString());
@@ -367,9 +365,9 @@ public class LegacyEntityCore implements EntityCore {
         }
 
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User cidsUser = BACKEND.getCidsUser(user, role);
 
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = BACKEND.getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "error while patching an object with classKey '"
                             + classKey + "' and objectId '" + objectId + "': class for class key not found!";
@@ -426,7 +424,7 @@ public class LegacyEntityCore implements EntityCore {
         }
         try {
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
-            LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanNew, false);
+            BACKEND.applyCidsBeanUpdateStatus(beanNew, false);
 
             final CidsBean updatedBean = beanNew.persist();
             if (requestResultingInstance) {
@@ -507,10 +505,10 @@ public class LegacyEntityCore implements EntityCore {
             throw new InvalidRoleException(message);                          // NOI18N
         }
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User cidsUser = BACKEND.getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = BACKEND.getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "error while getting an object with classKey '" + classKey
                             + "' and objectId '" + objectId + "': class for class key not found!";
@@ -520,8 +518,7 @@ public class LegacyEntityCore implements EntityCore {
 
             // FIXME: getLightwight MetaObject if level = 0
             final int cid = metaClass.getId();
-            final MetaObject metaObject = LegacyCoreBackend.getInstance()
-                        .getService()
+            final MetaObject metaObject = BACKEND.getService()
                         .getMetaObject(
                             cidsUser,
                             Integer.parseInt(objectId),
@@ -598,10 +595,10 @@ public class LegacyEntityCore implements EntityCore {
         }
 
         try {
-            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final Sirius.server.newuser.User cidsUser = BACKEND.getCidsUser(user, role);
 
             final String domain = RuntimeContainer.getServer().getDomainName();
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
+            final MetaClass metaClass = BACKEND.getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
                 final String message = "error while deleting an object with classKey '"
                             + classKey + "' and objectId '" + objectId
@@ -612,14 +609,13 @@ public class LegacyEntityCore implements EntityCore {
 
             final int cid = metaClass.getId();
 
-            final MetaObject metaObject = LegacyCoreBackend.getInstance()
-                        .getService()
+            final MetaObject metaObject = BACKEND.getService()
                         .getMetaObject(
                             cidsUser,
                             Integer.parseInt(objectId),
                             cid,
                             domain);
-            final int ret = LegacyCoreBackend.getInstance().getService().deleteMetaObject(cidsUser, metaObject, domain);
+            final int ret = BACKEND.getService().deleteMetaObject(cidsUser, metaObject, domain);
             return (ret > 100);
         } catch (final Exception ex) {
             final String message = "error while deleting an object with classKey '"
@@ -721,13 +717,13 @@ public class LegacyEntityCore implements EntityCore {
         // what about custom Icon Factory???
 
         // check the cache!
-        if (LegacyCoreBackend.getInstance().getObjectIconCache().containsKey(classKey)) {
-            return LegacyCoreBackend.getInstance().getObjectIconCache().get(classKey);
+        if (BACKEND.getObjectIconCache().containsKey(classKey)) {
+            return BACKEND.getObjectIconCache().get(classKey);
         }
 
         try {
-            final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, legacyUser);
+            final Sirius.server.newuser.User legacyUser = BACKEND.getCidsUser(user, role);
+            final MetaClass metaClass = BACKEND.getMetaClassForClassname(classKey, legacyUser);
             if (metaClass == null) {
                 final String message = "error while getting class with classKey '" + classKey
                             + "': class not found!";
@@ -751,7 +747,7 @@ public class LegacyEntityCore implements EntityCore {
             bos.close();
             final byte[] icon = bos.toByteArray();
 
-            LegacyCoreBackend.getInstance().getObjectIconCache().put(classKey, icon);
+            BACKEND.getObjectIconCache().put(classKey, icon);
 
             return icon;
         } catch (final Exception ex) {
