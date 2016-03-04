@@ -99,12 +99,6 @@
             <version>0.9.9-RC2</version>
         </dependency>
         <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.5.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>de.cismet.cids.navigator</groupId>
             <artifactId>cids-navigator</artifactId>
             <version>2.0-SNAPSHOT</version>
@@ -120,5 +114,28 @@
             <artifactId>cidsbean-json-patch</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <!-- 
+                       all those tests have to be excluded because they require a connection to a local
+                    -->
+                    <excludes>
+                        <exclude>**/HistoryServerTest.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
