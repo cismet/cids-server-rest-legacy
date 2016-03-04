@@ -25,7 +25,6 @@ import lombok.NonNull;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.awt.Graphics2D;
@@ -336,7 +335,7 @@ public class LegacyEntityCore implements EntityCore {
                 throw new EntityInfoNotFoundException(message, classKey);
             }
 
-            final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
+            final CidsBean beanToUpdate = CidsBean.createNewCidsBeanFromJSON(true, jsonObject.toString());
             LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanToUpdate, true);
 //            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
