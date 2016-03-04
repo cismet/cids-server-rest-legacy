@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cidsx.server.backend.legacy;
 
 import Sirius.navigator.connection.Connection;
@@ -28,6 +24,8 @@ import Sirius.server.newuser.UserGroup;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.Getter;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.Lookup;
 
@@ -69,12 +67,12 @@ import de.cismet.cidsx.server.exceptions.CidsServerException;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
+@Slf4j
 public class LegacyCoreBackend {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final LegacyCoreBackend INSTANCE = new LegacyCoreBackend();
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LegacyCoreBackend.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -107,6 +105,7 @@ public class LegacyCoreBackend {
      */
     private LegacyCoreBackend() {
         loadServerActions();
+        log.info("LegacyCoreBackend initialized with " + this.serverActionMap.size() + " server actions");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -158,7 +157,7 @@ public class LegacyCoreBackend {
 
             ClassCacheMultiple.setInstance(user.getDomain());
         } catch (final Exception ex) {
-            LOG.error(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -187,7 +186,7 @@ public class LegacyCoreBackend {
                     LegacyCidsServerCore.getTestUser(),
                     LegacyCidsServerCore.getTestPassword());
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -296,8 +295,8 @@ public class LegacyCoreBackend {
      */
     public boolean ensureDomainCached(final String domain, final User cidsUser) {
         if (!this.classNameCache.isDomainCached(domain)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
+            if (log.isDebugEnabled()) {
+                log.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
                             + "' to loockup class with legacy ids.");
             }
 
@@ -306,7 +305,7 @@ public class LegacyCoreBackend {
             try {
                 metaClasses = LegacyCoreBackend.getInstance().getService().getClasses(legacyUser, cidsUser.getDomain());
             } catch (RemoteException ex) {
-                LOG.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex.getMessage(), ex);
             }
 
@@ -318,7 +317,7 @@ public class LegacyCoreBackend {
                 final String message = "cannot lookup class name for class with id '"
                             + "' and fill class name cache: no classes found at domain '" + domain
                             + "' for user '" + cidsUser.getUser() + "'";
-                LOG.error(message);
+                log.error(message);
                 throw new RuntimeException(message);
             }
         }
@@ -339,8 +338,8 @@ public class LegacyCoreBackend {
      */
     public int getIdForClassName(final User cidsUser, final String className) throws Exception {
         if (!this.classNameCache.isDomainCached(cidsUser.getDomain())) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
+            if (log.isDebugEnabled()) {
+                log.debug("need to fill the class name cache for domain '" + cidsUser.getDomain()
                             + "' to lookup class with legacy name '" + className + "'");
             }
 
@@ -355,7 +354,7 @@ public class LegacyCoreBackend {
                 final String message = "cannot lookup class id for class with name '"
                             + "' and fill class name cache: no classes found at domain '" + cidsUser.getDomain()
                             + "' for user '" + cidsUser.getUser() + "'";
-                LOG.error(message);
+                log.error(message);
                 throw new Exception(message);
             }
         }
@@ -385,8 +384,8 @@ public class LegacyCoreBackend {
             } else {
                 iconString = baseIconString;
             }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("searching for icon '" + iconString + "'");
+            if (log.isDebugEnabled()) {
+                log.debug("searching for icon '" + iconString + "'");
             }
             if (this.nodeIconCache.containsKey(iconString)) {
                 return this.nodeIconCache.get(iconString);
@@ -410,7 +409,7 @@ public class LegacyCoreBackend {
                 } catch (IOException ex) {
                     final String message = "Could not load icon '" + iconString + "': "
                                 + ex.getMessage();
-                    LOG.error(message, ex);
+                    log.error(message, ex);
                     throw new CidsServerException(message, ex);
                 }
             } else if (iconType != null) {
@@ -425,7 +424,7 @@ public class LegacyCoreBackend {
                 this.nodeIconCache.put(iconString, null);
             }
         } else {
-            LOG.warn("invalid base icon string: '" + baseIconString + "'");
+            log.warn("invalid base icon string: '" + baseIconString + "'");
         }
         return null;
     }
@@ -442,14 +441,14 @@ public class LegacyCoreBackend {
      */
     public void applyCidsBeanUpdateStatus(final CidsBean cidsBean, final boolean setChanged) {
         if (cidsBean.getPrimaryKeyValue() == -1) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("applying update status to NEW CidsBean '"
+            if (log.isDebugEnabled()) {
+                log.debug("applying update status to NEW CidsBean '"
                             + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
             }
         } else {
             if (cidsBean.getPrimaryKeyValue() == -1) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("applying update status to UPDATED CidsBean '"
+                if (log.isDebugEnabled()) {
+                    log.debug("applying update status to UPDATED CidsBean '"
                                 + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
                 }
             }

@@ -14,6 +14,10 @@ import Sirius.server.middleware.types.MetaObject;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import com.github.fge.jsonpatch.JsonPatchException;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -28,6 +32,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import java.sql.Date;
 
@@ -46,6 +51,9 @@ import javax.swing.ImageIcon;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cids.jsonpatch.CidsBeanPatch;
+import de.cismet.cids.jsonpatch.CidsBeanPatchUtils;
+
 import de.cismet.cidsx.server.api.types.SimpleObjectQuery;
 import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
@@ -54,11 +62,13 @@ import de.cismet.cidsx.server.cores.EntityCore;
 import de.cismet.cidsx.server.data.RuntimeContainer;
 import de.cismet.cidsx.server.exceptions.CidsServerException;
 import de.cismet.cidsx.server.exceptions.EntityInfoNotFoundException;
+import de.cismet.cidsx.server.exceptions.EntityNotFoundException;
 import de.cismet.cidsx.server.exceptions.InvalidClassKeyException;
 import de.cismet.cidsx.server.exceptions.InvalidEntityException;
 import de.cismet.cidsx.server.exceptions.InvalidParameterException;
 import de.cismet.cidsx.server.exceptions.InvalidRoleException;
 import de.cismet.cidsx.server.exceptions.InvalidUserException;
+import de.cismet.cidsx.server.exceptions.PatchFailedException;
 
 /**
  * DOCUMENT ME!
@@ -73,8 +83,9 @@ public class LegacyEntityCore implements EntityCore {
     //~ Static fields/initializers ---------------------------------------------
 
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
-    private static final Pattern CLASSKEY_PATTERN = Pattern.compile("^/([^/]*)/");
-    private static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
+    protected static final Pattern CLASSKEY_PATTERN = Pattern.compile("^/([^/]*)/");
+    protected static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
+    protected static final ObjectReader PATCH_READER = CidsBeanPatchUtils.getInstance().getCidsBeanPatchReader();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -324,7 +335,7 @@ public class LegacyEntityCore implements EntityCore {
                 throw new EntityInfoNotFoundException(message, classKey);
             }
 
-            final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), false);
+            final CidsBean beanToUpdate = CidsBean.createNewCidsBeanFromJSON(true, jsonObject.toString());
             LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanToUpdate, true);
 //            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
@@ -359,39 +370,139 @@ public class LegacyEntityCore implements EntityCore {
             final String classKey,
             final String objectId,
             final JsonNode jsonObject,
-            final String role) {
+            final String role,
+            final boolean requestResultingInstance) {
         final long current = System.currentTimeMillis();
 
         if (log.isDebugEnabled()) {
             log.debug("patchObject with classKey '" + classKey + "' and objectId '" + objectId + "'.");
         }
 
+        if (!user.isValidated()) {
+            final String message = "error while patching an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': user '" + user.getUser() + "' is not validated!";
+            log.error(message);
+            throw new InvalidUserException(message);                          // NOI18N
+        }
+        if (classKey.isEmpty()) {
+            final String message = "error while patching an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': class key is empty!";
+            log.error(message);
+            throw new InvalidClassKeyException(message);                      // NOI18N
+        }
+        if (objectId.isEmpty()) {
+            final String message = "error while patching an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': objectId is empty!";
+            log.error(message);
+            throw new InvalidParameterException(message, "objectId", "null"); // NOI18N
+        }
+        if (role.isEmpty()) {
+            final String message = "error while patching an object with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': role is empty!";
+            log.error(message);
+            throw new InvalidRoleException(message);                          // NOI18N
+        }
+
+        final CidsBeanPatch patch;
+        CidsBean cidsBean;
+        final CidsBean updatedBean;
+
+        try {
+            patch = PATCH_READER.readValue(jsonObject);
+        } catch (Exception ex) {
+            final String message = "invalid json patch format: " + ex.getMessage();
+            log.error(message, ex);
+            throw new InvalidParameterException(message, ex, "patch", jsonObject); // NOI18N
+        }
+
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-
+            final String domain = RuntimeContainer.getServer().getDomainName();
             final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
             if (metaClass == null) {
-                final String message = "error while patching an object with classKey '"
-                            + classKey + "' and objectId '" + objectId + "': class for class key not found!";
+                final String message = "error while patching an object with classKey '" + classKey
+                            + "' and objectId '" + objectId + "': class for class key not found!";
                 log.warn(message);
                 throw new EntityInfoNotFoundException(message, classKey);
             }
 
-            final CidsBean beanToUpdate = CidsBean.updateCidsBeanFromJSON(jsonObject.toString(), true);
-//            final CidsBean updatedBean = beanToUpdate;
-            final CidsBean updatedBean = beanToUpdate.persist();
-//            log.error("beanToUpdate:\n" + updatedBean.getMOString());
+            final MetaObject metaObject = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .getMetaObject(
+                            cidsUser,
+                            Integer.parseInt(objectId),
+                            metaClass.getId(),
+                            domain);
+
+            if (metaObject == null) {
+                final String message = "error while patching an entity with classKey '"
+                            + classKey + "' and objectId '" + objectId
+                            + "': entity to be patched not found";
+                log.warn(message);
+                throw new EntityNotFoundException(message, objectId);
+            }
+
+            cidsBean = metaObject.getBean();
+        } catch (final EntityInfoNotFoundException ei) {
+            throw ei;
+        } catch (final Exception ex) {
+            final String message = "error while loading an entity to be patched with classKey '"
+                        + classKey + "' and objectId '" + objectId + "': " + ex.getMessage();
+            log.error(message, ex);
+            throw new InvalidEntityException(message, ex, jsonObject);
+        }
+
+        try {
+            cidsBean = patch.apply(cidsBean);
+        } catch (JsonPatchException jpe) {
+            final String message = "error while patching an entity with classKey '"
+                        + classKey + "' and objectId '" + objectId
+                        + "': patch failed with '" + jpe.getMessage() + "'";
+            throw new PatchFailedException(message, jpe);
+        } catch (Throwable t) {
+            final String message = "unhandled error while patching an entity with classKey '"
+                        + classKey + "' and objectId '" + objectId
+                        + "': patch failed with unexpected error '" + t.getMessage() + "'";
+            throw new PatchFailedException(message, t);
+        }
+
+        try {
+            updatedBean = cidsBean.persist();
+//            log.error("beanToUpdate:\n" + beanToUpdate.getMOString());
+
             if (log.isDebugEnabled()) {
                 log.debug("patchObject with classKey '" + classKey + "' and objectId '" + objectId + "' completed in "
                             + (System.currentTimeMillis() - current) + "ms.");
             }
 
-            return null; // <-- why ???
+            if (requestResultingInstance) {
+                final JsonNode node = MAPPER.reader().readTree(updatedBean.toJSONString(true));
+                if (log.isDebugEnabled()) {
+                    log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId
+                                + "' completed in "
+                                + (System.currentTimeMillis() - current) + "ms.");
+                }
+                return node;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId
+                                + "' completed in "
+                                + (System.currentTimeMillis() - current) + "ms.");
+                }
+                return null;
+            }
         } catch (final Exception ex) {
-            final String message = "error while updating an object with classKey '"
-                        + classKey + "' and objectId '" + objectId + "': " + ex.getMessage();
+            JsonNode cidsBeanNode;
+            try {
+                cidsBeanNode = MAPPER.readTree(cidsBean.toJSONString(true));
+            } catch (IOException ex1) {
+                log.error(ex.getMessage(), ex);
+                cidsBeanNode = JsonNodeFactory.instance.textNode(ex.getMessage());
+            }
+            final String message = "error while storing a patched entity with classKey '" + classKey
+                        + "' and objectId '" + objectId + "': " + ex.getMessage();
             log.error(message, ex);
-            throw new InvalidEntityException(message, ex, jsonObject);
+            throw new InvalidEntityException(message, ex, cidsBeanNode);
         }
     }
 
