@@ -132,7 +132,7 @@
                        all those tests have to be excluded because they require a connection to a local
                     -->
                     <excludes>
-                        <exclude>**/HistoryServerTest.class</exclude>
+                        <exclude>**/RESTfulInterfaceTest.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
