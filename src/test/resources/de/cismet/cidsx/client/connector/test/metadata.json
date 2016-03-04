@@ -1,0 +1,65 @@
+{
+    "$self": "/SWITCHON.METADATA/-1",
+    "id": -1,
+    "name": "SWITCH-ON Basic Meta-Data",
+    "tags": [],
+    "description": "Meta-Data record created, derived or imported by the SWITCH-ON project according to the SWITCH-ON Standard Information Model (SIM) for Meta-Data for the SWITCH-ON Spatial Information Platform (SIP).",
+    "contact": {
+        "$self": "/SWITCHON.CONTACT/37",
+        "id": 37,
+        "organisation": "SWITCH-ON (Meta-Data Provider)",
+        "name": "SWITCH-ON (Meta-Data Provider)",
+        "description": "The SWITCH-ON (Sharing Water-related Information to Tackle Changes in the Hydrosphere – for Operational Needs) project prepared the Meta-Data Record of this dataset and made it available in the SWITCH-ON Spatial Information Platform Spatial Information Platform (SIP).",
+        "email": "switchon.wm@gmail.com",
+        "url": "http://www.water-switch-on.eu/",
+        "role": {
+            "$self": "/SWITCHON.TAG/1515",
+            "id": 1515,
+            "name": "metadataProvider",
+            "taggroup": {
+                "$self": "/SWITCHON.TAGGROUP/165",
+                "id": 165,
+                "name": "role",
+                "description": "Function performed by the responsible party (fixed group, standard codelist)."
+            },
+            "description": "Party that collects, supplies and publishes meta-data about the resource. Person or organisation offering a meta-data catalogue that contains meta-data about the resource."
+        }
+    },
+    "type": {
+        "$self": "/SWITCHON.TAG/177",
+        "id": 177,
+        "name": "basic meta-data",
+        "taggroup": {
+            "$self": "/SWITCHON.TAGGROUP/160",
+            "id": 160,
+            "name": "meta-data type",
+            "description": "SIP internal type of the Meta-Data Record (fixed group)."
+        },
+        "description": "Type of the Meta-Data Record. \"basic meta-data\" refers to meta-data collected by switch-on according to the SIM meta-data schema. In fact, this meta-meta-data record refers to enclosing resource meta-data record."
+    },
+    "language": {
+        "$self": "/SWITCHON.TAG/145",
+        "id": 145,
+        "name": "eng",
+        "taggroup": {
+            "$self": "/SWITCHON.TAGGROUP/157",
+            "id": 157,
+            "name": "language",
+            "description": "The language(s) used within the resource or in which the metadata elements are expressed.  The value domain of this tag is limited to the languages defined in ISO 639-2."
+        },
+        "description": "English"
+    },
+    "standard": {
+        "$self": "/SWITCHON.TAG/1387",
+        "id": 1387,
+        "name": "SWITCH-ON SIM",
+        "taggroup": {
+            "$self": "/SWITCHON.TAGGROUP/159",
+            "id": 159,
+            "name": "meta-data standard",
+            "description": "Official standard on which the meta-data record is based (open group with some predefined tags)."
+        },
+        "description": "Meta-Data Record compliant to the Standard Information Model (SIM) of the Spatial Information Platform (SIP) of the EU FP7 project SWITCH-ON."
+    },
+    "creationdate": 1404338400000
+}
