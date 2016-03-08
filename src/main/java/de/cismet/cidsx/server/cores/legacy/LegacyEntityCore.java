@@ -454,6 +454,9 @@ public class LegacyEntityCore implements EntityCore {
 
         try {
             cidsBean = patch.apply(cidsBean);
+            if (log.isDebugEnabled()) {
+                log.debug(cidsBean.getMOString());
+            }
         } catch (JsonPatchException jpe) {
             final String message = "error while patching an entity with classKey '"
                         + classKey + "' and objectId '" + objectId
@@ -477,27 +480,17 @@ public class LegacyEntityCore implements EntityCore {
 
             if (requestResultingInstance) {
                 final JsonNode node = MAPPER.reader().readTree(updatedBean.toJSONString(true));
-                if (log.isDebugEnabled()) {
-                    log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId
-                                + "' completed in "
-                                + (System.currentTimeMillis() - current) + "ms.");
-                }
                 return node;
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("updateObject with classKey '" + classKey + "' and objectId '" + objectId
-                                + "' completed in "
-                                + (System.currentTimeMillis() - current) + "ms.");
-                }
                 return null;
             }
         } catch (final Exception ex) {
             JsonNode cidsBeanNode;
             try {
                 cidsBeanNode = MAPPER.readTree(cidsBean.toJSONString(true));
-            } catch (IOException ex1) {
-                log.error(ex.getMessage(), ex);
-                cidsBeanNode = JsonNodeFactory.instance.textNode(ex.getMessage());
+            } catch (final IOException ioex) {
+                log.error(ioex.getMessage(), ioex);
+                cidsBeanNode = JsonNodeFactory.instance.textNode(ioex.getMessage());
             }
             final String message = "error while storing a patched entity with classKey '" + classKey
                         + "' and objectId '" + objectId + "': " + ex.getMessage();
@@ -535,7 +528,17 @@ public class LegacyEntityCore implements EntityCore {
             log.error(message);
             throw new InvalidRoleException(message);     // NOI18N
         }
+
         try {
+            final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+            final MetaClass metaClass = LegacyCoreBackend.getInstance().getMetaClassForClassname(classKey, cidsUser);
+            if (metaClass == null) {
+                final String message = "error while deleting an object with classKey '"
+                            + classKey + "': class for classKey not found!";
+                log.warn(message);
+                throw new EntityInfoNotFoundException(message, classKey);
+            }
+
             final CidsBean beanNew = CidsBean.createNewCidsBeanFromJSON(false, jsonObject.toString());
             LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanNew, false);
 
@@ -554,6 +557,8 @@ public class LegacyEntityCore implements EntityCore {
                 }
                 return null;
             }
+        } catch (final EntityInfoNotFoundException ifx) {
+            throw ifx;
         } catch (final Exception ex) {
             final String message = "error while creating an object with classKey '"
                         + classKey + "': " + ex.getMessage();
