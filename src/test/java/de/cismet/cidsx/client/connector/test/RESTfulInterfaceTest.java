@@ -11,10 +11,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.core.util.Base64;
@@ -27,7 +24,6 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.CidsBeanInfo;
 import de.cismet.cids.jsonpatch.CidsBeanPatch;
 import de.cismet.cids.jsonpatch.CidsBeanPatchUtils;
-import de.cismet.cids.jsonpatch.operation.CidsBeanPatchOperation;
 import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -35,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.PropertyResourceBundle;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.log4j.Logger;
@@ -62,8 +57,8 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
     private static String BASIC_AUTH_STRING;
     private static CidsBean DEFAULT_CIDS_BEAN;
     private static RESTfulInterfaceTest INSTANCE;
-    private static ObjectMapper OBJECT_MAPPER = CidsBeanPatchUtils.getInstance().getCidsBeanMapper();
-    private static ObjectReader OBJECT_READER
+    private static final ObjectMapper OBJECT_MAPPER = CidsBeanPatchUtils.getInstance().getCidsBeanMapper();
+    private static final ObjectReader OBJECT_READER
             = CidsBeanPatchUtils.getInstance().getCidsBeanMapper().reader().withType(CidsBeanPatch.class);
 
     private final static Logger LOGGER = Logger.getLogger(RESTfulInterfaceTest.class);
@@ -126,7 +121,13 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         final CidsBean originalBidsBean = CidsBean.createNewCidsBeanFromJSON(false, node.toString());
         originalBidsBean.setProperty("id", DEFAULT_CIDS_BEAN.getPrimaryKeyValue());
 
-        assertEquals(originalBidsBean.toJSONString(true), DEFAULT_CIDS_BEAN.toJSONString(true));
+        try {
+            assertEquals(originalBidsBean.toJSONString(true), DEFAULT_CIDS_BEAN.toJSONString(true));
+        } catch(AssertionError ae) {
+            LOGGER.error(ae.getMessage(), ae);
+            throw ae;
+        }
+
         LOGGER.info("RESTfulInterfaceTest successfully initialized");
     }
 
@@ -327,6 +328,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
      */
     @Before
     public void setUp() {
+        LOGGER.debug("setUp()");
     }
 
     /**
@@ -334,7 +336,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
      */
     @After
     public void tearDown() {
-
+        LOGGER.debug("tearDown()");
     }
 
     @Test
@@ -351,7 +353,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
             // compare updated instance with resulting instance
             String actualString = DEFAULT_CIDS_BEAN.toJSONString(false);
             String expectedString = expected.toJSONString(false);
-            assertEquals(actualString, expectedString);
+            assertEquals(expectedString, actualString);
 
             LOGGER.debug("patch '" + comment + "' test passed!");
 

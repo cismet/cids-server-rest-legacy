@@ -33,7 +33,7 @@
             "$self": "/SWITCHON.TAGGROUP/160",
             "id": 160,
             "name": "meta-data type",
-            "description": "SIP internal type of the Meta-Data Record (fixed group)."
+            "description": "SIP internal type of the Meta-Data Record."
         },
         "description": "Type of the Meta-Data Record. \"basic meta-data\" refers to meta-data collected by switch-on according to the SIM meta-data schema. In fact, this meta-meta-data record refers to enclosing resource meta-data record."
     },
