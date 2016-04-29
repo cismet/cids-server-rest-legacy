@@ -17,6 +17,7 @@ import Sirius.navigator.connection.proxy.ConnectionProxy;
 import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.UserGroup;
@@ -433,6 +434,225 @@ public class LegacyCoreBackend {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param  originalMetaObject  DOCUMENT ME!
+     * @param  updatedCidsBean     DOCUMENT ME!
+     */
+    public void synchonizeArrayElementLinks(final MetaObject originalMetaObject,
+            final CidsBean updatedCidsBean) {
+        this.synchonizeArrayElementLinks(originalMetaObject, updatedCidsBean.getMetaObject());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  originalMetaObject  DOCUMENT ME!
+     * @param  updatedMetaObject   DOCUMENT ME!
+     */
+    protected void synchonizeArrayElementLinks(
+            final MetaObject originalMetaObject,
+            final MetaObject updatedMetaObject) {
+        for (final ObjectAttribute updatedObjectAttribute : updatedMetaObject.getAttribs()) {
+            if (updatedObjectAttribute.referencesObject()
+                        && (updatedObjectAttribute.getValue() != null)) {
+                final MetaObject updatedObjectAttributeMetaObject = (MetaObject)updatedObjectAttribute.getValue();
+
+                ObjectAttribute originalObjectAttribute = null;
+                MetaObject originalObjectAttributeMetaObject = null;
+
+                // find the corresponding original meta object
+                for (final ObjectAttribute potentionalOriginalObjectAttribute : originalMetaObject.getAttribs()) {
+                    if (potentionalOriginalObjectAttribute.referencesObject()
+                                && (potentionalOriginalObjectAttribute.getValue() != null)
+                                && ((MetaObject)potentionalOriginalObjectAttribute.getValue()).getKey().equals(
+                                    updatedObjectAttributeMetaObject.getKey())) {
+                        originalObjectAttribute = potentionalOriginalObjectAttribute;
+                        originalObjectAttributeMetaObject = (MetaObject)potentionalOriginalObjectAttribute.getValue();
+                        // found!
+                        break;
+                    }
+                }
+
+                // check if updated object attribute exists in original meta object
+                if ((originalObjectAttribute != null) && (originalObjectAttributeMetaObject != null)) {
+                    // check and procress arrays
+                    if (updatedObjectAttribute.isArray()
+                                && updatedObjectAttributeMetaObject.isDummy()) {
+                        // if updated attribute is array, original attribute must be an array too!
+                        if (originalObjectAttribute.isArray() && originalObjectAttributeMetaObject.isDummy()) {
+                            // explicitely declare dummies
+                            final ObjectAttribute updatedDummyArrayAttribute = updatedObjectAttribute;
+                            final MetaObject originalDummyMetaObject = originalObjectAttributeMetaObject;
+                            final MetaObject updatedDummyMetaObject = updatedObjectAttributeMetaObject;
+
+                            // process array entries of dummy object
+                            for (final ObjectAttribute updatedArrayElementAttribute
+                                        : updatedDummyMetaObject.getAttribs()) {
+                                // check if n-m array and synchronize ids!
+                                if (updatedArrayElementAttribute.referencesObject()
+                                            && (updatedArrayElementAttribute.getValue() != null)
+                                            && updatedDummyArrayAttribute.isArray()) {
+                                    // intermediate array element link object!
+                                    final MetaObject updatedArrayElementMetaObject = (MetaObject)
+                                        updatedArrayElementAttribute.getValue();
+
+                                    // just to be sure ....
+                                    if (updatedArrayElementMetaObject.getMetaClass().isArrayElementLink()) {
+                                        // the real a array entry!
+                                        MetaObject updatedArrayMetaObject = null;
+                                        for (final ObjectAttribute updatedArrayAttribute
+                                                    : updatedArrayElementMetaObject.getAttribs()) {
+                                            if (updatedArrayAttribute.referencesObject()
+                                                        && (updatedArrayAttribute.getValue() != null)) {
+                                                updatedArrayMetaObject = (MetaObject)updatedArrayAttribute.getValue();
+                                                break;
+                                            }
+                                        }
+
+                                        if (updatedArrayMetaObject != null) {
+                                            for (final ObjectAttribute originalArrayElementAttribute
+                                                        : originalDummyMetaObject.getAttribs()) {
+                                                if (originalArrayElementAttribute.referencesObject()
+                                                            && (originalArrayElementAttribute.getValue() != null)
+                                                            && originalArrayElementAttribute.isArray()) {
+                                                    final MetaObject originalArrayElementMetaObject = (MetaObject)
+                                                        originalArrayElementAttribute.getValue();
+                                                    // just to be sure ....
+                                                    if (updatedArrayElementMetaObject.getMetaClass()
+                                                                .isArrayElementLink()) {
+                                                        MetaObject originalArrayMetaObject = null;
+                                                        for (final ObjectAttribute originalArrayAttribute
+                                                                    : originalArrayElementMetaObject.getAttribs()) {
+                                                            if (originalArrayAttribute.referencesObject()
+                                                                        && (originalArrayAttribute.getValue() != null)) {
+                                                                originalArrayMetaObject = (MetaObject)
+                                                                    originalArrayAttribute.getValue();
+                                                                break;
+                                                            }
+                                                        }
+
+                                                        if (originalArrayMetaObject != null) {
+                                                            // found the array entry -> update array element link object
+                                                            if (updatedArrayMetaObject.getKey().equals(
+                                                                            originalArrayMetaObject.getKey())) {
+                                                                if (log.isDebugEnabled()) {
+                                                                    log.debug(
+                                                                        "setting id of array element link object for array entry '"
+                                                                                + updatedArrayMetaObject.getID()
+                                                                                + "' of meta object '"
+                                                                                + updatedMetaObject.getID()
+                                                                                + "' from "
+                                                                                + updatedArrayElementMetaObject.getID()
+                                                                                + " to "
+                                                                                + originalArrayElementMetaObject
+                                                                                    .getID());
+                                                                }
+
+                                                                updatedArrayElementMetaObject.setID(
+                                                                    originalArrayElementMetaObject.getID());
+                                                                updatedArrayElementMetaObject.setStatus(
+                                                                    MetaObject.MODIFIED);
+
+                                                                // process array entries!
+                                                                this.synchonizeArrayElementLinks(
+                                                                    originalArrayMetaObject,
+                                                                    updatedArrayMetaObject);
+                                                                break;
+                                                            }
+                                                        } else {
+                                                            log.warn("invalid original Array Element Object '"
+                                                                        + originalArrayElementMetaObject.getKey()
+                                                                        + "' of original meta object '"
+                                                                        + originalMetaObject.getKey()
+                                                                        + "': actual array entry is null!");
+                                                        }
+                                                    } else {
+                                                        log.warn("invalid original Array Element Object '"
+                                                                    + originalArrayElementMetaObject.getKey()
+                                                                    + "' of original meta object '"
+                                                                    + originalMetaObject.getKey()
+                                                                    + "': expected arrayElementLink");
+                                                    }
+                                                } else {
+                                                    log.warn("invalid original Array Element Attribute '"
+                                                                + originalArrayElementAttribute.getName()
+                                                                + "' (" + originalArrayElementAttribute.getID()
+                                                                + ") of original meta object '"
+                                                                + originalMetaObject.getKey()
+                                                                + "', expexted: isArray");
+                                                }
+                                            }
+                                        } else {
+                                            log.warn("invalid updated Array Element Object '"
+                                                        + updatedArrayElementMetaObject.getKey()
+                                                        + "' of updated meta object '"
+                                                        + updatedMetaObject.getKey()
+                                                        + "': actual array entry is null!");
+                                        }
+                                    } else {
+                                        log.warn("invalid updated Array Element Object '"
+                                                    + updatedArrayElementMetaObject.getKey()
+                                                    + "' of updated meta object '"
+                                                    + updatedMetaObject.getKey() + "': expected arrayElementLink");
+                                    }
+                                } // 1-n
+                                else if (updatedDummyArrayAttribute.isVirtualOneToManyAttribute()) {
+                                    final MetaObject updatedArrayMetaObject = (MetaObject)
+                                        updatedArrayElementAttribute.getValue();
+
+                                    for (final ObjectAttribute originalArrayElementAttribute
+                                                : originalDummyMetaObject.getAttribs()) {
+                                        if (originalArrayElementAttribute.referencesObject()
+                                                    && (originalArrayElementAttribute.getValue() != null)) {
+                                            final MetaObject originalArrayMetaObject = (MetaObject)
+                                                originalArrayElementAttribute.getValue();
+
+                                            // found the array entry -> check children
+                                            if (updatedArrayMetaObject.getKey().equals(
+                                                            originalArrayMetaObject.getKey())) {
+                                                // process array entries!
+                                                this.synchonizeArrayElementLinks(
+                                                    originalArrayMetaObject,
+                                                    updatedArrayMetaObject);
+                                                break;
+                                            }
+                                        } else {
+                                            log.warn("invalid original Array Attribute '"
+                                                        + originalArrayElementAttribute.getName()
+                                                        + "' (" + originalArrayElementAttribute.getID()
+                                                        + ") of original meta object '"
+                                                        + originalMetaObject.getKey()
+                                                        + "', expexted: is MetaObject");
+                                        }
+                                    }
+                                } else {
+                                    log.warn("invalid updated Array Element Attribute '"
+                                                + updatedArrayElementAttribute.getName()
+                                                + "' (" + updatedArrayElementAttribute.getID()
+                                                + ") of updated meta object '"
+                                                + updatedMetaObject.getKey() + "'");
+                                }
+                            }
+                        } else {
+                            log.warn("invalid original Array Dummy Attribute '"
+                                        + originalObjectAttribute.getName()
+                                        + "' (" + originalObjectAttribute.getID()
+                                        + ") of original meta object '"
+                                        + originalMetaObject.getKey()
+                                        + "', expexted isArray=true, isDummy=true");
+                        }
+                    } else {
+                        this.synchonizeArrayElementLinks(
+                            originalObjectAttributeMetaObject,
+                            updatedObjectAttributeMetaObject);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Recursively applies the update status of a CidsBeans MetaObject and all descendant MetaObject Attributes
      * according to the following rules:
      *
@@ -448,12 +668,10 @@ public class LegacyCoreBackend {
                 log.debug("applying update status to NEW CidsBean '"
                             + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
             }
-        } else {
-            if (cidsBean.getPrimaryKeyValue() == -1) {
-                if (log.isDebugEnabled()) {
-                    log.debug("applying update status to UPDATED CidsBean '"
-                                + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
-                }
+        } else if (cidsBean.getPrimaryKeyValue() == -1) {
+            if (log.isDebugEnabled()) {
+                log.debug("applying update status to UPDATED CidsBean '"
+                            + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "' (setChanged: " + setChanged + ")");
             }
         }
 
@@ -471,12 +689,12 @@ public class LegacyCoreBackend {
             metaObject.setStatus(MetaObject.NEW);
         } else if (setChanged) {
             metaObject.setStatus(MetaObject.MODIFIED);
+            metaObject.setChanged(true);
         }
 
         for (final ObjectAttribute objectAttribute : metaObject.getAttribs()) {
             if (objectAttribute.referencesObject() && (objectAttribute.getValue() != null)) {
                 final MetaObject attributeMetaObject = (MetaObject)objectAttribute.getValue();
-                attributeMetaObject.setChanged(true);
                 this.applyMetaObjectUpdateStatus(attributeMetaObject, setChanged);
             }
         }

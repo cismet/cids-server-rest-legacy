@@ -335,8 +335,26 @@ public class LegacyEntityCore implements EntityCore {
                 throw new EntityInfoNotFoundException(message, classKey);
             }
 
+            final MetaObject originalMetaObject = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .getMetaObject(
+                            cidsUser,
+                            Integer.parseInt(objectId),
+                            metaClass.getID(),
+                            metaClass.getDomain());
+
             final CidsBean beanToUpdate = CidsBean.createNewCidsBeanFromJSON(true, jsonObject.toString());
+
+            if (originalMetaObject != null) {
+                LegacyCoreBackend.getInstance().synchonizeArrayElementLinks(originalMetaObject, beanToUpdate);
+            } else {
+                log.warn("problem during updateObject with classKey '" + classKey
+                            + "' and objectId '" + objectId
+                            + "': original object not found! Trying INSERT instead of UPDATE!");
+            }
+
             LegacyCoreBackend.getInstance().applyCidsBeanUpdateStatus(beanToUpdate, true);
+
 //            final CidsBean updatedBean = beanToUpdate;
             final CidsBean updatedBean = beanToUpdate.persist();
 //            log.error("beanToUpdate:\n" + beanToUpdate.getMOString());
@@ -835,7 +853,6 @@ public class LegacyEntityCore implements EntityCore {
 
         // FIXME: currently returns only the default object icon of the class,
         // what about custom Icon Factory???
-
         // check the cache!
         if (LegacyCoreBackend.getInstance().getObjectIconCache().containsKey(classKey)) {
             return LegacyCoreBackend.getInstance().getObjectIconCache().get(classKey);
