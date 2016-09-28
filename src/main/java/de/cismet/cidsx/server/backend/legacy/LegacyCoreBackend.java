@@ -247,7 +247,7 @@ public class LegacyCoreBackend {
             return null;
         }
 
-        if ((role != null) && role.equalsIgnoreCase("all") && role.equalsIgnoreCase("default")) {
+        if ((role != null) && !role.equalsIgnoreCase("all") && !role.equalsIgnoreCase("default")) {
             for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
                 cidsUser.setUserGroup(null);
                 if (role.equals(cidsUserGroup.getName())) {
