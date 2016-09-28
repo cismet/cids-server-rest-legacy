@@ -235,41 +235,44 @@ public class LegacyCoreBackend {
      * DOCUMENT ME!
      *
      * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Sirius.server.newuser.User getCidsUser(final User user) {
-        if (testModeEnabled) {
-            return testUser;
-        } else {
-            return getCidsUser(user, null);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
      * @param   role  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public Sirius.server.newuser.User getCidsUser(final User user, final String role) {
-        user.equals(user);
+    public synchronized Sirius.server.newuser.User getCidsUser(final User user, final String role) {
+        user.equals(user); // <- why ???
         final Sirius.server.newuser.User cidsUser = userMap.get(user);
         if (cidsUser == null) {
+            log.warn("user '" + user.getUser() + "' not found");
             return null;
         }
-        if ((role == null) || role.equals("all")) {
-            cidsUser.setUserGroup(null);
-        } else {
+
+        if ((role != null) && role.equalsIgnoreCase("all") && role.equalsIgnoreCase("default")) {
             for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
+                cidsUser.setUserGroup(null);
                 if (role.equals(cidsUserGroup.getName())) {
                     cidsUser.setUserGroup(cidsUserGroup);
                     break;
                 }
             }
+
+            if (cidsUser.getUserGroup() == null) {
+                log.warn("role '" + role + "' of user '" + user.getUser() + "' found in "
+                            + cidsUser.getPotentialUserGroups().size() + " potential usergroups!");
+            }
         }
+
+        // Bugfix for #34
+        if (cidsUser.getUserGroup() == null) {
+            if ((cidsUser.getPotentialUserGroups() != null) && !cidsUser.getPotentialUserGroups().isEmpty()) {
+                cidsUser.setUserGroup(cidsUser.getPotentialUserGroups().iterator().next());
+                log.warn("usergroup of user '" + user.getUser() + "' not set, setting to first available usergroup of "
+                            + cidsUser.getPotentialUserGroups().size() + " potential usergroups");
+            } else {
+                log.error("usergroup of user '" + user.getUser() + "' not set and no potential usergroups available!");
+            }
+        }
+
         return cidsUser;
     }
 
