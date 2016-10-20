@@ -38,7 +38,6 @@ import java.net.URL;
 
 import java.rmi.RemoteException;
 
-import java.util.Collection;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -48,7 +47,6 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.CallServerService;
-import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.ws.SSLConfig;
 import de.cismet.cids.server.ws.SSLConfigProvider;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
@@ -79,7 +77,6 @@ public class LegacyCoreBackend {
     final SSLConfigProvider sslConfigProvider = Lookup.getDefault().lookup(SSLConfigProvider.class);
     final SSLConfig sslConfig = (sslConfigProvider == null) ? null : sslConfigProvider.getSSLConfig();
     private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<User, Sirius.server.newuser.User>();
-    private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final transient ClassNameCache classNameCache = new ClassNameCache();
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver(),
             sslConfig);
@@ -104,8 +101,7 @@ public class LegacyCoreBackend {
      * Creates a new ConnectorHelper object.
      */
     private LegacyCoreBackend() {
-        loadServerActions();
-        log.info("LegacyCoreBackend initialized with " + this.serverActionMap.size() + " server actions");
+        log.info("LegacyCoreBackend initialized");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -163,16 +159,6 @@ public class LegacyCoreBackend {
 
     /**
      * DOCUMENT ME!
-     */
-    public final void loadServerActions() {
-        final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
-        for (final ServerAction serverAction : serverActions) {
-            serverActionMap.put(serverAction.getTaskName(), serverAction);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
      *
      * @param  enabled  DOCUMENT ME!
      */
@@ -188,15 +174,6 @@ public class LegacyCoreBackend {
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public HashMap<String, ServerAction> getServerActionMap() {
-        return serverActionMap;
     }
 
     /**
