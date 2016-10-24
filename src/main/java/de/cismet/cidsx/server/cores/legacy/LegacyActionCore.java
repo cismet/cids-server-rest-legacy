@@ -84,7 +84,6 @@ public class LegacyActionCore implements ActionCore {
 
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
-            cidsUser.setUserGroup(null);
             final List<JsonNode> taskNameNodes = new ArrayList<JsonNode>();
             final List<ActionInfo> serverActionInfos = ServerActionFactory.getFactory().getServerActionInfos();
             for (final ActionInfo actionInfo : serverActionInfos) {
