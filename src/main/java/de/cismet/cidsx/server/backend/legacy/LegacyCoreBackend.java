@@ -241,15 +241,33 @@ public class LegacyCoreBackend {
      */
     public synchronized Sirius.server.newuser.User getCidsUser(final User user, final String role) {
         user.equals(user); // <- why ???
-        final Sirius.server.newuser.User cidsUser = userMap.get(user);
-        if (cidsUser == null) {
-            log.warn("user '" + user.getUser() + "' not found");
+
+        final Sirius.server.newuser.User immutableCidsUser = userMap.get(user);
+
+        if (immutableCidsUser == null) {
+            log.warn("user '" + user.getUser() + "@" + user.getDomain() + "' not found");
             return null;
         }
 
-        if ((role != null) && !role.equalsIgnoreCase("all") && !role.equalsIgnoreCase("default")) {
+        // setUserGroup is called on one user instance that might be used by different
+        // requests (threads) using different roles! synchronized is not enough! Make copy of cidsUser!
+        final Sirius.server.newuser.User cidsUser = new Sirius.server.newuser.User(
+                immutableCidsUser.getId(),
+                immutableCidsUser.getName(),
+                immutableCidsUser.getDomain(),
+                immutableCidsUser.isAdmin());
+        if (immutableCidsUser.isValid()) {
+            cidsUser.setValid();
+        } else {
+            log.warn("user '" + cidsUser.getName() + "@" + cidsUser.getDomain() + "' is not valid!?");
+        }
+        cidsUser.setPotentialUserGroups(immutableCidsUser.getPotentialUserGroups()); // no deep copy required here
+
+        if ((role == null) || role.equalsIgnoreCase("all")) {
+            // null == all potential user groups! See https://github.com/cismet/cids-server/issues/16
+            cidsUser.setUserGroup(null);
+        } else {
             for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
-                cidsUser.setUserGroup(null);
                 if (role.equals(cidsUserGroup.getName())) {
                     cidsUser.setUserGroup(cidsUserGroup);
                     break;
@@ -257,19 +275,13 @@ public class LegacyCoreBackend {
             }
 
             if (cidsUser.getUserGroup() == null) {
-                log.warn("role '" + role + "' of user '" + user.getUser() + "' found in "
-                            + cidsUser.getPotentialUserGroups().size() + " potential usergroups!");
-            }
-        }
-
-        // Bugfix for #34
-        if (cidsUser.getUserGroup() == null) {
-            if ((cidsUser.getPotentialUserGroups() != null) && !cidsUser.getPotentialUserGroups().isEmpty()) {
-                cidsUser.setUserGroup(cidsUser.getPotentialUserGroups().iterator().next());
-                log.warn("usergroup of user '" + user.getUser() + "' not set, setting to first available usergroup of "
-                            + cidsUser.getPotentialUserGroups().size() + " potential usergroups");
-            } else {
-                log.error("usergroup of user '" + user.getUser() + "' not set and no potential usergroups available!");
+                log.warn("role '" + role + "' of user '" + cidsUser.getName() + "@" + cidsUser.getDomain()
+                            + "' found in "
+                            + cidsUser.getPotentialUserGroups().size()
+                            + " potential usergroups, usergroups set to null -> "
+                            + "user is acting with all " + cidsUser.getPotentialUserGroups().size()
+                            + " potential usergroups!");
+                cidsUser.setUserGroup(null);
             }
         }
 
