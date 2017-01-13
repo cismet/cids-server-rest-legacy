@@ -177,6 +177,8 @@ public class LegacyActionCore implements ActionCore {
             log.info("executeNewAction with actionKey '" + actionKey + "'");
         }
 
+        // fetch the action info (meta-data about action parameters and return types) from
+        // the introspected or annotated lookup-able ServerAction instance.
         final ActionInfo actionInfo = ServerActionFactory.getFactory().getServerActionInfo(actionKey);
         if (actionInfo == null) {
             final String message = "The Action '" + actionKey + "' is not supported by this CIDS Server Instance!";
@@ -188,17 +190,19 @@ public class LegacyActionCore implements ActionCore {
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
         try {
-            // procress the parameters
+            // procress the parameters, the client may provide the action meta-info!
             if ((actionTask != null) && (actionTask.getParameters() != null)
                         && !actionTask.getParameters().isEmpty()) {
                 if ((actionTask.getParameterDescription() == null) || actionTask.getParameterDescription().isEmpty()) {
                     log.warn(
-                        "client did not send action parameter infos, trying to load them from local action info cache");
-                    if ((actionTask.getParameterDescription() != null)
-                                && !actionTask.getParameterDescription().isEmpty()) {
+                        "client did not send action parameter infos for '"+actionKey
+                                +"', trying to load them from local action info cache");
+                    if ((actionInfo.getParameterDescription() != null)
+                                && !actionInfo.getParameterDescription().isEmpty()) {
                         actionTask.setParameterDescription(actionInfo.getParameterDescription());
                     } else {
-                        log.warn("action parameter descriptions not found in local action info cache");
+                        log.warn("action parameter descriptions for '"+actionKey
+                                +"'not found in local action info cache!");
                     }
                 }
 
@@ -206,7 +210,8 @@ public class LegacyActionCore implements ActionCore {
                             .ServerActionParametersFromActionTask(actionTask);
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("no server action parameters provided!");
+                    log.debug("no server action parameters provided for '"+actionKey
+                                +"'!");
                 }
                 serverActionParameters = new ServerActionParameter[0];
             }
@@ -221,11 +226,13 @@ public class LegacyActionCore implements ActionCore {
                 } else if ((actionInfo.getBodyDescription() != null)
                             && (actionInfo.getBodyDescription().getMediaType() != null)) {
                     log.warn(
-                        "client did not send body parameter info, trying to load them from local action info cache");
+                        "client did not send body parameter info for '"+actionKey
+                                +"', trying to load them from local action info cache");
                     bodyDescription = actionInfo.getBodyDescription();
                 } else {
                     log.warn(
-                        "body parameter description not found in local action info cache, assuming body content is JAVA_SERIALIZED_OBJECT");
+                        "body parameter description for '"+actionKey
+                                +"' not found in local action info cache, assuming body content is JAVA_SERIALIZED_OBJECT!");
                     bodyDescription = ServerActionFactory.getFactory().getDefaultBodyDescription();
                 }
 
@@ -244,7 +251,7 @@ public class LegacyActionCore implements ActionCore {
                             .bodyObjectFromFileAttachment(bodyResource.getRes(), bodyDescription);
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("no body parameter provided!");
+                    log.debug("no body parameter provided for '"+actionKey+"'!");
                 }
                 bodyObject = null;
             }
@@ -260,30 +267,38 @@ public class LegacyActionCore implements ActionCore {
                             serverActionParameters);
 
             if (taskResult != null) {
+                // The Action implementation took care to create an appropriate repesentation of the resource,
+                // just hand it over to the dispatcher (cids-server-rest)
                 if (GenericResourceWithContentType.class.isAssignableFrom(taskResult.getClass())) {
                     log.info("Action  '" + actionKey + "' completed, result of type '"
                                 + ((GenericResourceWithContentType)taskResult).getContentType() + "' generated");
                     return (GenericResourceWithContentType)taskResult;
-                } else if ((actionTask != null) && (actionTask.getResultDescription() != null)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(
-                            "server action did not provide actual content type of result, trying to use default content type provided by client");
-                    }
-                    log.info("Action  '" + actionKey + "' completed, result of default type '"
-                                + actionTask.getResultDescription().getMediaType() + "' generated");
-                    return new GenericResourceWithContentType(actionTask.getResultDescription().getMediaType(),
-                            taskResult);
-                } else if (actionInfo.getResultDescription() != null) {
-                    log.warn(
-                        "client did not provide information about default content type of result, trying to load them from local action info cache");
-                    return new GenericResourceWithContentType(actionInfo.getResultDescription().getMediaType(),
-                            taskResult);
                 } else {
-                    log.warn(
-                        "default content type of result not found in local action info cache, assuming JAVA_SERIALIZED_OBJECT");
-                    return new GenericResourceWithContentType(
-                            MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT,
-                            taskResult);
+                if ((actionTask != null) && (actionTask.getResultDescription() != null)) {
+                    // TODO: Manual processing of result!
+                    if (log.isDebugEnabled()) {
+                            log.debug(
+                                "server action did not provide actual content type of result, trying to use default content type '"
+                                    + actionTask.getResultDescription().getMediaType() + "' provided by client");
+                        }
+                        log.info("Action  '" + actionKey + "' completed, result of default type '"
+                                    + actionTask.getResultDescription().getMediaType() + "' generated");
+                        return new GenericResourceWithContentType(actionTask.getResultDescription().getMediaType(),
+                                taskResult);
+                    } else if (actionInfo.getResultDescription() != null) {
+                        log.warn(
+                            "client did not provide information about default content type of result, trying to use '" 
+                                + actionInfo.getResultDescription().getMediaType() + "' from local action info cache");
+                        return new GenericResourceWithContentType(actionInfo.getResultDescription().getMediaType(),
+                                taskResult);
+                    } else {
+                        log.warn(
+                            "default content type of result not found in local action info cache, assuming '"
+                                + MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT + "'!");
+                        return new GenericResourceWithContentType(
+                                MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT,
+                                taskResult);
+                    }
                 }
             }
 
