@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>de.cismet.cids</groupId>
+        <artifactId>cids-parent</artifactId>
+        <version>2.4</version>
+    </parent>
+    
+    <groupId>de.cismet.cids</groupId>
+    <artifactId>cids-server-rest-legacy</artifactId>
+    <version>4.0</version>
+    <packaging>jar</packaging>
+
+    <name>cids Server REST legacy</name>
+    <description>!!! description pending !!!</description>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <distribution>repo</distribution>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+        </license>
+    </licenses>
+    
+    <prerequisites>
+        <maven>3</maven>
+    </prerequisites>
+    
+    <scm>
+        <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
+        <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
+        <url>https://github.com/cismet/cids-server-rest-legacy</url>
+      <tag>v4.0</tag>
+  </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/cismet/cids-server-rest-legacy/issues</url>
+    </issueManagement>
+    
+    <properties>
+        <jersey.version>1.17.1</jersey.version>
+        <jackson.version>2.2.2</jackson.version>
+    </properties>
+    
+    <repositories>
+        <repository>
+            <id>cismet-repo</id>
+            <url>https://repo.cismet.de/repo</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+                <updatePolicy>daily</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+                <updatePolicy>interval:60</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.14.4</version>
+            <scope>provided</scope>
+        </dependency>        
+        <dependency>
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server-rest</artifactId>
+            <version>4.0</version>
+            <scope>compile</scope>
+        </dependency>        
+        <dependency>
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server-rest-types</artifactId>
+            <version>4.0</version>
+        </dependency>        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.6.3</version>
+        </dependency>        
+        <dependency>
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server</artifactId>
+            <version>4.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.9-RC2</version>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.cids.navigator</groupId>
+            <artifactId>cids-navigator</artifactId>
+            <version>4.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>javafx</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>cidsbean-json-patch</artifactId>
+            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.java</groupId>
+            <artifactId>junit-dataprovider</artifactId>
+            <version>1.10.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <!-- 
+                       all those tests have to be excluded because they require a connection to a local
+                    -->
+                    <excludes>
+                        <exclude>**/RESTfulInterfaceTest.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
