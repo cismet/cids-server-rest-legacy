@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>de.cismet.cids</groupId>
-        <artifactId>cids-parent</artifactId>
+        <groupId>de.cismet</groupId>
+        <artifactId>cismet-parent</artifactId>
         <version>5.0-SNAPSHOT</version>
     </parent>
     
@@ -161,6 +161,14 @@
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
+            
+            <dependency>
+                <groupId>de.cismet</groupId>
+                <artifactId>json-patch</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
@@ -175,6 +183,16 @@
                 <version>5.0-SNAPSHOT</version>
             </dependency>
             <!-- END: cismet dependencies -->
+            
+            <!--
+                Require upper bound dependencies for com.google.guava:guava:10.0
+                from de.cismet.cids.navigator:cids-navigator
+            -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>16.0.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
@@ -207,23 +225,87 @@
         </dependency>
         <dependency>
             <groupId>de.cismet</groupId>
+            <artifactId>json-patch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet</groupId>
             <artifactId>jcommander</artifactId>
         </dependency>
         
         <!-- END: cismet dependencies -->
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>        
-        
-        <!-- END: managed dependencies -->
-       
+        </dependency>    
         <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.9-RC2</version>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
         </dependency>
-        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fge</groupId>
+            <artifactId>jackson-coreutils</artifactId>
+            <version>1.8</version>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-apache-client</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <!-- END: managed dependencies -->
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+            <version>RELEASE701</version>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+                
         <!-- BEGIN: Runtime dependencies -->
         <!--
             By inlcuding this !runtime! bindung we are forwarding
@@ -345,6 +427,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!--
+            Why oh, why, did you use testng?! :o(
+            See http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/200711.mbox/%3CPine.WNT.4.64.0711191635230.2484@sfeng02.rf.lan%3E
+        -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -355,6 +441,11 @@
                     <artifactId>jcommander</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.java</groupId>
+            <artifactId>junit-dataprovider</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- END :TEST dependencies -->
     </dependencies>
@@ -428,6 +519,16 @@
                             <exclude>**/CidsBeanTest</exclude>
                             <exclude>**/CidsBeanSerialisationTest</exclude>
                         </excludes>
+                        <!--
+                            Don't support mixing JUnit tests with TestNG tests in a single Surefire execution. :o(
+                            Set junit='false' to disable testng to try running in junit tests in compatiblity mode.
+                        -->
+                        <properties>
+                            <property>
+                                <name>junit</name>
+                                <value>false</value>
+                            </property>
+                        </properties> 
                     </configuration>
                 </plugin>
             </plugins>
