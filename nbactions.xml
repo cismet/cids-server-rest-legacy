@@ -150,6 +150,7 @@
         </goals>
         <properties>
             <exec.args>-Dlog4j.configuration=file:log4j.properties -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
             <exec.executable>java</exec.executable>
         </properties>
         <activatedProfiles>
@@ -167,6 +168,7 @@
         </goals>
         <properties>
             <exec.args>-Dlog4j.configuration=file:log4j.debug.properties -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
             <exec.executable>java</exec.executable>
             <jpda.listen>true</jpda.listen>
         </properties>
@@ -185,6 +187,7 @@
         </goals>
         <properties>
             <exec.args>-Dlog4j.configuration=file:log4j.properties -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
             <exec.executable>java</exec.executable>
         </properties>
         <activatedProfiles>
@@ -214,6 +217,7 @@
         </goals>
         <properties>
             <exec.args>-Dlog4j.configuration=file:log4j.properties -Dcids-server-rest.fscore.caseSensitivityOverride=true -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
             <exec.executable>java</exec.executable>
         </properties>
         <activatedProfiles>

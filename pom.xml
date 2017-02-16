@@ -103,10 +103,14 @@
                         <groupId>de.cismet.commons</groupId>
                         <artifactId>cismap-commons</artifactId>
                     </exclusion>
-                    <exclusion>
+                    <!--
+                        Don't exclude gui-commons, because ProxyOptionsPanel
+                        is needed in connector!
+                    -->     
+                    <!--<exclusion>
                         <groupId>de.cismet.commons</groupId>
                         <artifactId>cismet-gui-commons</artifactId>
-                    </exclusion>
+                    </exclusion>-->
                     <exclusion>
                         <groupId>de.cismet.custom</groupId>
                         <artifactId>beansbinding</artifactId>
@@ -127,10 +131,6 @@
                     <exclusion>
                         <groupId>de.cismet.commons</groupId>
                         <artifactId>cismap-commons</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>de.cismet.commons</groupId>
-                        <artifactId>cismet-gui-commons</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>de.cismet.custom</groupId>
@@ -562,5 +562,40 @@
                 </pluginManagement>
             </build>
         </profile>
+        
+        <!--
+            EXAMPLE Profile for running cids-server-rest-lagacy with a custom cids-server implementation
+            in Netbeans.
+            -> Exclude all transitive dependencies from custom cids-server implementation
+            WARNING: This can be dangerous, check Constructos of @ServiceProvider Classes
+            for usage of custom dependencies!
+        -->
+        
+        <!--<profile>
+            <id>switch-on</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <de.cismet.cidsDistDir>W:\Projects\switchonDistribution</de.cismet.cidsDistDir>
+                <de.cismet.cids.navigator.workingDir>${de.cismet.cidsDistDir}/client/switchon</de.cismet.cids.navigator.workingDir>
+                <de.cismet.cids.server.workingDir>${de.cismet.cidsDistDir}/server/switchon</de.cismet.cids.server.workingDir>
+                <de.cismet.cids.server.rest.workingDir>${de.cismet.cidsDistDir}/server/switchon_rest</de.cismet.cids.server.rest.workingDir>
+                <de.cismet.cids.lib.local>${de.cismet.cidsDistDir}/lib/localSwitchon</de.cismet.cids.lib.local>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>de.cismet.cids.custom.switchon</groupId>
+                    <artifactId>cids-custom-switchon-server</artifactId>
+                    <version>5.0-SNAPSHOT</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>*</groupId>
+                            <artifactId>*</artifactId>
+                        </exclusion>                           
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>-->
     </profiles>
 </project>
