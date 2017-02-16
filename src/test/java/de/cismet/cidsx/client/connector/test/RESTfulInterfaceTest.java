@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.PropertyResourceBundle;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
@@ -42,8 +41,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testng.annotations.DataProvider;
 
 /**
  *
@@ -51,6 +52,7 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(DataProviderRunner.class)
+@Ignore // requires a running service!
 public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
 
     private static String HOST;
@@ -74,16 +76,8 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
      */
     @BeforeClass
     public static void setUpClass() throws Exception {
-
         LOGGER.debug("setUpClass()");
-        final Properties p = new Properties();
-        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-        p.put("log4j.appender.Remote.remoteHost", "localhost");
-        p.put("log4j.appender.Remote.port", "4445");
-        p.put("log4j.appender.Remote.locationInfo", "true");
-        p.put("log4j.rootLogger", "ALL,Remote");
-        org.apache.log4j.PropertyConfigurator.configure(p);
-
+        
         PropertyResourceBundle bundle;
 
         try {
