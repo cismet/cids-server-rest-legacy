@@ -34,8 +34,8 @@
     </ciManagement>
         
     <dependencyManagement>  
-        <!-- IMPORT of cismet-ext-bom -->
         <dependencies>
+            <!-- IMPORT of cismet-ext-bom -->
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
@@ -43,7 +43,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
+              
             <!-- BEGIN: cismet dependencies -->
             <dependency>
                 <groupId>de.cismet.commons</groupId>
@@ -197,7 +197,7 @@
     </dependencyManagement>
     
     <dependencies>
-        <!-- END: managed dependencies -->
+        <!-- BEGIN: managed dependencies -->
         <!-- BEGIN: cismet dependencies -->
         <dependency>
             <groupId>de.cismet.commons</groupId>
@@ -569,6 +569,8 @@
             -> Exclude all transitive dependencies from custom cids-server implementation
             WARNING: This can be dangerous, check Constructos of @ServiceProvider Classes
             for usage of custom dependencies!
+            WARNING: This profile *cannot* be defined in settings.xml, since external profiles
+            are onyl allowed to define <repositories>, <pluginRepositories> and <properties>!
         -->
         
         <!--<profile>
