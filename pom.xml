@@ -15,7 +15,7 @@
 
     <name>cids Server REST legacy</name>
     <description>!!! description pending !!!</description>
-
+    
     <scm>
         <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
@@ -301,7 +301,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-            <version>RELEASE701</version>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
@@ -543,7 +542,9 @@
         <profile>
             <id>case-insensitive-test-override</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <os>
+                    <family>Windows</family>
+                </os>
             </activation>
             <build>
                 <pluginManagement>
