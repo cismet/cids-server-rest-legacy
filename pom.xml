@@ -3,147 +3,602 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>de.cismet.cids</groupId>
-        <artifactId>cids-parent</artifactId>
-        <version>2.4</version>
+        <groupId>de.cismet</groupId>
+        <artifactId>cismet-parent</artifactId>
+        <version>5.0-SNAPSHOT</version>
     </parent>
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>5.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>cids Server REST legacy</name>
     <description>!!! description pending !!!</description>
-    <licenses>
-        <license>
-            <name>GNU Lesser General Public License</name>
-            <distribution>repo</distribution>
-            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
-        </license>
-    </licenses>
-    
-    <prerequisites>
-        <maven>3</maven>
-    </prerequisites>
     
     <scm>
         <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
         <url>https://github.com/cismet/cids-server-rest-legacy</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
+  
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/cismet/cids-server-rest-legacy/issues</url>
     </issueManagement>
     
-    <properties>
-        <jersey.version>1.17.1</jersey.version>
-        <jackson.version>2.2.2</jackson.version>
-    </properties>
-    
-    <repositories>
-        <repository>
-            <id>cismet-repo</id>
-            <url>https://repo.cismet.de/repo</url>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
-                <updatePolicy>daily</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
-                <updatePolicy>interval:60</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
+    <ciManagement>
+        <system>jenkins</system>
+        <url>https://ci.cismet.de/job/cids-server-rest/</url>
+    </ciManagement>
+        
+    <dependencyManagement>  
+        <dependencies>
+            <!-- IMPORT of cismet-ext-bom -->
+            <dependency>
+                <groupId>de.cismet</groupId>
+                <artifactId>cismet-ext-bom</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+              
+            <!-- BEGIN: cismet dependencies -->
+            <dependency>
+                <groupId>de.cismet.commons</groupId>
+                <artifactId>cismet-commons</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.commons</groupId>
+                <artifactId>cismet-commons</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server-rest</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server-rest</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet.cids.navigator</groupId>
+                <artifactId>cids-navigator</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.oracle</groupId>
+                        <artifactId>javafx</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>de.cismet.commons</groupId>
+                        <artifactId>cismap-commons</artifactId>
+                    </exclusion>
+                    <!--
+                        Don't exclude gui-commons, because ProxyOptionsPanel
+                        is needed in connector!
+                    -->     
+                    <!--<exclusion>
+                        <groupId>de.cismet.commons</groupId>
+                        <artifactId>cismet-gui-commons</artifactId>
+                    </exclusion>-->
+                    <exclusion>
+                        <groupId>de.cismet.custom</groupId>
+                        <artifactId>beansbinding</artifactId>
+                    </exclusion>
+                </exclusions>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.cids.navigator</groupId>
+                <artifactId>cids-navigator</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.oracle</groupId>
+                        <artifactId>javafx</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>de.cismet.commons</groupId>
+                        <artifactId>cismap-commons</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>de.cismet.custom</groupId>
+                        <artifactId>beansbinding</artifactId>
+                    </exclusion>
+                </exclusions>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server-rest-types</artifactId>
+                <version>5.0-SNAPSHOT</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cidsbean-json-patch</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cidsbean-json-patch</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet</groupId>
+                <artifactId>json-patch</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet</groupId>
+                <artifactId>json-patch</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>de.cismet</groupId>
+                <artifactId>jcommander</artifactId>
+                <version>5.0-SNAPSHOT</version>
+            </dependency>
+            <!-- END: cismet dependencies -->
+            
+            <!--
+                Require upper bound dependencies for com.google.guava:guava:10.0
+                from de.cismet.cids.navigator:cids-navigator
+            -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>16.0.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     
     <dependencies>
+        <!-- BEGIN: managed dependencies -->
+        <!-- BEGIN: cismet dependencies -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.14.4</version>
-            <scope>provided</scope>
-        </dependency>        
-        <dependency>
-            <groupId>de.cismet.cids</groupId>
-            <artifactId>cids-server-rest</artifactId>
-            <version>4.0</version>
-            <scope>compile</scope>
-        </dependency>        
+            <groupId>de.cismet.commons</groupId>
+            <artifactId>cismet-commons</artifactId>
+        </dependency>
         <dependency>
             <groupId>de.cismet.cids</groupId>
             <artifactId>cids-server-rest-types</artifactId>
-            <version>4.0</version>
-        </dependency>        
+        </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.6.3</version>
-        </dependency>        
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server-rest</artifactId>
+        </dependency>
         <dependency>
             <groupId>de.cismet.cids</groupId>
             <artifactId>cids-server</artifactId>
-            <version>4.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.9-RC2</version>
         </dependency>
         <dependency>
             <groupId>de.cismet.cids.navigator</groupId>
             <artifactId>cids-navigator</artifactId>
-            <version>4.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.oracle</groupId>
-                    <artifactId>javafx</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>de.cismet.cids</groupId>
             <artifactId>cidsbean-json-patch</artifactId>
-            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet</groupId>
+            <artifactId>json-patch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet</groupId>
+            <artifactId>jcommander</artifactId>
+        </dependency>
+        
+        <!-- END: cismet dependencies -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>    
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fge</groupId>
+            <artifactId>jackson-coreutils</artifactId>
+            <version>1.8</version>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-apache-client</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <!-- END: managed dependencies -->
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+                
+        <!-- BEGIN: Runtime dependencies -->
+        <!--
+            By inlcuding this !runtime! bindung we are forwarding
+            all log messages collected by slf4j to log4j!
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- END: Runtime dependencies -->
+        
+        <!-- BEGIN: Provided Dependencies -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>    
+        <!-- END: Provided Dependencies -->
+        
+        <!-- BEGIN: TEST dependencies -->
+        <!-- BEGIN: Downstream Test Dependencies -->
+        <dependency>
+            <groupId>de.cismet.commons</groupId>
+            <artifactId>cismet-commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server-rest</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.cids.navigator</groupId>
+            <artifactId>cids-navigator</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet</groupId>
+            <artifactId>json-patch</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <!-- END: Downstream Test Dependencies -->
+        
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-xml-provider</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--
+            Why oh, why, did you use testng?! :o(
+            See http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/200711.mbox/%3CPine.WNT.4.64.0711191635230.2484@sfeng02.rf.lan%3E
+        -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.beust</groupId>
+                    <artifactId>jcommander</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.tngtech.java</groupId>
             <artifactId>junit-dataprovider</artifactId>
-            <version>1.10.3</version>
             <scope>test</scope>
         </dependency>
+        <!-- END :TEST dependencies -->
     </dependencies>
     
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
-                <configuration>
-                    <!-- 
-                       all those tests have to be excluded because they require a connection to a local
-                    -->
-                    <excludes>
-                        <exclude>**/RESTfulInterfaceTest.class</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>de.cismet.cidsx.server.Starter</mainClass>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <!--
+                    Unpack resources of test dependencies to be able to run also tests
+                    that cannot be run from a jar file, e.g. because resources are 
+                    loaded as java.io.File.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>resource-dependencies</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <includeGroupIds>de.cismet</includeGroupIds>
+                                <includeArtifactIds>cismet-commons,cids-server</includeArtifactIds>
+                                <outputDirectory>${project.build.testOutputDirectory}/</outputDirectory>
+                                <encoding>${project.build.sourceEncoding}</encoding>
+                                <classifier>tests</classifier>
+                                <type>test-jar</type>
+                                <includeScope>test</includeScope>
+                                <failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
+                                <excludes>**/log4j.properties,**/*.class</excludes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>     
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <dependenciesToScan>
+                            <dependency>de.cismet.commons:cismet-commons</dependency>
+                            <dependency>de.cismet.cids:cids-server</dependency>
+                            <dependency>de.cismet.cids.navigator:cids-navigator</dependency>
+                            <dependency>de.cismet.cids:cids-server-rest</dependency>
+                            <dependency>de.cismet:json-patch</dependency>
+                            <dependency>de.cismet.cids:cidsbean-json-patch</dependency> 
+                        </dependenciesToScan>
+                        <!--
+                            These tests from cismap- and cismet-commons do not work from inside a JAR file!
+                            Therefore, the required resources to run the external tests have been 
+                            copied to the cids-navigator test/resources directory!
+                        -->
+                        <excludes>
+                            <exclude>**/ClassPathInfoTest.java</exclude>
+                            <exclude>**/ClassloadingHelperTest</exclude>
+                            <!--
+                                Unfortunately, the Mockito Stuff does not work from inside a jar!
+                            -->
+                            <exclude>**/CidsBeanTest</exclude>
+                            <exclude>**/CidsBeanSerialisationTest</exclude>
+                        </excludes>
+                        <!--
+                            Don't support mixing JUnit tests with TestNG tests in a single Surefire execution. :o(
+                            Set junit='false' to disable testng to try running in junit tests in compatiblity mode.
+                        -->
+                        <properties>
+                            <property>
+                                <name>junit</name>
+                                <value>false</value>
+                            </property>
+                        </properties> 
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+    
+    <!--
+        This profile is required to build the project on OS with case-insentive filesystem 
+        e.g. Windows.
+    -->
+    <profiles>
+        <profile>
+            <id>case-insensitive-test-override</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <systemPropertyVariables>
+                                    <cids-server-rest.fscore.caseSensitivityOverride>true</cids-server-rest.fscore.caseSensitivityOverride>
+                                </systemPropertyVariables>
+                                <excludedGroups>case_sensitivity</excludedGroups>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        
+        <!--
+            EXAMPLE Profile for running cids-server-rest-lagacy with a custom cids-server implementation
+            in Netbeans.
+            -> Exclude all transitive dependencies from custom cids-server implementation
+            WARNING: This can be dangerous, check Constructos of @ServiceProvider Classes
+            for usage of custom dependencies!
+            WARNING: This profile *cannot* be defined in settings.xml, since external profiles
+            are onyl allowed to define <repositories>, <pluginRepositories> and <properties>!
+        -->
+        
+        <!--<profile>
+            <id>switch-on</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <de.cismet.cidsDistDir>W:\Projects\switchonDistribution</de.cismet.cidsDistDir>
+                <de.cismet.cids.navigator.workingDir>${de.cismet.cidsDistDir}/client/switchon</de.cismet.cids.navigator.workingDir>
+                <de.cismet.cids.server.workingDir>${de.cismet.cidsDistDir}/server/switchon</de.cismet.cids.server.workingDir>
+                <de.cismet.cids.server.rest.workingDir>${de.cismet.cidsDistDir}/server/switchon_rest</de.cismet.cids.server.rest.workingDir>
+                <de.cismet.cids.lib.local>${de.cismet.cidsDistDir}/lib/localSwitchon</de.cismet.cids.lib.local>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>de.cismet.cids.custom.switchon</groupId>
+                    <artifactId>cids-custom-switchon-server</artifactId>
+                    <version>5.0-SNAPSHOT</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>*</groupId>
+                            <artifactId>*</artifactId>
+                        </exclusion>                           
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>-->
+    </profiles>
 </project>

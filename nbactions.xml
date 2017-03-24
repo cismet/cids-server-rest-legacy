@@ -1,110 +1,198 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
     <action>
-        <actionName>run</actionName>
-        <goals>
-            <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
-        </goals>
-        <properties>
-            <jalopy.skip>true</jalopy.skip>
-            <exec.args>-classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
-            <exec.executable>java</exec.executable>
-            <exec.classpathScope>runtime</exec.classpathScope>
-        </properties>
-    </action>
-    <action>
-        <actionName>debug</actionName>
-        <goals>
-            <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
-        </goals>
-        <properties>
-            <jalopy.skip>true</jalopy.skip>
-            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
-            <exec.executable>java</exec.executable>
-            <exec.classpathScope>runtime</exec.classpathScope>
-            <jpda.listen>true</jpda.listen>
-        </properties>
-    </action>
-    <action>
-        <actionName>profile</actionName>
-        <goals>
-            <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
-        </goals>
-        <properties>
-            <exec.args>${profiler.args} -classpath %classpath de.cismet.cidsx.server.Starter</exec.args>
-            <exec.executable>${profiler.java}</exec.executable>
-            <profiler.action>profile</profiler.action>
-        </properties>
-    </action>
-    <action>
         <actionName>build</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
         <goals>
             <goal>install</goal>
         </goals>
-        <properties>
-            <maven.test.skip>true</maven.test.skip>
-            <jalopy.skip>true</jalopy.skip>
-        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
     </action>
     <action>
-        <actionName>rebuild</actionName>
+        <actionName>clean</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
         <goals>
             <goal>clean</goal>
-            <goal>install</goal>
         </goals>
-        <properties>
-            <maven.test.skip>false</maven.test.skip>
-        </properties>
-    </action>
-    <action>
-        <actionName>debug.single.main</actionName>
-        <goals>
-            <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
-        </goals>
-        <properties>
-            <jalopy.skip>true</jalopy.skip>
-            <exec.classpathScope>${classPathScope}</exec.classpathScope>
-            <jpda.listen>true</jpda.listen>
-            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
-            <exec.executable>java</exec.executable>
-        </properties>
-    </action>
-    <action>
-        <actionName>run.single.main</actionName>
-        <goals>
-            <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
-        </goals>
-        <properties>
-            <exec.classpathScope>${classPathScope}</exec.classpathScope>
-            <exec.args>-classpath %classpath ${packageClassName} @runtime.properties -interactive</exec.args>
-            <jalopy.skip>true</jalopy.skip>
-            <exec.executable>java</exec.executable>
-        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
     </action>
     <action>
         <actionName>test</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
         <goals>
             <goal>test</goal>
         </goals>
-        <properties>
-            <jalopy.skip>true</jalopy.skip>
-        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild-test</activatedProfile>
+        </activatedProfiles>
     </action>
     <action>
         <actionName>test.single</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
         <goals>
             <goal>test-compile</goal>
             <goal>surefire:test</goal>
         </goals>
         <properties>
             <test>${packageClassName}</test>
-            <jalopy.skip>true</jalopy.skip>
         </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild-test</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>run.single.main</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Dlog4j.configuration=file:log4j.properties -classpath %classpath ${packageClassName}</exec.args>
+            <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>debug.single.main</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Dlog4j.configuration=file:log4j.debug.properties -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
+            <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
+            <jpda.listen>true</jpda.listen>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>debug.test.single</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>test-compile</goal>
+            <goal>surefire:test</goal>
+        </goals>
+        <properties>
+            <test>${packageClassName}</test>
+            <forkMode>once</forkMode>
+            <maven.surefire.debug>-Dlog4j.configuration=file:log4j.debug.properties -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}</maven.surefire.debug>
+            <jpda.listen>true</jpda.listen>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild-test</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>profile.single.main</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Dlog4j.configuration=file:log4j.properties -classpath %classpath ${packageClassName}</exec.args>
+            <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>javadoc</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>generate-sources</goal>
+            <goal>javadoc:javadoc</goal>
+        </goals>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>run</actionName>
+        <packagings>
+            <packaging>jar</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Dlog4j.configuration=file:log4j.properties -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
+            <exec.executable>java</exec.executable>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>debug</actionName>
+        <packagings>
+            <packaging>jar</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Dlog4j.configuration=file:log4j.debug.properties -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
+            <exec.executable>java</exec.executable>
+            <jpda.listen>true</jpda.listen>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+    </action>
+    <action>
+        <actionName>profile</actionName>
+        <packagings>
+            <packaging>jar</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Dlog4j.configuration=file:log4j.properties -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
+            <exec.executable>java</exec.executable>
+        </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
     </action>
     <action>
         <actionName>CUSTOM-build-case-insensitve</actionName>
@@ -120,15 +208,20 @@
     <action>
         <actionName>CUSTOM-run-case-insensitive</actionName>
         <displayName>Run - case-insensitive</displayName>
+        <packagings>
+            <packaging>jar</packaging>
+        </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
         </goals>
         <properties>
-            <jalopy.skip>true</jalopy.skip>
-            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8899 -Dcids-server-rest.fscore.caseSensitivityOverride=true -classpath %classpath de.cismet.cidsx.server.rest.domain.Starter</exec.args>
+            <exec.args>-Dlog4j.configuration=file:log4j.properties -Dcids-server-rest.fscore.caseSensitivityOverride=true -classpath %classpath de.cismet.cidsx.server.Starter @runtime.properties -interactive</exec.args>
+            <exec.workingdir>${de.cismet.cids.server.rest.workingDir}</exec.workingdir>
             <exec.executable>java</exec.executable>
-            <exec.classpathScope>runtime</exec.classpathScope>
         </properties>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
     </action>
 </actions>
