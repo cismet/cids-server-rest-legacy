@@ -5,7 +5,7 @@
     <parent>
         <groupId>de.cismet</groupId>
         <artifactId>cismet-parent</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>5.0</version>
     </parent>
     
     <groupId>de.cismet.cids</groupId>
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -48,14 +48,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -93,7 +93,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -122,7 +122,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -144,20 +144,20 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
             </dependency>
             
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cidsbean-json-patch</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cidsbean-json-patch</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -165,14 +165,14 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -180,7 +180,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>jcommander</artifactId>
-                <version>5.0-SNAPSHOT</version>
+                <version>5.0</version>
             </dependency>
             <!-- END: cismet dependencies -->
             
@@ -590,7 +590,7 @@
                 <dependency>
                     <groupId>de.cismet.cids.custom.switchon</groupId>
                     <artifactId>cids-custom-switchon-server</artifactId>
-                    <version>5.0-SNAPSHOT</version>
+                    <version>5.0</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
