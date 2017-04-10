@@ -5,12 +5,12 @@
     <parent>
         <groupId>de.cismet</groupId>
         <artifactId>cismet-parent</artifactId>
-        <version>5.0</version>
+        <version>5.0.1</version>
     </parent>
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
-    <version>5.1-SNAPSHOT</version>
+    <version>5.0-UBA-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>cids Server REST legacy</name>
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>5.0</version>
+                <version>5.0.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.1-SNAPSHOT</version>
+                <version>5.0-UBA</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.1-SNAPSHOT</version>
+                <version>5.0-UBA</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.1-SNAPSHOT</version>
+                <version>5.0-UBA</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.1-SNAPSHOT</version>
+                <version>5.0-UBA</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -144,7 +144,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>5.1-SNAPSHOT</version>
+                <version>5.0-UBA</version>
             </dependency>
             
             <dependency>
