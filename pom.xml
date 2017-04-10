@@ -10,7 +10,7 @@
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
-    <version>1.0-UBA</version>
+    <version>1.1-UBA-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>cids Server REST legacy</name>
@@ -31,7 +31,7 @@
         <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
         <url>https://github.com/cismet/cids-server-rest-legacy</url>
-      <tag>v1.0-UBA</tag>
+      <tag>HEAD</tag>
   </scm>
     <issueManagement>
         <system>GitHub</system>
