@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.0-UBA</version>
+                <version>5.1-UBA-SNAPSHOT</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.0-UBA</version>
+                <version>5.1-UBA-SNAPSHOT</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0-UBA</version>
+                <version>5.1-UBA-SNAPSHOT</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0-UBA</version>
+                <version>5.1-UBA-SNAPSHOT</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -144,7 +144,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>5.0-UBA</version>
+                <version>5.1-UBA-SNAPSHOT</version>
             </dependency>
             
             <dependency>
