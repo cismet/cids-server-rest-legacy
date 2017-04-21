@@ -343,7 +343,8 @@ public class LegacyActionCore implements ActionCore {
 
                         if (!actualMediaType.toString().equals(expectedContentType)) {
                             log.warn("Actual content type '" + actualMediaType.toString() + "' ("
-                                        + taskResult.getClass().getSimpleName() + ") of result of Action  '" + actionKey
+                                        + taskResultWithContentType.getRes().getClass().getSimpleName()
+                                        + ") of result of Action  '" + actionKey
                                         + "' does not match type of result expected by action or task result description '"
                                         + expectedContentType + "'!");
                         }
