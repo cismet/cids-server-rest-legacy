@@ -3,25 +3,20 @@ pipeline {
     
     options {
         buildDiscarder(logRotator(numToKeepStr:'5'))
-        timeout(time: 60, unit: 'MINUTES')
+        timeout(time: 15, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
     stages {
         stage('checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/dev-uba']], 
+                checkout([$class: 'GitSCM', branches: [[name: "*/${env.BRANCH_NAME}"]], 
                         extensions: [[$class: 'CleanCheckout'], 
-                            [$class: 'LocalBranch', localBranch: 'dev-uba']]])
+                            [$class: 'LocalBranch', localBranch: "${env.BRANCH_NAME}"]]])
             }
         }  
         
         stage('build') {
-            
-            when {
-                branch 'dev-uba'
-            }
-            
             steps {
                 withMaven(
                     maven: 'default', // Tools declared in the Jenkins "Global Tool Configuration"
@@ -48,13 +43,6 @@ pipeline {
 				to: "pascal@cismet.de", 
 				subject: "Jenkins build became unstable: ${currentBuild.fullDisplayName}",
                 body: """<p>UNSTABLE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-                <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
-        }
-        changed {
-            emailext attachLog: true, 
-                to: "dev@cismet.de", 
-                subject: "Jenkins build passed: ${currentBuild.fullDisplayName}",
-                body: """<p>SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                 <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
         }
     }
