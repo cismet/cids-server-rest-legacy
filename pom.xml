@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.0</version>
+                <version>5.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>5.0</version>
+                <version>5.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -540,7 +540,7 @@
     -->
     <profiles>
         <profile>
-            <id>case-insensitive-test-override</id>
+            <id>case-insensitive-test-override-windows</id>
             <activation>
                 <os>
                     <family>Windows</family>
@@ -563,7 +563,31 @@
                 </pluginManagement>
             </build>
         </profile>
-        
+        <profile>
+            <id>case-insensitive-test-override-mac</id>
+            <activation>
+                <os>
+                    <family>Mac</family>
+                </os>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <systemPropertyVariables>
+                                    <cids-server-rest.fscore.caseSensitivityOverride>true</cids-server-rest.fscore.caseSensitivityOverride>
+                                </systemPropertyVariables>
+                                <excludedGroups>case_sensitivity</excludedGroups>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
         <!--
             EXAMPLE Profile for running cids-server-rest-lagacy with a custom cids-server implementation
             in Netbeans.
