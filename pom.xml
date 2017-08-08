@@ -48,14 +48,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>5.0</version>
+                <version>5.1.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>5.0</version>
+                <version>5.1.2</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0</version>
+                <version>5.1.3</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0</version>
+                <version>5.1.3</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -93,7 +93,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>5.0</version>
+                <version>5.1.1</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -446,7 +446,7 @@
             <artifactId>junit-dataprovider</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- END :TEST dependencies -->
+    <!-- END :TEST dependencies -->
     </dependencies>
     
     <build>
