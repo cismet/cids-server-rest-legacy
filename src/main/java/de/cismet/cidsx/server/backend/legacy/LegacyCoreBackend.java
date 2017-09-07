@@ -82,7 +82,8 @@ public class LegacyCoreBackend {
     private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final transient ClassNameCache classNameCache = new ClassNameCache();
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver(),
-            sslConfig);
+            sslConfig,
+            LegacyCidsServerCore.isCompressionEnabled());
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
 
@@ -148,7 +149,8 @@ public class LegacyCoreBackend {
 
             final Connection connection = ConnectionFactory.getFactory()
                         .createConnection(RESTfulConnection.class.getCanonicalName(),
-                            info.getCallserverURL());
+                            info.getCallserverURL(),
+                            LegacyCidsServerCore.isCompressionEnabled());
 
             final ConnectionSession session = ConnectionFactory.getFactory().createSession(connection, info, true);
             final ConnectionProxy proxy = ConnectionFactory.getFactory()
