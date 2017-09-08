@@ -36,6 +36,12 @@ public class LegacyCidsServerCore implements CidsServerCore {
     )
     static String callserver;
     @Parameter(
+        names = { "-core.legacy.compressionEnabled", "--core.legacy.compressionEnabled" },
+        required = false,
+        description = "whether or not the compression should be enabled"
+    )
+    static String compressionEnabled;
+    @Parameter(
         names = { "-core.legacy.testdomain", "--core.legacy.testdomain" },
         required = false,
         description = "domain name to use for unittests"
@@ -68,6 +74,15 @@ public class LegacyCidsServerCore implements CidsServerCore {
      */
     public static String getCallserver() {
         return callserver;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean isCompressionEnabled() {
+        return "true".equalsIgnoreCase(compressionEnabled);
     }
 
     /**
