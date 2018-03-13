@@ -146,7 +146,10 @@ public class LegacySearchCore implements SearchCore {
 
             final Collection searchResults = LegacyCoreBackend.getInstance()
                         .getService()
-                        .customServerSearch(cidsUser, cidsServerSearch);
+                        .customServerSearch(
+                            cidsUser,
+                            cidsServerSearch,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
 
             final List<JsonNode> jsonNodes;
 
@@ -159,7 +162,7 @@ public class LegacySearchCore implements SearchCore {
                                 + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
                 }
 
-                jsonNodes = new ArrayList<JsonNode>();
+                jsonNodes = new ArrayList<>();
                 int i = 0;
                 String className = null;
                 for (final Object searchResult : searchResults) {
