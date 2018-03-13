@@ -51,8 +51,14 @@ public class LegacyUserCore implements UserCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getUser(null, null, domain, username, password);
-            final Collection<String> userGroupNames = new ArrayList<String>();
+                        .getUser(
+                            null,
+                            null,
+                            domain,
+                            username,
+                            password,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
+            final Collection<String> userGroupNames = new ArrayList<>();
             for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
                 userGroupNames.add(cidsUserGroup.getName());
             }

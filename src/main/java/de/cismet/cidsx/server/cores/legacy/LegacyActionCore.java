@@ -81,13 +81,14 @@ public class LegacyActionCore implements ActionCore {
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             cidsUser.setUserGroup(null);
-            final List<JsonNode> taskNameNodes = new ArrayList<JsonNode>();
+            final List<JsonNode> taskNameNodes = new ArrayList<>();
             final HashMap<String, ServerAction> serverActionMap = LegacyCoreBackend.getInstance().getServerActionMap();
             for (final String actionKey : serverActionMap.keySet()) {
                 if (LegacyCoreBackend.getInstance().getService().hasConfigAttr(
                                 cidsUser,
                                 SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX
-                                + actionKey)) {
+                                + actionKey,
+                                LegacyCoreBackend.getInstance().getConnectionContext())) {
                     final ServerAction cidsServerAction = serverActionMap.get(actionKey);
                     final ActionTask actionTask = new ActionTask(cidsServerAction.getTaskName(),
                             cidsServerAction.getTaskName(),
@@ -125,7 +126,8 @@ public class LegacyActionCore implements ActionCore {
             if (LegacyCoreBackend.getInstance().getService().hasConfigAttr(
                             cidsUser,
                             SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX
-                            + actionKey)) {
+                            + actionKey,
+                            LegacyCoreBackend.getInstance().getConnectionContext())) {
                 final ServerAction cidsServerAction = serverActionMap.get(actionKey);
                 final ActionTask actionTask = new ActionTask(cidsServerAction.getTaskName(),
                         cidsServerAction.getTaskName(),
@@ -175,7 +177,7 @@ public class LegacyActionCore implements ActionCore {
             log.info("executeNewAction with actionKey '" + actionKey + "'");
         }
 
-        final List<ServerActionParameter> cidsSAPs = new ArrayList<ServerActionParameter>();
+        final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         if ((actionTask != null) && (actionTask.getParameters() != null)
                     && !actionTask.getParameters().isEmpty()) {
@@ -213,6 +215,7 @@ public class LegacyActionCore implements ActionCore {
                             actionKey,
                             cidsUser.getDomain(),
                             body,
+                            LegacyCoreBackend.getInstance().getConnectionContext(),
                             cidsSAPs.toArray(new ServerActionParameter[0]));
 
             return new GenericResourceWithContentType(STREAMTYPE_APPOCTETSTREAM, taskResult);
@@ -251,7 +254,7 @@ public class LegacyActionCore implements ActionCore {
                     CismetExecutors.newFixedThreadPool(5));
                 es = actionExecutorServices.get(actionKey);
             }
-            final List<ServerActionParameter> cidsSAPs = new ArrayList<ServerActionParameter>();
+            final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Map<String, Object> actionParameters = actionTask.getParameters();
             if (actionParameters != null) {
@@ -338,7 +341,7 @@ public class LegacyActionCore implements ActionCore {
 
         final GenericResourceWithContentType result = resultMap.get(taskKey);
         final ActionTask actionTask = taskMap.get(taskKey);
-        final List<ActionResultInfo> ariList = new LinkedList<ActionResultInfo>();
+        final List<ActionResultInfo> ariList = new LinkedList<>();
         if (result != null) {
             final ActionResultInfo ari = new ActionResultInfo(
                     actionTask.getKey(),

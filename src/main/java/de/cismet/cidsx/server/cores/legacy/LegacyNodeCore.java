@@ -55,9 +55,9 @@ public class LegacyNodeCore implements NodeCore {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node[] legacyNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getRoots(legacyUser);
+                        .getRoots(legacyUser, LegacyCoreBackend.getInstance().getConnectionContext());
 
-            final List<JsonNode> nodes = new ArrayList<JsonNode>();
+            final List<JsonNode> nodes = new ArrayList<>();
             for (final Sirius.server.middleware.types.Node legacyNode : legacyNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameCache()
@@ -88,7 +88,11 @@ public class LegacyNodeCore implements NodeCore {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
+                        .getMetaObjectNode(
+                            legacyUser,
+                            Integer.parseInt(nodeKey),
+                            user.getDomain(),
+                            LegacyCoreBackend.getInstance().getConnectionContext());
 
             if (legacyNode != null) {
                 final String className = LegacyCoreBackend.getInstance()
@@ -121,12 +125,16 @@ public class LegacyNodeCore implements NodeCore {
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node legacyNode = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(legacyUser, Integer.parseInt(nodeKey), user.getDomain());
+                        .getMetaObjectNode(
+                            legacyUser,
+                            Integer.parseInt(nodeKey),
+                            user.getDomain(),
+                            LegacyCoreBackend.getInstance().getConnectionContext());
             final Sirius.server.middleware.types.Node[] legacyChildrenNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getChildren(legacyNode, legacyUser);
+                        .getChildren(legacyNode, legacyUser, LegacyCoreBackend.getInstance().getConnectionContext());
 
-            final List<JsonNode> nodes = new ArrayList<JsonNode>();
+            final List<JsonNode> nodes = new ArrayList<>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameCache()
@@ -161,9 +169,9 @@ public class LegacyNodeCore implements NodeCore {
 
             final Sirius.server.middleware.types.Node[] legacyChildrenNodes = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getChildren(legacyNode, legacyUser);
+                        .getChildren(legacyNode, legacyUser, LegacyCoreBackend.getInstance().getConnectionContext());
 
-            final List<JsonNode> children = new ArrayList<JsonNode>();
+            final List<JsonNode> children = new ArrayList<>();
             for (final Sirius.server.middleware.types.Node legacyChildrenNode : legacyChildrenNodes) {
                 final String className = LegacyCoreBackend.getInstance()
                             .getClassNameCache()
