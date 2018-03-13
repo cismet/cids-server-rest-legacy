@@ -126,7 +126,7 @@ public class LegacyEntityCore implements EntityCore {
         }
 
         try {
-            final List<JsonNode> all = new ArrayList<JsonNode>();
+            final List<JsonNode> all = new ArrayList<>();
 
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
 
@@ -156,7 +156,11 @@ public class LegacyEntityCore implements EntityCore {
 
                 final LightweightMetaObject[] lwmos = LegacyCoreBackend.getInstance()
                             .getService()
-                            .getLightweightMetaObjectsByQuery(metaClass.getId(), cidsUser, query, new String[0]);
+                            .getLightweightMetaObjectsByQuery(metaClass.getId(),
+                                cidsUser,
+                                query,
+                                new String[0],
+                                LegacyCoreBackend.getInstance().getConnectionContext());
                 for (final LightweightMetaObject lwmo : lwmos) {
                     final String selfString = "{\"$self\":\"/" + metaClass.getDomain() + "." + metaClass.getTableName()
                                 + "/" + lwmo.getId() + "\"}";
@@ -166,7 +170,11 @@ public class LegacyEntityCore implements EntityCore {
             } else {
                 final MetaObject[] metaObjects = LegacyCoreBackend.getInstance()
                             .getService()
-                            .getMetaObject(cidsUser, query, domain);
+                            .getMetaObject(
+                                cidsUser,
+                                query,
+                                domain,
+                                LegacyCoreBackend.getInstance().getConnectionContext());
 
                 if (metaObjects != null) {
                     for (final MetaObject metaObject : metaObjects) {
@@ -261,7 +269,7 @@ public class LegacyEntityCore implements EntityCore {
                     targetBean.setProperty(propName, targetChild);
                 } else if (o instanceof Collection) {
                     final List<CidsBean> list = (List<CidsBean>)o;
-                    final List<CidsBean> newList = new ArrayList<CidsBean>();
+                    final List<CidsBean> newList = new ArrayList<>();
 
                     for (final CidsBean tmpBean : list) {
                         newList.add(deepcloneCidsBean(tmpBean));
@@ -432,7 +440,8 @@ public class LegacyEntityCore implements EntityCore {
                             cidsUser,
                             Integer.parseInt(objectId),
                             metaClass.getId(),
-                            domain);
+                            domain,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
 
             if (metaObject == null) {
                 final String message = "error while patching an entity with classKey '"
@@ -642,7 +651,8 @@ public class LegacyEntityCore implements EntityCore {
                             cidsUser,
                             Integer.parseInt(objectId),
                             cid,
-                            domain);
+                            domain,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
             if (metaObject != null) {
                 metaObject.setAllClasses();
 
@@ -734,8 +744,15 @@ public class LegacyEntityCore implements EntityCore {
                             cidsUser,
                             Integer.parseInt(objectId),
                             cid,
-                            domain);
-            final int ret = LegacyCoreBackend.getInstance().getService().deleteMetaObject(cidsUser, metaObject, domain);
+                            domain,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
+            final int ret = LegacyCoreBackend.getInstance()
+                        .getService()
+                        .deleteMetaObject(
+                            cidsUser,
+                            metaObject,
+                            domain,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
             return (ret > 100);
         } catch (final Exception ex) {
             final String message = "error while deleting an object with classKey '"

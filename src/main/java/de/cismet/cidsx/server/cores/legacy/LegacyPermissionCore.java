@@ -139,7 +139,12 @@ public class LegacyPermissionCore implements PermissionCore {
             final int oid = Integer.parseInt(objectKey);
             final MetaObject metaObject = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObject(cidsUser, oid, cid, domain);
+                        .getMetaObject(
+                            cidsUser,
+                            oid,
+                            cid,
+                            domain,
+                            LegacyCoreBackend.getInstance().getConnectionContext());
             return metaObject.hasObjectWritePermission(cidsUser);
         } catch (final Exception ex) {
             final String message = "Error reading write permissions of object with classKey '"
@@ -223,7 +228,11 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
+                        .getMetaObjectNode(
+                            cidsUser,
+                            Integer.parseInt(nodeKey),
+                            user.getDomain(),
+                            LegacyCoreBackend.getInstance().getConnectionContext());
 
             return cidsNode.getPermissions().hasReadPermission(cidsUser);
         } catch (final Exception ex) {
@@ -245,7 +254,11 @@ public class LegacyPermissionCore implements PermissionCore {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final Sirius.server.middleware.types.Node cidsNode = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getMetaObjectNode(cidsUser, Integer.parseInt(nodeKey), user.getDomain());
+                        .getMetaObjectNode(
+                            cidsUser,
+                            Integer.parseInt(nodeKey),
+                            user.getDomain(),
+                            LegacyCoreBackend.getInstance().getConnectionContext());
 
             return cidsNode.getPermissions().hasWritePermission(cidsUser);
         } catch (final Exception ex) {

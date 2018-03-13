@@ -61,6 +61,11 @@ import de.cismet.cidsx.server.data.RuntimeContainer;
 import de.cismet.cidsx.server.data.StatusHolder;
 import de.cismet.cidsx.server.exceptions.CidsServerException;
 
+import de.cismet.connectioncontext.AbstractConnectionContext.Category;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
@@ -68,7 +73,7 @@ import de.cismet.cidsx.server.exceptions.CidsServerException;
  * @version  $Revision$, $Date$
  */
 @Slf4j
-public class LegacyCoreBackend {
+public class LegacyCoreBackend implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -78,14 +83,17 @@ public class LegacyCoreBackend {
 
     final SSLConfigProvider sslConfigProvider = Lookup.getDefault().lookup(SSLConfigProvider.class);
     final SSLConfig sslConfig = (sslConfigProvider == null) ? null : sslConfigProvider.getSSLConfig();
-    private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<User, Sirius.server.newuser.User>();
-    private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
+    private final HashMap<User, Sirius.server.newuser.User> userMap = new HashMap<>();
+    private final HashMap<String, ServerAction> serverActionMap = new HashMap<>();
     private final transient ClassNameCache classNameCache = new ClassNameCache();
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver(),
             sslConfig,
             LegacyCidsServerCore.isCompressionEnabled());
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
+    private final ConnectionContext connectionContext = ConnectionContext.create(
+            Category.LEGACY,
+            getClass().getSimpleName());
 
     /** Class Cache: Domain, classKey, Class (JsonNode) */
     @Getter private final HashMap<String, JsonNode> classCache = new HashMap<String, JsonNode>();
@@ -128,7 +136,7 @@ public class LegacyCoreBackend {
 
         final MetaClass metaClass = LegacyCoreBackend.getInstance()
                     .getService()
-                    .getClassByTableName(cidsUser, tableName, domainName);
+                    .getClassByTableName(cidsUser, tableName, domainName, getConnectionContext());
         return metaClass;
     }
 
@@ -150,14 +158,18 @@ public class LegacyCoreBackend {
             final Connection connection = ConnectionFactory.getFactory()
                         .createConnection(RESTfulConnection.class.getCanonicalName(),
                             info.getCallserverURL(),
-                            LegacyCidsServerCore.isCompressionEnabled());
+                            LegacyCidsServerCore.isCompressionEnabled(),
+                            getConnectionContext());
 
-            final ConnectionSession session = ConnectionFactory.getFactory().createSession(connection, info, true);
+            final ConnectionSession session = ConnectionFactory.getFactory()
+                        .createSession(connection, info, true, getConnectionContext());
             final ConnectionProxy proxy = ConnectionFactory.getFactory()
-                        .createProxy(DefaultConnectionProxyHandler.class.getCanonicalName(), session);
+                        .createProxy(DefaultConnectionProxyHandler.class.getCanonicalName(),
+                            session,
+                            getConnectionContext());
             SessionManager.init(proxy);
 
-            ClassCacheMultiple.setInstance(user.getDomain());
+            ClassCacheMultiple.setInstance(user.getDomain(), getConnectionContext());
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
         }
@@ -320,7 +332,11 @@ public class LegacyCoreBackend {
             final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);
             final MetaClass[] metaClasses;
             try {
-                metaClasses = LegacyCoreBackend.getInstance().getService().getClasses(legacyUser, cidsUser.getDomain());
+                metaClasses = LegacyCoreBackend.getInstance().getService()
+                            .getClasses(
+                                    legacyUser,
+                                    cidsUser.getDomain(),
+                                    LegacyCoreBackend.getInstance().getConnectionContext());
             } catch (RemoteException ex) {
                 log.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex.getMessage(), ex);
@@ -363,7 +379,7 @@ public class LegacyCoreBackend {
             final Sirius.server.newuser.User legacyUser = this.getCidsUser(cidsUser, null);
             final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getClasses(legacyUser, cidsUser.getDomain());
+                        .getClasses(legacyUser, cidsUser.getDomain(), getConnectionContext());
 
             if (metaClasses != null) {
                 this.classNameCache.fillCache(cidsUser.getDomain(), metaClasses);
@@ -494,5 +510,10 @@ public class LegacyCoreBackend {
                 this.applyMetaObjectUpdateStatus(attributeMetaObject, setChanged);
             }
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

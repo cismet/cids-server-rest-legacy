@@ -67,11 +67,14 @@ public class LegacyEntityInfoCore implements EntityInfoCore {
         }
 
         try {
-            final List<JsonNode> all = new ArrayList<JsonNode>();
+            final List<JsonNode> all = new ArrayList<>();
             final Sirius.server.newuser.User legacyUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
             final MetaClass[] metaClasses = LegacyCoreBackend.getInstance()
                         .getService()
-                        .getClasses(legacyUser, legacyUser.getDomain());
+                        .getClasses(
+                            legacyUser,
+                            legacyUser.getDomain(),
+                            LegacyCoreBackend.getInstance().getConnectionContext());
             if (metaClasses != null) {
                 for (final MetaClass metaClass : metaClasses) {
                     final CidsClass cidsClass = CidsClassFactory.getFactory()
