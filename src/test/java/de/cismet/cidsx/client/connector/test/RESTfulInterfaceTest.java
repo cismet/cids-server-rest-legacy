@@ -102,7 +102,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
                 bundle.getString("domain"),
                 bundle.getString("usergroup"),
                 bundle.getString("username"),
-                bundle.getString("password"));
+                bundle.getString("password"), true);
 
         if (INSTANCE == null) {
             INSTANCE = new RESTfulInterfaceTest();
