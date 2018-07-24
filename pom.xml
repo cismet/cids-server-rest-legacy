@@ -456,11 +456,6 @@
             <scope>test</scope>
         </dependency>
     <!-- END :TEST dependencies -->
-        <dependency>
-            <groupId>de.cismet.verdis</groupId>
-            <artifactId>verdis-server</artifactId>
-            <version>6.2-SNAPSHOT</version>
-        </dependency>
     </dependencies>
     
     <build>
