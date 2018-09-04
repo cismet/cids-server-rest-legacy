@@ -38,7 +38,6 @@ import java.net.URL;
 
 import java.rmi.RemoteException;
 
-import java.util.Collection;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -113,8 +112,7 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
      * Creates a new ConnectorHelper object.
      */
     private LegacyCoreBackend() {
-        loadServerActions();
-        log.info("LegacyCoreBackend initialized with " + this.serverActionMap.size() + " server actions");
+        log.info("LegacyCoreBackend initialized");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -177,16 +175,6 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
 
     /**
      * DOCUMENT ME!
-     */
-    public final void loadServerActions() {
-        final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
-        for (final ServerAction serverAction : serverActions) {
-            serverActionMap.put(serverAction.getTaskName(), serverAction);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
      *
      * @param  enabled  DOCUMENT ME!
      */
@@ -202,15 +190,6 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public HashMap<String, ServerAction> getServerActionMap() {
-        return serverActionMap;
     }
 
     /**
