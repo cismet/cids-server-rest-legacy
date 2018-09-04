@@ -10,6 +10,9 @@
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
+    <!--
+        FIXME: replace with release version when action api enhancements have been merged!
+    -->
     <version>6.2-UBA-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -66,7 +69,7 @@
                 <!--
                     FIXME: Replace with release version after mering action enhancements branch #40
                 -->
-                <version>6.2-UBA-SNAPSHOT</version>
+                <version>6.1-UBA-SNAPSHOT</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -76,7 +79,7 @@
                 <!--
                     FIXME: Replace with release version after mering action enhancements branch #40
                 -->
-                <version>6.2-UBA-SNAPSHOT</version>
+                <version>6.1-UBA-SNAPSHOT</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -159,7 +162,7 @@
                 <!--
                     FIXME: Replace with release version after mering action enhancements branch #40
                 -->
-                <version>6.2-UBA-SNAPSHOT</version>
+                <version>6.1-UBA-SNAPSHOT</version>
             </dependency>
             
             <dependency>
@@ -274,12 +277,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <scope>compile</scope>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
