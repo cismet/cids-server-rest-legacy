@@ -93,7 +93,8 @@ public class LegacyActionCore implements ActionCore {
                 if (LegacyCoreBackend.getInstance().getService().hasConfigAttr(
                                 cidsUser,
                                 SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX
-                                + actionInfo.getActionKey())) {
+                                + actionInfo.getActionKey(),
+                                LegacyCoreBackend.getInstance().getConnectionContext())) {
                     taskNameNodes.add(MAPPER.convertValue(actionInfo, JsonNode.class));
                 } else {
                     if (log.isDebugEnabled()) {
@@ -126,7 +127,8 @@ public class LegacyActionCore implements ActionCore {
             if (LegacyCoreBackend.getInstance().getService().hasConfigAttr(
                             cidsUser,
                             SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX
-                            + actionKey)) {
+                            + actionKey,
+                            LegacyCoreBackend.getInstance().getConnectionContext())) {
                 final ActionInfo actionInfo = ServerActionFactory.getFactory().getServerActionInfo(actionKey);
                 if (actionInfo != null) {
                     return MAPPER.convertValue(actionInfo, JsonNode.class);
@@ -289,6 +291,7 @@ public class LegacyActionCore implements ActionCore {
                             actionKey,
                             cidsUser.getDomain(),
                             bodyObject,
+                            LegacyCoreBackend.getInstance().getConnectionContext(),
                             serverActionParameters);
 
             // process the task result -----------------------------------------
