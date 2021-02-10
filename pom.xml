@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>6.0</version>
+                <version>6.1-SNAPSHOT</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>6.0</version>
+                <version>6.1-SNAPSHOT</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.3.1</version>
+                <version>6.4-SNAPSHOT</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.3.1</version>
+                <version>6.4-SNAPSHOT</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -144,7 +144,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>6.0</version>
+                <version>6.1-SNAPSHOT</version>
             </dependency>
             
             <dependency>
@@ -334,6 +334,26 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>de.cismet.cids.custom.wupp.server</groupId>
+            <artifactId>cids-custom-server-wuppertal</artifactId>
+            <version>6.15-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency> 
+<!--        <dependency>
+            <groupId>de.cismet.belis</groupId>
+            <artifactId>belis-server</artifactId>
+            <version>6.2-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency> -->
+        <!--
+         <dependency>
+            <groupId>de.cismet.verdis</groupId>
+            <artifactId>verdis-server</artifactId>
+            <version>6.2-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency> -->
+ 
         <!-- END: Runtime dependencies -->
         
         <!-- BEGIN: Provided Dependencies -->
@@ -455,7 +475,7 @@
             <artifactId>junit-dataprovider</artifactId>
             <scope>test</scope>
         </dependency>
-    <!-- END :TEST dependencies -->
+        <!-- END :TEST dependencies -->
     </dependencies>
     
     <build>
