@@ -44,10 +44,20 @@ public class LegacyUserCore implements UserCore {
             log.debug("validate with user '" + user.getUser() + "'.");
         }
 
+        String username;
+        String password;
+        String domain;
+
         System.setProperty("sun.rmi.transport.connectionTimeout", "15");
-        final String username = user.getUser();
-        final String password = user.getPass();
-        final String domain = user.getDomain();
+        if (user.getJwt() != null) {
+            username = "jwt";
+            password = user.getJwt();
+            domain = user.getDomain(); // should be local
+        } else {
+            username = user.getUser();
+            password = user.getPass();
+            domain = user.getDomain();
+        }
         try {
             final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance()
                         .getService()
@@ -65,6 +75,7 @@ public class LegacyUserCore implements UserCore {
             user.setUserGroups(userGroupNames);
             LegacyCoreBackend.getInstance().registerUser(cidsUser, user);
             user.setValidated(true);
+            user.setJwt(cidsUser.getJwsToken());
         } catch (final Exception ex) {
             log.error("Could not validate user '" + user.getUser() + "': "
                         + ex.getMessage(), ex);
