@@ -5,12 +5,12 @@
     <parent>
         <groupId>de.cismet</groupId>
         <artifactId>cismet-parent</artifactId>
-        <version>6.0</version>
+        <version>7.0</version>
     </parent>
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
-    <version>6.2</version>
+    <version>7.0</version>
     <packaging>jar</packaging>
 
     <name>cids Server REST legacy</name>
@@ -20,7 +20,7 @@
         <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
         <url>https://github.com/cismet/cids-server-rest-legacy</url>
-        <tag>v6.2</tag>
+        <tag>v7.0</tag>
     </scm>
   
     <issueManagement>
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -48,14 +48,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.2.1</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.2.1</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.5</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.5</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -93,7 +93,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.2.9</version>
+                <version>7.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -122,7 +122,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.2.9</version>
+                <version>7.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -144,20 +144,20 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>6.1</version>
+                <version>7.0</version>
             </dependency>
             
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cidsbean-json-patch</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cidsbean-json-patch</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -165,14 +165,14 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -180,7 +180,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>jcommander</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
             </dependency>
             <!-- END: cismet dependencies -->
             
@@ -337,20 +337,20 @@
         <dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
             <artifactId>cids-custom-server-wuppertal</artifactId>
-            <version>6.25.2</version>
+            <version>7.0</version>
             <scope>runtime</scope>
-        </dependency> 
+        </dependency>
 <!--        <dependency>
             <groupId>de.cismet.belis</groupId>
             <artifactId>belis-server</artifactId>
-            <version>6.2-SNAPSHOT</version>
+            <version>7.0</version>
             <scope>runtime</scope>
         </dependency> -->
         <!--
          <dependency>
             <groupId>de.cismet.verdis</groupId>
             <artifactId>verdis-server</artifactId>
-            <version>6.2-SNAPSHOT</version>
+            <version>7.0</version>
             <scope>runtime</scope>
         </dependency> -->
  
