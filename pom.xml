@@ -334,12 +334,6 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>de.cismet.cids.custom.wupp.server</groupId>
-            <artifactId>cids-custom-server-wuppertal</artifactId>
-            <version>7.1.1</version>
-            <scope>runtime</scope>
-        </dependency>
 <!--        <dependency>
             <groupId>de.cismet.belis</groupId>
             <artifactId>belis-server</artifactId>
@@ -476,12 +470,6 @@
             <scope>test</scope>
         </dependency>
         <!-- END :TEST dependencies -->
-        <dependency>
-            <groupId>de.cismet.cids.custom.wupp</groupId>
-            <artifactId>cids-custom-wuppertal</artifactId>
-            <version>7.2-SNAPSHOT</version>
-            <scope>runtime</scope>
-        </dependency>
     </dependencies>
     
     <build>
