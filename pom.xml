@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>7.0</version>
+                <version>7.2.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>7.0</version>
+                <version>7.2.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -93,7 +93,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>7.0</version>
+                <version>7.2.3</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -144,7 +144,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>7.0</version>
+                <version>7.0.1</version>
             </dependency>
             
             <dependency>
@@ -337,7 +337,7 @@
         <dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
             <artifactId>cids-custom-server-wuppertal</artifactId>
-            <version>7.0</version>
+            <version>7.1.1</version>
             <scope>runtime</scope>
         </dependency>
 <!--        <dependency>
@@ -476,6 +476,12 @@
             <scope>test</scope>
         </dependency>
         <!-- END :TEST dependencies -->
+        <dependency>
+            <groupId>de.cismet.cids.custom.wupp</groupId>
+            <artifactId>cids-custom-wuppertal</artifactId>
+            <version>7.2-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
     
     <build>
