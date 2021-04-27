@@ -269,7 +269,8 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
                 immutableCidsUser.getId(),
                 immutableCidsUser.getName(),
                 immutableCidsUser.getDomain(),
-                immutableCidsUser.isAdmin());
+                immutableCidsUser.isAdmin(),
+                immutableCidsUser.getJwsToken());
         if (immutableCidsUser.isValid()) {
             cidsUser.setValid();
         } else {
