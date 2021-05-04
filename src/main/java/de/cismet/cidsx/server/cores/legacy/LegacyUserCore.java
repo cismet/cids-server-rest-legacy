@@ -52,7 +52,7 @@ public class LegacyUserCore implements UserCore {
         if (user.getJwt() != null) {
             username = "jwt";
             password = user.getJwt();
-            domain = user.getDomain(); // should be local
+            domain = user.getDomain(); // extracted from jwt payload
         } else {
             username = user.getUser();
             password = user.getPass();
