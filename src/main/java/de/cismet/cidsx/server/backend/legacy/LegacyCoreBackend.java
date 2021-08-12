@@ -270,7 +270,9 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
                 immutableCidsUser.getName(),
                 immutableCidsUser.getDomain(),
                 immutableCidsUser.isAdmin(),
-                user.getJwt()); //always use the current jws, not the cached one (server has potentialy been restarted)
+                user.getJwt());                                                      // always use the current jws, not
+                                                                                     // the cached one (server has
+                                                                                     // potentialy been restarted)
         if (immutableCidsUser.isValid()) {
             cidsUser.setValid();
         } else {
