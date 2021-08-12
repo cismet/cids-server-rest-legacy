@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.security.Key;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -82,6 +84,17 @@ public class LegacyUserCore implements UserCore {
             user.setValidated(false);
         }
         return user;
+    }
+
+    @Override
+    public Key getPublicJwtKey(final String domain) {
+        try {
+            return LegacyCoreBackend.getInstance().getService().getPublicJwtKey(domain);
+        } catch (Exception e) {
+            log.error("Cannot retrieve public jwt key", e);
+
+            return null;
+        }
     }
 
     @Override
