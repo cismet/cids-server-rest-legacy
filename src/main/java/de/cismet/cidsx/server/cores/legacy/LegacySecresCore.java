@@ -32,6 +32,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -70,6 +72,7 @@ public class LegacySecresCore implements SecresCore {
             AbstractConnectionContext.Category.ACTION,
             "LegacyWebdavCore");
     private static final String CONF_ATTR_PREFIX = "secres://";
+    private static final Set<String> missingConfigurations = new TreeSet<String>();
 
     //~ Enums ------------------------------------------------------------------
 
@@ -113,6 +116,10 @@ public class LegacySecresCore implements SecresCore {
             try {
                 config = mapper.readValue(configAttr, clazz);
             } catch (Exception e) {
+                if (!missingConfigurations.contains(type)) {
+                    log.error("cannot read configuration for " + type, e);
+                    missingConfigurations.add(type);
+                }
                 throw new CidsServerException(
                     "Cannot read configuration",
                     "Cannot read configuration",
