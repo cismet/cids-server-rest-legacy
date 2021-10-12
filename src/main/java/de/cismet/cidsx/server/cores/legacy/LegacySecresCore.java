@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -102,7 +103,7 @@ public class LegacySecresCore implements SecresCore {
             final MultivaluedMap<String, String> queryParams) {
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null);
         String contentType = "";
-        byte[] content = null;
+        InputStream contentStream = null;
         Response.Status responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
 
         try {
@@ -177,30 +178,24 @@ public class LegacySecresCore implements SecresCore {
                             ++index;
                         }
 
+                        responseStatus = Response.Status.OK;
+
                         if (index > 0) {
                             contentType = new String(Arrays.copyOf(response, index));
                         }
                         ++index;
-
-                        content = Arrays.copyOfRange(response, index, response.length);
+                        contentStream = new ByteArrayInputStream(response, index, response.length);
                     }
                     break;
                 }
                 case LOCAL: {
                     final String baseUrl = (config.getBaseUrl() == null) ? "" : config.getBaseUrl();
-                    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    final byte[] tmp = new byte[1024];
-                    int len;
                     final File file = new File(baseUrl + url);
 
                     if (file.exists()) {
                         final InputStream is = new FileInputStream(file);
 
-                        while ((len = is.read(tmp, 0, tmp.length)) != -1) {
-                            os.write(tmp, 0, len);
-                        }
-
-                        content = os.toByteArray();
+                        contentStream = is;
                         contentType = Files.probeContentType(file.toPath());
 
                         responseStatus = Response.Status.OK;
@@ -216,18 +211,11 @@ public class LegacySecresCore implements SecresCore {
                     final String baseUrl = (config.getBaseUrl() == null) ? "" : config.getBaseUrl();
                     final Map<String, String> headerList = new HashMap<>();
                     final Map<String, Object> statusList = new HashMap<>();
-                    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    final byte[] tmp = new byte[1024];
-                    int len;
                     final String paramString = getParamString(queryParams);
                     final String targetUrl = baseUrl + url + ((paramString != null) ? ("?" + paramString) : "");
                     final InputStream is = webDav.getInputStream(targetUrl, headerList, statusList);
 
-                    while ((len = is.read(tmp, 0, tmp.length)) != -1) {
-                        os.write(tmp, 0, len);
-                    }
-
-                    content = os.toByteArray();
+                    contentStream = is;
 
                     for (final String headerName : headerList.keySet()) {
                         if (headerName.equalsIgnoreCase("Content-Type")) {
@@ -241,7 +229,7 @@ public class LegacySecresCore implements SecresCore {
                 }
             }
 
-            return Response.status(responseStatus).header("Content-Type", contentType).entity(content);
+            return Response.status(responseStatus).header("Content-Type", contentType).entity(contentStream);
         } catch (CidsServerException ex) {
             throw ex;
         } catch (final Exception ex) {
