@@ -313,11 +313,6 @@
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-api</artifactId> 
-            <version>1.0</version>
-        </dependency>
                 
         <!-- BEGIN: Runtime dependencies -->
         <!--
@@ -340,16 +335,15 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.tyrus</groupId>
-           <artifactId>tyrus-client</artifactId>
-           <version>1.1</version>
-           <scope>runtime</scope>
+            <groupId>org.glassfish.tyrus.bundles</groupId>
+            <artifactId>websocket-ri-bundle</artifactId>
+            <version>1.18</version>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.tyrus</groupId>
-           <artifactId>tyrus-container-grizzly</artifactId>
-           <version>1.1</version>
-           <scope>runtime</scope>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http-server</artifactId>
+            <version>2.3.35</version>
+            <scope>runtime</scope>
         </dependency>
 <!--        <dependency>
             <groupId>de.cismet.belis</groupId>
