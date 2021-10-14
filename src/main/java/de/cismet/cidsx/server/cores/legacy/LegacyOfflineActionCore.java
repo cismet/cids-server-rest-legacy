@@ -76,6 +76,7 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
             AbstractConnectionContext.Category.OTHER,
             "ActionExecutionService");
     private static final int MILLIS_PER_SECOND = 1000;
+    private static final int MIN_DURATION_BETWEEN_LOGGING = 5 * 60 * MILLIS_PER_SECOND;
     private static final String UPDATE_QUERY =
         "mutation UpdateActionResult {update_action(where: {id: {_eq: \"%1s\"}}, _set: {result: \"%2s\", updatedAt: \"now()\"}){affected_rows}}";
     private static final String STATUS_UPDATE_QUERY =
@@ -87,10 +88,11 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
 
     private ExecutorService executor;
     private int maxParallelThreads = 10;
-    private Map<String, SubscriptionResponse.Payload.Data.Action> lastActions =
+    private final Map<String, SubscriptionResponse.Payload.Data.Action> lastActions =
         new HashMap<String, SubscriptionResponse.Payload.Data.Action>();
     private boolean connectionOpen = false;
     private String pathServerResources;
+    private long lastServerErrorLogging = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -136,6 +138,7 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                 handler.addWebsocketClientEndpoint(clientEndPoint);
                 clientEndPoint.openConnection(new URI(config.getWebSocketUrl()));
                 connectionOpen = true;
+                lastServerErrorLogging = 0;
 
                 while (connectionOpen) {
                     try {
@@ -145,8 +148,17 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                log.error("WebSocketException. Retry to connect", e);
+                // do not bloat the logging file, when the server is not available
+                if ((System.currentTimeMillis() - lastServerErrorLogging) > MIN_DURATION_BETWEEN_LOGGING) {
+                    log.error("WebSocketException. Retry to connect", e);
+                    lastServerErrorLogging = System.currentTimeMillis();
+                }
+
+                try {
+                    Thread.sleep(MILLIS_PER_SECOND);
+                } catch (InterruptedException ex) {
+                    // nothing to do
+                }
             }
         } while (true);
     }
