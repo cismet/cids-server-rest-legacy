@@ -491,7 +491,8 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
 
         @Override
         public void handleMessage(final String message) {
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !message.equalsIgnoreCase("{\"type\":\"ka\"}")) {
+                // do not log the keep alive messsages
                 log.debug("retrieve message: " + message);
             }
 
@@ -518,9 +519,10 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                             }
                         }
                     }
+                } else if (response.getType().equals("error")) {
+                    log.error("An error message was send:\n" + message);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 log.error("Cannot handle hasura message", e);
             }
         }
@@ -537,7 +539,9 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
             }
 
             websocketClient.sendMessage(
-                "{\"type\":\"connection_init\",\"payload\":{\"headers\":{\"X-Hasura-Admin-Secret\":\"mysecretaccesskey\"}}}");
+                "{\"type\":\"connection_init\",\"payload\":{\"headers\":{\"X-Hasura-Admin-Secret\":\""
+                        + hasuraSecret
+                        + "\"}}}");
             websocketClient.sendMessage(
                 "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"query\":\"subscription onActionChanged {\\n            action {\\n                id\\n                jwt\\n                isCompleted\\n                applicationId\\n                createdAt\\n                updatedAt\\n                status\\n                action,\\n                parameter,\\n                result\\n            }       \\n        }\"}}");
         }
