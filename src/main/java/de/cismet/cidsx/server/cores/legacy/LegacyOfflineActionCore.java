@@ -7,8 +7,6 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
-import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,6 +81,14 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
         "mutation UpdateActionStatus {update_action(where: {id: {_eq: \"%1s\"}}, _set: {status: %2s, updatedAt: \"now()\"}){affected_rows}}";
     private static final String STATUS_RESULT_UPDATE_QUERY =
         "mutation UpdateActionStatus {update_action(where: {id: {_eq: \"%1s\"}}, _set: {result: \"%2s\", status: %3s, updatedAt: \"now()\"}){affected_rows}}";
+    private static final String INIT_WEBSOCKET_QUERY =
+        "{\"type\":\"connection_init\",\"payload\":{\"headers\":{\"X-Hasura-Admin-Secret\":\"%1s\"}}}";
+    private static final String GET_PARAMETER_QUERY =
+        "query GetParameter {action(where: {_and: {id: {_eq: \"%1s\"}}}) {id parameter}}";
+    private static final String INIT_SUBSCRIPTION_QUERY =
+        "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"query\":\"subscription onActionChanged "
+                + "{action(where: {_and: {isCompleted: {_eq: false}, result: {_is_null: true}, status: {_is_null: true}}}) "
+                + "{id jwt isCompleted applicationId createdAt updatedAt status action, result} }\"}}";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -171,9 +177,6 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
     private ActionExecutionServiceConfiguration readConfig() {
         ActionExecutionServiceConfiguration config = new ActionExecutionServiceConfiguration();
         try {
-//            ServerResourcesLoader.getInstance()
-//                    .setResourcesBasePath(
-//                        "/home/therter/ApplicationData/WuppDist/server/linux/SB__wunda_live/server_resources");
             ServerResourcesLoader.getInstance().setResourcesBasePath(
                 pathServerResources);
             config = ServerResourcesLoader.getInstance()
@@ -247,7 +250,7 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                 sendStatusUpdate(202);
 
                 final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null);
-                final List<ServerActionParameter> parameterList = convertParameters(action.getParameter());
+                final List<ServerActionParameter> parameterList = convertParameters(getParameters(action.getId()));
                 byte[] body = null;
 
                 if (action.getBody() != null) {
@@ -380,6 +383,37 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
         /**
          * DOCUMENT ME!
          *
+         * @param   id  result DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         *
+         * @throws  Exception  DOCUMENT ME!
+         */
+        private String getParameters(final String id) throws Exception {
+            final String query = String.format(
+                    GET_PARAMETER_QUERY,
+                    id);
+            final GraphQlQuery queryObject = new GraphQlQuery();
+            queryObject.setOperationName("GetParameter");
+            queryObject.setQuery(query);
+
+            final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            final String res = sendHasuraRequest(queryObject, hasuraUrlString);
+            final SubscriptionResponse.Payload result = mapper.readValue(
+                    res,
+                    SubscriptionResponse.Payload.class);
+
+            if (!result.getData().getAction()[0].getId().equals(id)) {
+                // some error occured
+                log.error("Unexpected response when retrieving parameters:\n" + res);
+            }
+
+            return result.getData().getAction()[0].getParameter();
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
          * @param   queryObject      query DOCUMENT ME!
          * @param   hasuraUrlString  DOCUMENT ME!
          *
@@ -461,8 +495,8 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
         //~ Instance fields ----------------------------------------------------
 
         private WebsocketClientEndpoint websocketClient = null;
-        private String hasuraUrlString;
-        private String hasuraSecret;
+        private final String hasuraUrlString;
+        private final String hasuraSecret;
 
         //~ Constructors -------------------------------------------------------
 
@@ -538,12 +572,8 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                 log.debug("connection is open");
             }
 
-            websocketClient.sendMessage(
-                "{\"type\":\"connection_init\",\"payload\":{\"headers\":{\"X-Hasura-Admin-Secret\":\""
-                        + hasuraSecret
-                        + "\"}}}");
-            websocketClient.sendMessage(
-                "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"query\":\"subscription onActionChanged {\\n            action {\\n                id\\n                jwt\\n                isCompleted\\n                applicationId\\n                createdAt\\n                updatedAt\\n                status\\n                action,\\n                parameter,\\n                result\\n            }       \\n        }\"}}");
+            websocketClient.sendMessage(String.format(INIT_WEBSOCKET_QUERY, hasuraSecret));
+            websocketClient.sendMessage(INIT_SUBSCRIPTION_QUERY);
         }
 
         @Override
