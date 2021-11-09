@@ -10,6 +10,8 @@ package de.cismet.cidsx.server.cores.legacy;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -474,8 +476,35 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                 while (it.hasNext()) {
                     final Map.Entry<String, JsonNode> n = it.next();
 
-                    final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(), n.getValue().asText());
-                    cidsSAPs.add(cidsSAP);
+                    if (n.getValue() instanceof ArrayNode) {
+                        final ArrayNode array = (ArrayNode)n.getValue();
+                        final ArrayList list = new ArrayList();
+
+                        for (int i = 0; i < array.size(); ++i) {
+                            if (array.get(i) instanceof ObjectNode) {
+                                final HashMap<String, Object> map = new HashMap<String, Object>();
+
+                                final ObjectNode oNode = (ObjectNode)array.get(i);
+
+                                final Iterator<String> fields = oNode.fieldNames();
+                                while (fields.hasNext()) {
+                                    final String field = fields.next();
+
+                                    final JsonNode subNode = oNode.get(field);
+                                    map.put(field, subNode.asText());
+                                }
+
+                                list.add(map);
+                            }
+                        }
+                        final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
+                                list);
+                        cidsSAPs.add(cidsSAP);
+                    } else {
+                        final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
+                                n.getValue().asText());
+                        cidsSAPs.add(cidsSAP);
+                    }
                 }
             } catch (Exception e) {
                 log.error("Error while parsing parameter: " + json, e);
