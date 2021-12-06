@@ -127,6 +127,8 @@ public class LegacySecresCore implements SecresCore {
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     e);
             }
+            final Map<String, List<String>> removedParameters = removeReservedParamsFromUrl(queryParams, config);
+
             final Mode mode = parseMode(config.getMode());
 
             switch (mode) {
@@ -229,7 +231,11 @@ public class LegacySecresCore implements SecresCore {
                 }
             }
 
-            return Response.status(responseStatus).header("Content-Type", contentType).entity(contentStream);
+            ResponseBuilder rb = Response.status(responseStatus).header("Content-Type", contentType);
+
+            rb = addConfiguredHeader(rb, config, removedParameters);
+
+            return rb.entity(contentStream);
         } catch (CidsServerException ex) {
             throw ex;
         } catch (final Exception ex) {
@@ -239,6 +245,104 @@ public class LegacySecresCore implements SecresCore {
             throw new CidsServerException(message, message,
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   queryParams  url DOCUMENT ME!
+     * @param   config       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Map<String, List<String>> removeReservedParamsFromUrl(final MultivaluedMap<String, String> queryParams,
+            final ConfigurationJson config) {
+        final Map<String, List<String>> removedParameters = new HashMap<>();
+
+        if (config.getParams() != null) {
+            for (final ConfigurationJson.Params param : config.getParams()) {
+                if (queryParams.containsKey(param.getKey())) {
+                    removedParameters.put(param.getKey(), queryParams.get(param.getKey()));
+                }
+            }
+        }
+
+        for (final String key : removedParameters.keySet()) {
+            queryParams.remove(key);
+        }
+
+        return removedParameters;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   builder            DOCUMENT ME!
+     * @param   config             DOCUMENT ME!
+     * @param   removedParameters  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private ResponseBuilder addConfiguredHeader(final ResponseBuilder builder,
+            final ConfigurationJson config,
+            final Map<String, List<String>> removedParameters) {
+        ResponseBuilder builderWithHeader = builder;
+
+        if (config.getResponseHeader() != null) {
+            for (final ConfigurationJson.ResponseHeader header : config.getResponseHeader()) {
+                builderWithHeader = builder.header(header.key, header.value);
+            }
+        }
+
+        if (config.getOverwritableHeader() != null) {
+            for (final ConfigurationJson.OverwritableHeader header : config.getOverwritableHeader()) {
+                builderWithHeader = builder.header(
+                        header.key,
+                        getFirstValueOrDefault(
+                            removedParameters.get(header.value),
+                            getDefaultValue(header.value, config)));
+            }
+        }
+
+        return builderWithHeader;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   listValue     key DOCUMENT ME!
+     * @param   defaultValue  config DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getFirstValueOrDefault(final List<String> listValue, final String defaultValue) {
+        if (listValue != null) {
+            if (listValue.size() > 0) {
+                return listValue.get(0);
+            }
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   key     DOCUMENT ME!
+     * @param   config  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getDefaultValue(final String key, final ConfigurationJson config) {
+        if (config.getParams() != null) {
+            for (final ConfigurationJson.Params param : config.getParams()) {
+                if (param.getKey().equals(key)) {
+                    return param.getDefaultValue();
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -336,5 +440,55 @@ public class LegacySecresCore implements SecresCore {
         private String password;
         private String baseUrl;
         private String mode;
+        private ResponseHeader[] responseHeader;
+        private Params[] params;
+        private OverwritableHeader[] overwritableHeader;
+
+        //~ Inner Classes ------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @version  $Revision$, $Date$
+         */
+        @Getter
+        @Setter
+        public static class ResponseHeader {
+
+            //~ Instance fields ------------------------------------------------
+
+            private String key;
+            private String value;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @version  $Revision$, $Date$
+         */
+        @Getter
+        @Setter
+        public static class Params {
+
+            //~ Instance fields ------------------------------------------------
+
+            private String key;
+            private String defaultValue;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @version  $Revision$, $Date$
+         */
+        @Getter
+        @Setter
+        public static class OverwritableHeader {
+
+            //~ Instance fields ------------------------------------------------
+
+            private String key;
+            private String value;
+        }
     }
 }
