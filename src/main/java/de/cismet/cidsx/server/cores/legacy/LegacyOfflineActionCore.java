@@ -559,34 +559,36 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                 log.debug("retrieve message: " + message);
             }
 
-            try {
-                final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            synchronized (lastActions) {
+                try {
+                    final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
 
-                final SubscriptionResponse response = mapper.readValue(message, SubscriptionResponse.class);
+                    final SubscriptionResponse response = mapper.readValue(message, SubscriptionResponse.class);
 
-                if (response.getType().equals("data")) {
-                    for (final SubscriptionResponse.Payload.Data.Action action
-                                : response.getPayload().getData().getAction()) {
-                        final SubscriptionResponse.Payload.Data.Action lastState = lastActions.get(action.getId());
+                    if (response.getType().equals("data")) {
+                        for (final SubscriptionResponse.Payload.Data.Action action
+                                    : response.getPayload().getData().getAction()) {
+                            final SubscriptionResponse.Payload.Data.Action lastState = lastActions.get(action.getId());
 
-                        if ((lastState == null) || !lastState.equals(action)) {
-                            lastActions.put(action.getId(), action);
-                            if (((action.getStatus() == null)
-                                            || ((action.getStatus() != 200) && (action.getStatus() != 202)))) {
-                                final ActionExecutioner ae = new ActionExecutioner(
-                                        action,
-                                        hasuraUrlString,
-                                        hasuraSecret);
+                            if ((lastState == null) || !lastState.equals(action)) {
+                                lastActions.put(action.getId(), action);
+                                if (((action.getStatus() == null)
+                                                || ((action.getStatus() != 200) && (action.getStatus() != 202)))) {
+                                    final ActionExecutioner ae = new ActionExecutioner(
+                                            action,
+                                            hasuraUrlString,
+                                            hasuraSecret);
 
-                                executor.submit(ae);
+                                    executor.submit(ae);
+                                }
                             }
                         }
+                    } else if (response.getType().equals("error")) {
+                        log.error("An error message was send:\n" + message);
                     }
-                } else if (response.getType().equals("error")) {
-                    log.error("An error message was send:\n" + message);
+                } catch (Exception e) {
+                    log.error("Cannot handle hasura message", e);
                 }
-            } catch (Exception e) {
-                log.error("Cannot handle hasura message", e);
             }
         }
 
