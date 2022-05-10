@@ -24,6 +24,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import javax.ws.rs.core.MultivaluedMap;
+
 import de.cismet.cids.server.actions.ServerActionParameter;
 
 import de.cismet.cidsx.server.api.types.User;
@@ -50,7 +52,10 @@ public class LegacyGraphQlCore implements GraphQlCore {
     }
 
     @Override
-    public String executeQuery(final User user, final String role, final String request) {
+    public Object executeQuery(final User user,
+            final String role,
+            final String request,
+            final String contentType) {
         final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
@@ -88,6 +93,17 @@ public class LegacyGraphQlCore implements GraphQlCore {
         cidsSAPs.add(cidsSAP);
         cidsSAP = new ServerActionParameter("VARIABLES", query.getVariablesAsText());
         cidsSAPs.add(cidsSAP);
+        boolean shouldBeZipped = false;
+
+        if ((contentType != null) && contentType.toLowerCase().contains("gzip")) {
+            cidsSAP = new ServerActionParameter("ZIPPED", "true");
+            cidsSAPs.add(cidsSAP);
+            shouldBeZipped = true;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("send graphql request (expect gzip: %s): %s", shouldBeZipped, query.getQuery()));
+        }
 
         try {
             final Object taskResult = LegacyCoreBackend.getInstance()
@@ -100,7 +116,7 @@ public class LegacyGraphQlCore implements GraphQlCore {
                             LegacyCoreBackend.getInstance().getConnectionContext(),
                             cidsSAPs.toArray(new ServerActionParameter[0]));
 
-            return (String)taskResult;
+            return taskResult;
         } catch (final Exception ex) {
             final String message = "error while executing queryQl task with request '"
                         + request + "': " + ex.getMessage();
