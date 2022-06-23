@@ -87,6 +87,8 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
         "{\"type\":\"connection_init\",\"payload\":{\"headers\":{\"X-Hasura-Admin-Secret\":\"%1s\"}}}";
     private static final String GET_PARAMETER_QUERY =
         "query GetParameter {action(where: {_and: {id: {_eq: \"%1s\"}}}) {id parameter}}";
+    private static final String GET_BODY_QUERY =
+        "query GetBody {action(where: {_and: {id: {_eq: \"%1s\"}}}) {id body}}";
     private static final String INIT_SUBSCRIPTION_QUERY =
         "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"query\":\"subscription onActionChanged "
                 + "{action(where: {_and: {isCompleted: {_eq: false}, result: {_is_null: true}, status: {_is_null: true}}}) "
@@ -213,6 +215,10 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
      */
     private class ActionExecutioner implements Runnable {
 
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final String BODY_MARKER = "$$_body_$$";
+
         //~ Instance fields ----------------------------------------------------
 
         private final SubscriptionResponse.Payload.Data.Action action;
@@ -252,11 +258,16 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                 sendStatusUpdate(202);
 
                 final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null);
-                final List<ServerActionParameter> parameterList = convertParameters(getParameters(action.getId()));
+                final String bodyString = getBody(action.getId());
+                final String parameters = getParameters(action.getId());
+                final boolean bodyUsedAsParameter = isBodyUsedAsParameter(parameters);
+                final List<ServerActionParameter> parameterList = convertParameters(parameters, bodyString);
                 byte[] body = null;
 
-                if (action.getBody() != null) {
-                    body = Base64.getDecoder().decode(action.getBody());
+                if (!bodyUsedAsParameter) {
+                    if (bodyString != null) {
+                        body = Base64.getDecoder().decode(bodyString);
+                    }
                 }
 
                 if (log.isDebugEnabled()) {
@@ -280,12 +291,14 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                     return;
                 }
 
-                if (actionResult != null) {
+                if (actionResult instanceof Exception) {
+                    log.warn("Exception returned from action " + action.getAction(), (Exception)actionResult);
+                    sendStatusResultUpdate("{\"Exception\": \"" + ((Exception)actionResult).getMessage() + "\"}", 500);
+                } else if (actionResult != null) {
                     sendStatusResultUpdate(actionResult.toString(), 200);
                 } else {
                     // The result in the db should be exception null invalid
                     sendStatusUpdate(200);
-                    return;
                 }
             } catch (Exception e) {
                 log.error("Error while executing action", e);
@@ -416,6 +429,49 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
         /**
          * DOCUMENT ME!
          *
+         * @param   id  result DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         *
+         * @throws  Exception  DOCUMENT ME!
+         */
+        private String getBody(final String id) throws Exception {
+            final String query = String.format(
+                    GET_BODY_QUERY,
+                    id);
+            final GraphQlQuery queryObject = new GraphQlQuery();
+            queryObject.setOperationName("GetBody");
+            queryObject.setQuery(query);
+
+            final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            final String res = sendHasuraRequest(queryObject, hasuraUrlString);
+            final SubscriptionResponse.Payload result = mapper.readValue(
+                    res,
+                    SubscriptionResponse.Payload.class);
+
+            if (!result.getData().getAction()[0].getId().equals(id)) {
+                // some error occured
+                log.error("Unexpected response when retrieving parameters:\n" + res);
+            }
+
+            return result.getData().getAction()[0].getBody();
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   parameters  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private boolean isBodyUsedAsParameter(final String parameters) {
+            return (parameters != null)
+                        && parameters.contains(BODY_MARKER);
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
          * @param   queryObject      query DOCUMENT ME!
          * @param   hasuraUrlString  DOCUMENT ME!
          *
@@ -462,15 +518,23 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
          * DOCUMENT ME!
          *
          * @param   json  DOCUMENT ME!
+         * @param   body  DOCUMENT ME!
          *
          * @return  DOCUMENT ME!
          */
-        private List<ServerActionParameter> convertParameters(final String json) {
+        private List<ServerActionParameter> convertParameters(final String json, final String body) {
             final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
             final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            final String extendedJson = (((body != null) && isBodyUsedAsParameter(json))
+                    ? json.replace(BODY_MARKER, body) : json);
+
+            if ((body == null) && isBodyUsedAsParameter(json)) {
+                log.warn(
+                    "The body placeholder is set in parameter field, but the body field is null. Do not replace body placeholder");
+            }
 
             try {
-                final JsonNode node = mapper.readTree(json);
+                final JsonNode node = mapper.readTree(extendedJson);
                 final Iterator<Map.Entry<String, JsonNode>> it = node.fields();
 
                 while (it.hasNext()) {
@@ -482,7 +546,7 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
 
                         for (int i = 0; i < array.size(); ++i) {
                             if (array.get(i) instanceof ObjectNode) {
-                                final HashMap<String, Object> map = new HashMap<String, Object>();
+                                final HashMap<String, Object> map = new HashMap<>();
 
                                 final ObjectNode oNode = (ObjectNode)array.get(i);
 
@@ -507,7 +571,7 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
                     }
                 }
             } catch (Exception e) {
-                log.error("Error while parsing parameter: " + json, e);
+                log.error("Error while parsing parameter: " + extendedJson, e);
             }
 
             return cidsSAPs;
