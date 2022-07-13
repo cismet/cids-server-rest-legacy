@@ -88,6 +88,7 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
     private final transient ClassNameCache classNameCache = new ClassNameCache();
     private final CallServerService service = new RESTfulSerialInterfaceConnector(LegacyCidsServerCore.getCallserver(),
             sslConfig,
+            LegacyCidsServerCore.getClientName(),
             LegacyCidsServerCore.isCompressionEnabled());
     private boolean testModeEnabled = false;
     private Sirius.server.newuser.User testUser = null;
@@ -158,6 +159,7 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
             final Connection connection = ConnectionFactory.getFactory()
                         .createConnection(RESTfulConnection.class.getCanonicalName(),
                             info.getCallserverURL(),
+                            LegacyCidsServerCore.getClientName(),
                             LegacyCidsServerCore.isCompressionEnabled(),
                             getConnectionContext());
 

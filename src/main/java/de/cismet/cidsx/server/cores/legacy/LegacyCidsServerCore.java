@@ -48,6 +48,12 @@ public class LegacyCidsServerCore implements CidsServerCore {
     )
     static String testDomain;
     @Parameter(
+        names = { "-core.legacy.clientName", "--core.legacy.clientName" },
+        required = false,
+        description = "client name to use for connection"
+    )
+    static String clientName;
+    @Parameter(
         names = { "-core.legacy.testuser", "--core.legacy.testuser" },
         required = false,
         description = "user name to use for unittests"
@@ -101,6 +107,15 @@ public class LegacyCidsServerCore implements CidsServerCore {
      */
     public static String getTestUser() {
         return testUser;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String getClientName() {
+        return clientName;
     }
 
     /**
