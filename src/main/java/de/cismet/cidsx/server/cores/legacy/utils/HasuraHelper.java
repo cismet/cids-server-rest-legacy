@@ -46,6 +46,10 @@ public class HasuraHelper {
         "mutation UpdateActionStatus {update_action(where: {id: {_eq: \"%1s\"}}, _set: {status: %2s, updatedAt: \"now()\"}){affected_rows}}";
     private static final String STATUS_RESULT_UPDATE_QUERY =
         "mutation UpdateActionStatus {update_action(where: {id: {_eq: \"%1s\"}}, _set: {result: \"%2s\", status: %3s, updatedAt: \"now()\"}){affected_rows}}";
+    private static final String STATUS_RESULT_PARAMETER_UPDATE_QUERY =
+        "mutation UpdateActionStatus {update_action(where: {id: {_eq: \"%1s\"}}, _set: {result: \"%2s\", status: %3s, updatedAt: \"now()\", parameter: \"%4s\"}){affected_rows}}";
+    private static final String STATUS_PARAMETER_UPDATE_QUERY =
+        "mutation UpdateActionStatus {update_action(where: {id: {_eq: \"%1s\"}}, _set: {status: %3s, updatedAt: \"now()\", parameter: \"%4s\"}){affected_rows}}";
     private static final String GET_PARAMETER_QUERY =
         "query GetParameter {action(where: {_and: {id: {_eq: \"%1s\"}}}) {id parameter}}";
     private static final String GET_BODY_QUERY =
@@ -290,6 +294,80 @@ public class HasuraHelper {
                 a.getId(),
                 a.getResult().replace("\"", "\\\""),
                 a.getStatus());
+        final GraphQlQuery queryObject = new GraphQlQuery();
+        queryObject.setOperationName("UpdateActionStatus");
+        queryObject.setQuery(query);
+
+        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+        final String updateResult = sendHasuraRequest(queryObject);
+        final UpdateResult uResult = mapper.readValue(updateResult, UpdateResult.class);
+
+        if ((uResult.getData().getUpdate_action().getAffected_rows() == null)
+                    || !uResult.getData().getUpdate_action().getAffected_rows().equals(1)) {
+            // some error occured
+            log.error("Unexpected response when updating action result:\n"
+                        + updateResult);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   a          DOCUMENT ME!
+     * @param   result     DOCUMENT ME!
+     * @param   parameter  DOCUMENT ME!
+     * @param   status     DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public void sendUpdate(final SubscriptionResponse.Payload.Data.Action a,
+            final String result,
+            final String parameter,
+            final Integer status) throws Exception {
+        a.setResult(result);
+        a.setStatus(status);
+        a.setParameter(parameter);
+        final String query = String.format(
+                STATUS_RESULT_PARAMETER_UPDATE_QUERY,
+                a.getId(),
+                a.getResult().replace("\"", "\\\""),
+                a.getStatus(),
+                a.getParameter().replace("\"", "\\\""));
+        final GraphQlQuery queryObject = new GraphQlQuery();
+        queryObject.setOperationName("UpdateActionStatus");
+        queryObject.setQuery(query);
+
+        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+        final String updateResult = sendHasuraRequest(queryObject);
+        final UpdateResult uResult = mapper.readValue(updateResult, UpdateResult.class);
+
+        if ((uResult.getData().getUpdate_action().getAffected_rows() == null)
+                    || !uResult.getData().getUpdate_action().getAffected_rows().equals(1)) {
+            // some error occured
+            log.error("Unexpected response when updating action result:\n"
+                        + updateResult);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   a          DOCUMENT ME!
+     * @param   parameter  result DOCUMENT ME!
+     * @param   status     DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public void sendUpdate(final SubscriptionResponse.Payload.Data.Action a,
+            final String parameter,
+            final Integer status) throws Exception {
+        a.setStatus(status);
+        a.setParameter(parameter);
+        final String query = String.format(
+                STATUS_PARAMETER_UPDATE_QUERY,
+                a.getId(),
+                a.getStatus(),
+                a.getParameter());
         final GraphQlQuery queryObject = new GraphQlQuery();
         queryObject.setOperationName("UpdateActionStatus");
         queryObject.setQuery(query);

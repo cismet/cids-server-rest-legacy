@@ -7,39 +7,20 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import lombok.extern.slf4j.Slf4j;
 
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 
 import java.rmi.RemoteException;
 
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import de.cismet.cids.server.actions.ServerActionParameter;
 
-import de.cismet.cids.utils.MetaClassCacheService;
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -52,9 +33,6 @@ import de.cismet.cidsx.server.cores.legacy.utils.OfflineActionExecutioner;
 import de.cismet.cidsx.server.cores.legacy.utils.OfflineActionMessageHandler;
 import de.cismet.cidsx.server.cores.legacy.utils.WebsocketClientEndpoint;
 import de.cismet.cidsx.server.cores.legacy.utils.json.ActionExecutionServiceConfiguration;
-import de.cismet.cidsx.server.cores.legacy.utils.json.GraphQlQuery;
-import de.cismet.cidsx.server.cores.legacy.utils.json.SubscriptionResponse;
-import de.cismet.cidsx.server.cores.legacy.utils.json.UpdateResult;
 
 import de.cismet.commons.concurrency.CismetConcurrency;
 import de.cismet.commons.concurrency.CismetExecutors;
@@ -211,8 +189,7 @@ public class LegacyOfflineActionCore implements de.cismet.cidsx.server.cores.Off
      * @param  args  DOCUMENT ME!
      */
     public static void startTest(final String[] args) {
-        final String jwt =
-            "eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiIxIiwic3ViIjoiYWRtaW4iLCJkb21haW4iOiJCRUxJUzItVEVTVCIsImh0dHBzOi8vaGFzdXJhLmlvL2p3dC9jbGFpbXMiOnsieC1oYXN1cmEtZGVmYXVsdC1yb2xlIjoidXNlciIsIngtaGFzdXJhLWFsbG93ZWQtcm9sZXMiOlsiZWRpdG9yIiwidXNlciIsIm1vZCJdfX0.fYY0qv3Pnf-sMj4iwk_pL7XwSDgU0dvEL_AGIQIhszv02uesyAtw7nO0dXLrM6boSvAcKvXB1NjO9FVazIjnvGtk_QijL2L5wP6vey4-w2B3YsZyrIuc5O1P0KlK0QUNFQXk0N09jT5LaxFYzrkn0MkpPOdJXTfq56bBxF1RFIIb0j-5DKROMH1ecnrdlNJlJCYHZKRcM57UEC6gC3nrj8owcPwQQFRL-v99J75EGqKAaP5yFi9VXGXfyK2F2hAV9AlPOwLulz7knvMT4uDudevBKp77bRr3xc35j1VIfmO81q2S_zF2NZ3KIBtqg7KTgKnfA8thmKm9PsvOtDOoQA";
+        final String jwt = "";
         final User user = Tools.validationHelper("Bearer " + jwt);
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null);
         final String bodyString = null;

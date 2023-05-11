@@ -20,20 +20,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.openide.util.Exceptions;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
+import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -46,9 +39,8 @@ import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cidsx.server.api.tools.Tools;
 import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
-import de.cismet.cidsx.server.cores.legacy.utils.json.GraphQlQuery;
+import de.cismet.cidsx.server.cores.legacy.custom.CustomOfflineActionParameterModifier;
 import de.cismet.cidsx.server.cores.legacy.utils.json.SubscriptionResponse;
-import de.cismet.cidsx.server.cores.legacy.utils.json.UpdateResult;
 
 /**
  * DOCUMENT ME!
@@ -90,6 +82,8 @@ public class OfflineActionExecutioner implements Runnable {
         final HasuraHelper helper = new HasuraHelper(hasuraUrlString, hasuraSecret);
         waitingAction.addAll(action);
         int attempt = 0;
+        final Collection<? extends CustomOfflineActionParameterModifier> modifier = Lookup.getDefault()
+                    .lookupAll(CustomOfflineActionParameterModifier.class);
 
         while (!waitingAction.isEmpty() && (attempt <= 10)) {
             Collections.sort(waitingAction, new Comparator<SubscriptionResponse.Payload.Data.Action>() {
@@ -157,10 +151,10 @@ public class OfflineActionExecutioner implements Runnable {
                         return;
                     }
 
-                    // todo Exception wegen gesperrter Objekte abfangen
-
-                    if ((actionResult instanceof Exception)
-                                && ((Exception)actionResult).getMessage().equals("missing id as param")) {
+                    // missing id as param
+                    if ((actionResult instanceof Exception) && (((Exception)actionResult).getMessage() != null)
+                                && ((Exception)actionResult).getMessage().equals(
+                                    "A lock for the desired object is already existing")) {
                         waitingAction.add(a);
                         helper.sendStatusResultUpdate(
                             a,
@@ -171,7 +165,8 @@ public class OfflineActionExecutioner implements Runnable {
                                     + attempt);
                     } else if (actionResult instanceof Exception) {
                         log.warn("Exception returned from action " + a.getAction(), (Exception)actionResult);
-                        if (((Exception)actionResult).getMessage().equals("missing id as param")) {
+                        if ((((Exception)actionResult).getMessage() != null)
+                                    && ((Exception)actionResult).getMessage().equals("missing id as param")) {
                             log.error("missing id as param");
                         }
                         helper.sendStatusResultUpdate(
@@ -181,10 +176,22 @@ public class OfflineActionExecutioner implements Runnable {
                                     + "\"}",
                             500);
                     } else if (actionResult != null) {
-                        helper.sendStatusResultUpdate(a, actionResult.toString(), 200);
+                        final CustomOfflineActionParameterModifier m = getModifier(modifier, a);
+
+                        if (m != null) {
+                            helper.sendUpdate(a, actionResult.toString(), m.modifyParameter(a), 200);
+                        } else {
+                            helper.sendStatusResultUpdate(a, actionResult.toString(), 200);
+                        }
                     } else {
                         // The result in the db should be exception null invalid
-                        helper.sendStatusUpdate(a, 200);
+                        final CustomOfflineActionParameterModifier m = getModifier(modifier, a);
+
+                        if (m != null) {
+                            helper.sendUpdate(a, null, m.modifyParameter(a), 200);
+                        } else {
+                            helper.sendStatusUpdate(a, 200);
+                        }
                     }
                 } catch (Exception e) {
                     log.error("Error while executing action", e);
@@ -199,6 +206,28 @@ public class OfflineActionExecutioner implements Runnable {
                 }
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   modifier  DOCUMENT ME!
+     * @param   a         DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private CustomOfflineActionParameterModifier getModifier(
+            final Collection<? extends CustomOfflineActionParameterModifier> modifier,
+            final SubscriptionResponse.Payload.Data.Action a) {
+        if (modifier != null) {
+            for (final CustomOfflineActionParameterModifier m : modifier) {
+                if (m.canHandleAction(a)) {
+                    return m;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

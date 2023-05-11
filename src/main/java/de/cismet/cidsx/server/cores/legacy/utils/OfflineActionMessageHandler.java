@@ -19,13 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.Lookup;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,10 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import de.cismet.cids.utils.MetaClassCacheService;
-
 import de.cismet.cidsx.server.cores.legacy.custom.CustomOfflineActionGrouper;
-import de.cismet.cidsx.server.cores.legacy.utils.json.GraphQlQuery;
 import de.cismet.cidsx.server.cores.legacy.utils.json.SubscriptionResponse;
 
 /**
@@ -57,7 +52,7 @@ public class OfflineActionMessageHandler implements WebsocketClientEndpoint.Mess
         "{\"type\":\"connection_init\",\"payload\":{\"headers\":{\"X-Hasura-Admin-Secret\":\"%1s\"}}}";
     private static final String INIT_SUBSCRIPTION_QUERY =
         "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"query\":\"subscription onActionChanged "
-                + "{action(where: {_and: {isCompleted: {_eq: false}, result: {_is_null: true}, status: {_is_null: true}}}) "
+                + "{action(where: { _and: {isCompleted: {_eq: false}, result: {_is_null: true}, _or: [{ status: {_is_null: true}}, {status: {_eq: 401}}]} }) "
                 + "{id jwt isCompleted applicationId createdAt updatedAt status action, result} }\"}}";
 
     //~ Instance fields --------------------------------------------------------
@@ -203,8 +198,7 @@ public class OfflineActionMessageHandler implements WebsocketClientEndpoint.Mess
                             }
 
                             private Date toDate(final String dateString) {
-                                // todo pruefen, ob der Datestring wirklich geparst werden kann
-                                final SimpleDateFormat formatter = new SimpleDateFormat();
+                                final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'H:m:s.SSSX");
 
                                 try {
                                     return formatter.parse(dateString);
