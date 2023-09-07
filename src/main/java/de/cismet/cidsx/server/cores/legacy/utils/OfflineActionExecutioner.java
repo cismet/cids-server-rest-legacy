@@ -111,7 +111,7 @@ public class OfflineActionExecutioner implements Runnable {
                     if (Tools.canHazUserProblems(user)) {
                         // jwt invalid. The result in the db should be jwt invalid
                         helper.sendStatusUpdate(a, 401);
-                        break;
+                        continue;
                     }
 
                     helper.sendStatusUpdate(a, 202);
@@ -148,7 +148,7 @@ public class OfflineActionExecutioner implements Runnable {
                     } catch (RemoteException e) {
                         helper.sendStatusResultUpdate(a, "{\"Exception\": \"" + e.getMessage() + "\"}", 500);
 
-                        break;
+                        continue;
                     }
 
                     // missing id as param

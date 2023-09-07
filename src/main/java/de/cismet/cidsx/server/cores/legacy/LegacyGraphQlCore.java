@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
+import Sirius.server.newuser.UserGroup;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,7 +97,9 @@ public class LegacyGraphQlCore implements GraphQlCore {
         cidsSAPs.add(cidsSAP);
         boolean shouldBeZipped = false;
 
-        if ((contentType != null) && contentType.toLowerCase().contains("gzip")) {
+        if ((contentType != null)
+                    && (contentType.toLowerCase().contains("gzip")
+                        || contentType.toLowerCase().contains("octet-stream"))) {
             cidsSAP = new ServerActionParameter("ZIPPED", "true");
             cidsSAPs.add(cidsSAP);
             shouldBeZipped = true;

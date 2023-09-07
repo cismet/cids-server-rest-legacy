@@ -79,22 +79,44 @@ public class BelisOfflineActionGrouper implements CustomOfflineActionGrouper {
             final String parameter = a.getParameter();
             final List<ServerActionParameter> parameterList = OfflineActionExecutioner.convertParameters(parameter);
             String protocollId = null;
+            String objectType = null;
+            String objectId = null;
 
             for (final ServerActionParameter para : parameterList) {
                 if (para.getKey().equalsIgnoreCase("PROTOKOLL_ID")) {
                     protocollId = String.valueOf(para.getValue());
                     break;
+                } else if (para.getKey().equalsIgnoreCase("objekt_id")) {
+                    objectId = String.valueOf(para.getValue());
+                    break;
+                } else if (para.getKey().equalsIgnoreCase("objekt_typ")) {
+                    objectType = String.valueOf(para.getValue());
+                    break;
                 }
             }
 
-            List<SubscriptionResponse.Payload.Data.Action> list = actionsByProtocol.get(protocollId);
+            if ((protocollId != null) || ((objectType == null) || (objectId == null))) {
+                final String key = "prot_" + protocollId;
+                List<SubscriptionResponse.Payload.Data.Action> list = actionsByProtocol.get(key);
 
-            if (list == null) {
-                list = new ArrayList<>();
-                actionsByProtocol.put(protocollId, list);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    actionsByProtocol.put(key, list);
+                }
+
+                list.add(a);
+            } else {
+                // protocollId == null && objectType != null && objectId != null
+                final String key = objectType + "_" + objectId;
+                List<SubscriptionResponse.Payload.Data.Action> list = actionsByProtocol.get(key);
+
+                if (list == null) {
+                    list = new ArrayList<>();
+                    actionsByProtocol.put(key, list);
+                }
+
+                list.add(a);
             }
-
-            list.add(a);
         }
 
         // convert map to list
