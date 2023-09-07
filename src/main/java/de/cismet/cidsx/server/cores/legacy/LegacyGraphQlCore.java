@@ -7,7 +7,6 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
-import Sirius.server.newuser.UserGroup;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import java.io.File;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,9 +24,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import javax.ws.rs.core.MultivaluedMap;
 
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.actions.graphql.GraphqlAction;
 
 import de.cismet.cidsx.server.api.types.User;
 import de.cismet.cidsx.server.backend.legacy.LegacyCoreBackend;
@@ -62,6 +60,7 @@ public class LegacyGraphQlCore implements GraphQlCore {
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
         final Query query = new Query();
+        boolean chunked = false;
 
         try {
             final JsonNode node = mapper.readTree(request);
@@ -85,6 +84,8 @@ public class LegacyGraphQlCore implements GraphQlCore {
                         variableList.add(new VariableEntry(subEntry.getKey(), subEntry.getValue().toString()));
                     }
                     query.setVariables(variableList.toArray(new VariableEntry[variableList.size()]));
+                } else if (n.getKey().equalsIgnoreCase("chunked") && n.getValue().asText().equalsIgnoreCase("true")) {
+                    chunked = true;
                 }
             }
         } catch (Exception e) {
@@ -95,6 +96,12 @@ public class LegacyGraphQlCore implements GraphQlCore {
         cidsSAPs.add(cidsSAP);
         cidsSAP = new ServerActionParameter("VARIABLES", query.getVariablesAsText());
         cidsSAPs.add(cidsSAP);
+        
+        if (chunked) {
+            cidsSAP = new ServerActionParameter(GraphqlAction.PARAMETER_TYPE.CHUNKED.toString(), "true");
+            cidsSAPs.add(cidsSAP);
+        }
+        
         boolean shouldBeZipped = false;
 
         if ((contentType != null)
