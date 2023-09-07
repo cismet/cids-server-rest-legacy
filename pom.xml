@@ -10,7 +10,7 @@
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
-    <version>8.0</version>
+    <version>8.0.1</version>
     <packaging>jar</packaging>
 
     <name>cids Server REST legacy</name>
@@ -20,7 +20,7 @@
         <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
         <url>https://github.com/cismet/cids-server-rest-legacy</url>
-        <tag>v8.0</tag>
+        <tag>v8.0.1</tag>
     </scm>
   
     <issueManagement>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.0</version>
+                <version>8.3.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.0</version>
+                <version>8.3.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
