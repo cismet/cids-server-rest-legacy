@@ -7,7 +7,6 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,14 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.openide.util.lookup.ServiceProvider;
 
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
-
 
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.graphql.GraphqlAction;
@@ -96,12 +93,12 @@ public class LegacyGraphQlCore implements GraphQlCore {
         cidsSAPs.add(cidsSAP);
         cidsSAP = new ServerActionParameter("VARIABLES", query.getVariablesAsText());
         cidsSAPs.add(cidsSAP);
-        
+
         if (chunked) {
             cidsSAP = new ServerActionParameter(GraphqlAction.PARAMETER_TYPE.CHUNKED.toString(), "true");
             cidsSAPs.add(cidsSAP);
         }
-        
+
         boolean shouldBeZipped = false;
 
         if ((contentType != null)
