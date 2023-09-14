@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
@@ -272,7 +273,7 @@ public class OfflineActionExecutioner implements Runnable {
                     final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
                             list);
                     cidsSAPs.add(cidsSAP);
-                } else {
+                } else if (!(n.getValue() instanceof NullNode)) {
                     final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
                             n.getValue().asText());
                     cidsSAPs.add(cidsSAP);
