@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
+import Sirius.server.newuser.UserGroup;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,10 +56,22 @@ public class LegacyGraphQlCore implements GraphQlCore {
             final String request,
             final String contentType) {
         final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
-        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
         final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
         final Query query = new Query();
         boolean chunked = false;
+
+        if (cidsUser == null) {
+            cidsUser = new Sirius.server.newuser.User(3000, user.getUser(), user.getDomain(), user.getJwt());
+            final List<UserGroup> groups = new ArrayList<>();
+
+            for (final String grString : user.getUserGroups()) {
+                final UserGroup gr = new UserGroup(-1, grString, user.getDomain());
+                groups.add(gr);
+            }
+
+            cidsUser.setPotentialUserGroups(groups);
+        }
 
         try {
             final JsonNode node = mapper.readTree(request);
@@ -105,6 +119,7 @@ public class LegacyGraphQlCore implements GraphQlCore {
                     && (contentType.toLowerCase().contains("gzip")
                         || contentType.toLowerCase().contains("octet-stream"))) {
             cidsSAP = new ServerActionParameter("ZIPPED", "true");
+            log.warn("cidsSAPs " + String.valueOf(cidsSAPs) + " cidsSAP: " + String.valueOf(cidsSAP));
             cidsSAPs.add(cidsSAP);
             shouldBeZipped = true;
         }
@@ -119,7 +134,7 @@ public class LegacyGraphQlCore implements GraphQlCore {
                         .executeTask(
                             cidsUser,
                             "graphQl",
-                            cidsUser.getDomain(),
+                            role,
                             null,
                             LegacyCoreBackend.getInstance().getConnectionContext(),
                             cidsSAPs.toArray(new ServerActionParameter[0]));
