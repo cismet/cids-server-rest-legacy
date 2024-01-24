@@ -14,8 +14,6 @@ package de.cismet.cidsx.server.cores.legacy.custom;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.openide.util.lookup.ServiceProvider;
-
 import de.cismet.cidsx.server.cores.legacy.utils.json.SubscriptionResponse;
 
 /**
@@ -24,52 +22,19 @@ import de.cismet.cidsx.server.cores.legacy.utils.json.SubscriptionResponse;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-@ServiceProvider(service = CustomOfflineActionParameterModifier.class)
+//@ServiceProvider(service = CustomOfflineActionParameterModifier.class)
 @Slf4j
-public class BelisOfflineActionParameterModifier implements CustomOfflineActionParameterModifier {
+public class VzkActionParameterModifier implements CustomOfflineActionParameterModifier {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static String[] TASKNAMES = {
-            "addDocument",
-            "BelisWebDavTunnelAction",
-            "LockEntities",
-            "addIncident",
-            "uploadDocument",
-            "protokollFortfuehrungsantrag",
-            "protokollLeuchteLeuchtenerneuerung",
-            "protokollLeuchteLeuchtmittelwechselElekpruefung",
-            "protokollLeuchteLeuchtmittelwechsel",
-            "protokollLeuchteRundsteuerempfaengerwechsel",
-            "protokollLeuchteSonderturnus",
-            "protokollLeuchteVorschaltgeraetwechsel",
-            "protokollMauerlaschePruefung",
-            "protokollSchaltstelleRevision",
-            "protokollStandortAnstricharbeiten",
-            "protokollStandortElektrischePruefung",
-            "protokollStandortMasterneuerung",
-            "protokollStandortRevision",
-            "protokollStandortStandsicherheitspruefung",
-            "protokollStatusAenderung"
-        };
+    private static final String[] TASKNAMES = { "saveObject" };
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public String modifyParameter(final SubscriptionResponse.Payload.Data.Action a) {
-        String parameter = a.getParameter();
-
-        if (parameter.indexOf("\"ImageData\":") > 0) {
-            String tmp = parameter.substring(0, parameter.indexOf("\"ImageData\":") + "\"ImageData\":".length());
-            tmp += "\"stripped\"";
-            tmp += parameter.substring(parameter.indexOf(
-                        "\"",
-                        parameter.indexOf("\"", parameter.indexOf("\"ImageData\":") + "\"ImageData\":".length())
-                                + 1) + 1);
-            parameter = tmp;
-        }
-
-        return parameter;
+        return a.getParameter();
     }
 
     @Override

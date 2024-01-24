@@ -44,7 +44,7 @@ public class BelisOfflineActionGrouper implements CustomOfflineActionGrouper {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static String[] TASKNAMES = {
+    private static final String[] TASKNAMES = {
             "addDocument",
             "BelisWebDavTunnelAction",
             "LockEntities",
