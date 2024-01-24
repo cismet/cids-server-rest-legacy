@@ -274,9 +274,16 @@ public class OfflineActionExecutioner implements Runnable {
                             list);
                     cidsSAPs.add(cidsSAP);
                 } else if (!(n.getValue() instanceof NullNode)) {
-                    final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
-                            n.getValue().asText());
-                    cidsSAPs.add(cidsSAP);
+                    if (n.getValue().asText().equals("") && !n.getValue().toString().equals("")
+                                && (n.getValue() instanceof ObjectNode)) {
+                        final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
+                                n.getValue().toString());
+                        cidsSAPs.add(cidsSAP);
+                    } else {
+                        final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
+                                n.getValue().asText());
+                        cidsSAPs.add(cidsSAP);
+                    }
                 }
             }
         } catch (Exception e) {
