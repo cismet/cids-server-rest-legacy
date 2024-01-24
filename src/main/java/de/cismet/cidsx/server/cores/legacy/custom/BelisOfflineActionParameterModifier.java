@@ -30,7 +30,7 @@ public class BelisOfflineActionParameterModifier implements CustomOfflineActionP
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static String[] TASKNAMES = {
+    private static final String[] TASKNAMES = {
             "addDocument",
             "BelisWebDavTunnelAction",
             "LockEntities",
