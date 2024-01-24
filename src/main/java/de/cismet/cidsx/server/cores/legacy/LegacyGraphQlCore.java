@@ -243,14 +243,16 @@ public class LegacyGraphQlCore implements GraphQlCore {
             final StringBuffer sb = new StringBuffer("{");
             boolean first = true;
 
-            for (final VariableEntry variable : variables) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(",");
+            if (variables != null) {
+                for (final VariableEntry variable : variables) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        sb.append(",");
+                    }
+                    sb.append("\"").append(variable.name).append("\":");
+                    sb.append(variable.value);
                 }
-                sb.append("\"").append(variable.name).append("\":");
-                sb.append(variable.value);
             }
 
             sb.append("}");
