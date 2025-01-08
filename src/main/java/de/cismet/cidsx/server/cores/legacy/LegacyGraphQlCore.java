@@ -56,22 +56,10 @@ public class LegacyGraphQlCore implements GraphQlCore {
             final String request,
             final String contentType) {
         final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
-        Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role, true);
         final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
         final Query query = new Query();
         boolean chunked = false;
-
-        if (cidsUser == null) {
-            cidsUser = new Sirius.server.newuser.User(3000, user.getUser(), user.getDomain(), user.getJwt());
-            final List<UserGroup> groups = new ArrayList<>();
-
-            for (final String grString : user.getUserGroups()) {
-                final UserGroup gr = new UserGroup(-1, grString, user.getDomain());
-                groups.add(gr);
-            }
-
-            cidsUser.setPotentialUserGroups(groups);
-        }
 
         try {
             final JsonNode node = mapper.readTree(request);

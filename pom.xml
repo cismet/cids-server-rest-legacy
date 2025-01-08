@@ -10,7 +10,7 @@
     
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server-rest-legacy</artifactId>
-    <version>8.0.4</version>
+    <version>8.0.5</version>
     <packaging>jar</packaging>
 
     <name>cids Server REST legacy</name>
@@ -20,7 +20,7 @@
         <connection>https://github.com/cismet/cids-server-rest-legacy.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server-rest-legacy.git</developerConnection>
         <url>https://github.com/cismet/cids-server-rest-legacy</url>
-        <tag>v8.0.4</tag>
+        <tag>v8.0.5</tag>
     </scm>
   
     <issueManagement>
@@ -88,6 +88,17 @@
                 <version>8.4.5</version>
                 <type>test-jar</type>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.aedsicad</groupId>
+                <artifactId>aaaweb-rest-connector</artifactId>
+                <version>8.0.2</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.squareup.okio</groupId>
+                        <artifactId>okio</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             
             <dependency>
@@ -487,7 +498,7 @@
         <dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
             <artifactId>cids-custom-server-wuppertal</artifactId>
-            <version>8.2.3</version>
+            <version>8.5.3</version>
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>
