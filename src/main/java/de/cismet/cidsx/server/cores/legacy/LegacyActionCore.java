@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
+import Sirius.server.newuser.UserGroup;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -178,7 +180,8 @@ public class LegacyActionCore implements ActionCore {
         }
 
         final List<ServerActionParameter> cidsSAPs = new ArrayList<>();
-        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role, true);
+
         if ((actionTask != null) && (actionTask.getParameters() != null)
                     && !actionTask.getParameters().isEmpty()) {
             final Map<String, Object> actionParameters = actionTask.getParameters();

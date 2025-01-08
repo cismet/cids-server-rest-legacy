@@ -38,8 +38,10 @@ import java.net.URL;
 
 import java.rmi.RemoteException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -256,13 +258,32 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
      * @return  DOCUMENT ME!
      */
     public synchronized Sirius.server.newuser.User getCidsUser(final User user, final String role) {
+        return getCidsUser(user, role, false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user                      DOCUMENT ME!
+     * @param   role                      DOCUMENT ME!
+     * @param   allowUserfromOtherDomain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public synchronized Sirius.server.newuser.User getCidsUser(final User user,
+            final String role,
+            final boolean allowUserfromOtherDomain) {
         user.equals(user); // <- why ???
 
         final Sirius.server.newuser.User immutableCidsUser = userMap.get(user);
 
         if (immutableCidsUser == null) {
-            log.warn("user '" + user.getUser() + "@" + user.getDomain() + "' not found");
-            return null;
+            if (allowUserfromOtherDomain) {
+                return createCrossDomainedCidsUser(user);
+            } else {
+                log.warn("user '" + user.getUser() + "@" + user.getDomain() + "' not found");
+                return null;
+            }
         }
 
         // setUserGroup is called on one user instance that might be used by different
@@ -305,6 +326,32 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
         }
 
         return cidsUser;
+    }
+
+    /**
+     * This method creates a Sirius.server.newuser.User object from a de.cismet.cidsx.server.api.types.user object. Even
+     * if the user is from an other domain
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Sirius.server.newuser.User createCrossDomainedCidsUser(final User user) {
+        final Sirius.server.newuser.User newCidsUser = new Sirius.server.newuser.User(
+                9999,
+                user.getUser(),
+                user.getDomain(),
+                user.getJwt());
+        final List<UserGroup> groups = new ArrayList<>();
+
+        for (final String grString : user.getUserGroups()) {
+            final UserGroup gr = new UserGroup(-1, grString, user.getDomain());
+            groups.add(gr);
+        }
+
+        newCidsUser.setPotentialUserGroups(groups);
+
+        return newCidsUser;
     }
 
     /**
