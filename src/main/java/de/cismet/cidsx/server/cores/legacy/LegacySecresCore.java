@@ -101,7 +101,7 @@ public class LegacySecresCore implements SecresCore {
             final String type,
             final String url,
             final MultivaluedMap<String, String> queryParams) {
-        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null);
+        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null, true);
         String contentType = "";
         InputStream contentStream = null;
         Response.Status responseStatus = Response.Status.INTERNAL_SERVER_ERROR;

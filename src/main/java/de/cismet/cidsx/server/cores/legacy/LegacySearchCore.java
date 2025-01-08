@@ -126,7 +126,7 @@ public class LegacySearchCore implements SearchCore {
         final String domain = user.getDomain();
         LegacyCoreBackend.getInstance().ensureDomainCached(domain, user);
 
-        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role);
+        final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, role, true);
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
         final Class<? extends CidsServerSearch> serverSearchClass = ServerSearchFactory.getFactory()
                     .getServerSearchClass(searchKey);
