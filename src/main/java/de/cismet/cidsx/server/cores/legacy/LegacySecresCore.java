@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import java.net.URL;
+import java.net.URLEncoder;
 
 import java.nio.file.Files;
 
@@ -214,8 +215,16 @@ public class LegacySecresCore implements SecresCore {
                     final Map<String, String> headerList = new HashMap<>();
                     final Map<String, Object> statusList = new HashMap<>();
                     final String paramString = getParamString(queryParams);
-                    final String targetUrl = baseUrl + url + ((paramString != null) ? ("?" + paramString) : "");
-                    final InputStream is = webDav.getInputStream(targetUrl, headerList, statusList);
+                    String targetUrl = baseUrl + url + ((paramString != null) ? ("?" + paramString) : "");
+                    InputStream is = null;
+
+                    try {
+                        is = webDav.getInputStream(targetUrl, headerList, statusList);
+                    } catch (IllegalArgumentException e) {
+                        targetUrl = baseUrl + url
+                                    + ((paramString != null) ? ("?" + URLEncoder.encode(paramString, "UTF-8")) : "");
+                        is = webDav.getInputStream(targetUrl, headerList, statusList);
+                    }
 
                     contentStream = is;
 
