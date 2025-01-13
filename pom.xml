@@ -63,7 +63,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>8.0.2</version>
+                <version>8.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
