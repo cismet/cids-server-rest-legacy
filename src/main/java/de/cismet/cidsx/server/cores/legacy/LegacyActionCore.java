@@ -174,6 +174,7 @@ public class LegacyActionCore implements ActionCore {
             final String actionKey,
             final ActionTask actionTask,
             final String role,
+            final String domain,
             final InputStream fileAttachement) {
         if (log.isDebugEnabled()) {
             log.info("executeNewAction with actionKey '" + actionKey + "'");
@@ -211,17 +212,31 @@ public class LegacyActionCore implements ActionCore {
                 }
             }
 
-            final Object taskResult = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .executeTask(
-                            cidsUser,
-                            actionKey,
-                            cidsUser.getDomain(),
-                            body,
-                            LegacyCoreBackend.getInstance().getConnectionContext(),
-                            cidsSAPs.toArray(new ServerActionParameter[0]));
+            if (domain != null) {
+                final Object taskResult = LegacyCoreBackend.getInstance()
+                            .getService()
+                            .executeTask(
+                                cidsUser,
+                                actionKey,
+                                domain,
+                                body,
+                                LegacyCoreBackend.getInstance().getConnectionContext(),
+                                cidsSAPs.toArray(new ServerActionParameter[0]));
 
-            return new GenericResourceWithContentType(STREAMTYPE_APPOCTETSTREAM, taskResult);
+                return new GenericResourceWithContentType(STREAMTYPE_APPOCTETSTREAM, taskResult);
+            } else {
+                final Object taskResult = LegacyCoreBackend.getInstance()
+                            .getService()
+                            .executeTask(
+                                cidsUser,
+                                actionKey,
+                                cidsUser.getDomain(),
+                                body,
+                                LegacyCoreBackend.getInstance().getConnectionContext(),
+                                cidsSAPs.toArray(new ServerActionParameter[0]));
+
+                return new GenericResourceWithContentType(STREAMTYPE_APPOCTETSTREAM, taskResult);
+            }
         } catch (final Exception ex) {
             final String message = "error while executing action task with actionKey '"
                         + actionKey + "': " + ex.getMessage();
@@ -280,6 +295,7 @@ public class LegacyActionCore implements ActionCore {
                                     actionKey,
                                     finalTask,
                                     role,
+                                    user.getDomain(),
                                     fileAttachement);
                             resultMap.put(finalTask.getKey(), grwct);
                             finalTask.setStatus(ActionTask.Status.FINISHED);
