@@ -106,6 +106,7 @@ public class LegacySecresCore implements SecresCore {
         String contentType = "";
         InputStream contentStream = null;
         Response.Status responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
+        final Map<String, String> respHeaderList = new HashMap<>();
 
         try {
             final String configAttr = LegacyCoreBackend.getInstance()
@@ -231,6 +232,8 @@ public class LegacySecresCore implements SecresCore {
                     for (final String headerName : headerList.keySet()) {
                         if (headerName.equalsIgnoreCase("Content-Type")) {
                             contentType = headerList.get(headerName);
+                        } else {
+                            respHeaderList.put(headerName, headerList.get(headerName));
                         }
                     }
 
@@ -241,6 +244,13 @@ public class LegacySecresCore implements SecresCore {
             }
 
             ResponseBuilder rb = Response.status(responseStatus).header("Content-Type", contentType);
+
+            if ((config.getForwardResponseHeaders() != null)
+                        && config.getForwardResponseHeaders().equalsIgnoreCase("true")) {
+                for (final String headerName : respHeaderList.keySet()) {
+                    rb.header(headerName, respHeaderList.get(headerName));
+                }
+            }
 
             rb = addConfiguredHeader(rb, config, removedParameters);
 
@@ -449,6 +459,7 @@ public class LegacySecresCore implements SecresCore {
         private String password;
         private String baseUrl;
         private String mode;
+        private String forwardResponseHeaders;
         private ResponseHeader[] responseHeader;
         private Params[] params;
         private OverwritableHeader[] overwritableHeader;
