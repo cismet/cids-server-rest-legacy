@@ -71,9 +71,13 @@ public class LegacyUserCore implements UserCore {
                             password,
                             LegacyCoreBackend.getInstance().getConnectionContext());
             final Collection<String> userGroupNames = new ArrayList<>();
-            for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
-                userGroupNames.add(cidsUserGroup.getName());
+            
+            if (cidsUser.getPotentialUserGroups() != null) {
+                for (final UserGroup cidsUserGroup : cidsUser.getPotentialUserGroups()) {
+                    userGroupNames.add(cidsUserGroup.getName());
+                }
             }
+            
             user.setUserGroups(userGroupNames);
             LegacyCoreBackend.getInstance().registerUser(cidsUser, user);
             user.setValidated(true);
