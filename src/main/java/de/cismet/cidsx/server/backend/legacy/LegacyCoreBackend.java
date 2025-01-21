@@ -152,11 +152,19 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
         try {
             final ConnectionInfo info = new ConnectionInfo();
             info.setCallserverURL(LegacyCidsServerCore.getCallserver());
-            info.setUsername(user.getUser());
             info.setUsergroup(null);
-            info.setPassword(user.getPass());
             info.setUserDomain(user.getDomain());
             info.setUsergroupDomain(null);
+
+            if ((user.getJwt() != null)
+                        && ((user.getPass() == null) || (user.getUser() == null) || user.getUser().equals("jwt"))) {
+                info.setUsername("jwt");
+                info.setPassword(user.getJwt());
+            } else {
+                info.setUsername(user.getUser());
+                info.setPassword(user.getPass());
+            }
+            info.setPassword(((user.getPass() != null) ? user.getPass() : user.getJwt()));
 
             final Connection connection = ConnectionFactory.getFactory()
                         .createConnection(RESTfulConnection.class.getCanonicalName(),
