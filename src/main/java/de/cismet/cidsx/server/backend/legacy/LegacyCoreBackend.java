@@ -250,10 +250,31 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
      * @param  user      DOCUMENT ME!
      */
     public void registerUser(final Sirius.server.newuser.User cidsUser, final User user) {
-        if (!userMap.containsKey(user)) {
+        if (!mapContainsCurrentUser(user)) {
             initProxy(user);
             userMap.put(user, cidsUser);
             StatusHolder.getInstance().putStatus("cachedUsers", String.valueOf(userMap.size()));
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean mapContainsCurrentUser(final User user) {
+        if (!userMap.containsKey(user)) {
+            return false;
+        } else {
+            final Sirius.server.newuser.User u = userMap.get(user);
+
+            if (u != null) {
+                return u.getJwsToken().equals(user.getJwt());
+            } else {
+                return false;
+            }
         }
     }
 
