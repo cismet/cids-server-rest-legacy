@@ -250,7 +250,10 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
      * @param  user      DOCUMENT ME!
      */
     public void registerUser(final Sirius.server.newuser.User cidsUser, final User user) {
-        if (!mapContainsCurrentUser(user)) {
+        if (!mapContainsCurrentUser(user, cidsUser.getJwsToken())) {
+            // I do not think, that the initProxy() method does much sense here, because the SessionManager will use
+            // the proxy of the most recent user, that used the rest service with his current credentials for the first
+            // time. But it seems that the SessionManager is not used at all at the moment.
             initProxy(user);
             userMap.put(user, cidsUser);
             StatusHolder.getInstance().putStatus("cachedUsers", String.valueOf(userMap.size()));
@@ -261,17 +264,18 @@ public class LegacyCoreBackend implements ConnectionContextProvider {
      * DOCUMENT ME!
      *
      * @param   user  DOCUMENT ME!
+     * @param   jwt   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean mapContainsCurrentUser(final User user) {
+    private boolean mapContainsCurrentUser(final User user, final String jwt) {
         if (!userMap.containsKey(user)) {
             return false;
         } else {
             final Sirius.server.newuser.User u = userMap.get(user);
 
             if (u != null) {
-                return u.getJwsToken().equals(user.getJwt());
+                return u.getJwsToken().equals(jwt);
             } else {
                 return false;
             }
