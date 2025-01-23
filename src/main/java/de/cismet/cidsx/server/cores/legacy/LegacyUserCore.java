@@ -78,6 +78,10 @@ public class LegacyUserCore implements UserCore {
                 }
             }
 
+            if (userGroupNames.isEmpty() && (cidsUser.getUserGroup() != null)) {
+                userGroupNames.add(cidsUser.getUserGroup().getName());
+            }
+
             user.setUserGroups(userGroupNames);
             LegacyCoreBackend.getInstance().registerUser(cidsUser, user);
             user.setValidated(true);
