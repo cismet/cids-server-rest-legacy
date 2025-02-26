@@ -5,7 +5,7 @@
     <parent>
         <groupId>de.cismet</groupId>
         <artifactId>cismet-parent</artifactId>
-        <version>8.0</version>
+        <version>9.0</version>
     </parent>
     
     <groupId>de.cismet.cids</groupId>
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -48,14 +48,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>8.1</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>8.1</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,21 +78,21 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.8.2</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.8.2</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>de.aedsicad</groupId>
                 <artifactId>aaaweb-rest-connector</artifactId>
-                <version>8.0.2</version>
+                <version>9.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.squareup.okio</groupId>
@@ -104,7 +104,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>8.3.3</version>
+                <version>9.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -133,7 +133,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>8.3.3</version>
+                <version>9.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -155,20 +155,20 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
             </dependency>
             
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cidsbean-json-patch</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cidsbean-json-patch</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -176,14 +176,14 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>json-patch</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -191,7 +191,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>jcommander</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
             </dependency>
             <!-- END: cismet dependencies -->
             
@@ -331,13 +331,13 @@
             all log messages collected by slf4j to log4j!
         -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -498,7 +498,7 @@
         <dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
             <artifactId>cids-custom-server-wuppertal</artifactId>
-            <version>8.5.3</version>
+            <version>9.0</version>
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>
