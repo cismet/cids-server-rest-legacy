@@ -48,14 +48,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0</version>
+                <version>9.0.5</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0</version>
+                <version>9.0.5</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>9.0</version>
+                <version>9.1.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest</artifactId>
-                <version>9.0</version>
+                <version>9.1.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>9.0</version>
+                <version>9.1.5</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>9.0</version>
+                <version>9.1.5</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
