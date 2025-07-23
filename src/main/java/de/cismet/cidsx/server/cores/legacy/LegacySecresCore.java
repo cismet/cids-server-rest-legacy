@@ -57,6 +57,7 @@ import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
+import java.util.Base64;
 
 /**
  * DOCUMENT ME!
@@ -101,7 +102,8 @@ public class LegacySecresCore implements SecresCore {
     public ResponseBuilder executeQuery(final User user,
             final String type,
             final String url,
-            final MultivaluedMap<String, String> queryParams) {
+            final MultivaluedMap<String, String> queryParams,
+            final String authString) {
         final Sirius.server.newuser.User cidsUser = LegacyCoreBackend.getInstance().getCidsUser(user, null, true);
         String contentType = "";
         InputStream contentStream = null;
@@ -211,7 +213,22 @@ public class LegacySecresCore implements SecresCore {
                 default: {
                     // The webdav client is a normal http client that uses Basic Authentifizierung, if a user and
                     // password is set
-                    final WebDavClient webDav = new WebDavClient(null, config.getUser(), config.getPassword());
+                    final WebDavClient webDav;
+                    
+                    if (authString != null) {
+                        String decodedAuthString = new String(Base64.getDecoder().decode(authString));
+                        
+                        if (decodedAuthString.contains(":")) {
+                            String userFromAuthString = decodedAuthString.substring(0, decodedAuthString.indexOf(":"));
+                            String passwdFromAuthString = decodedAuthString.substring(decodedAuthString.indexOf(":") + 1);
+
+                            webDav = new WebDavClient(null, userFromAuthString, passwdFromAuthString);
+                        } else {
+                            webDav = new WebDavClient(null, config.getUser(), config.getPassword());
+                        }
+                    } else {
+                        webDav = new WebDavClient(null, config.getUser(), config.getPassword());
+                    }
                     final String baseUrl = (config.getBaseUrl() == null) ? "" : config.getBaseUrl();
                     final Map<String, String> headerList = new HashMap<>();
                     final Map<String, Object> statusList = new HashMap<>();
