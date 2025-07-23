@@ -130,8 +130,8 @@ public class OfflineActionExecutioner implements Runnable {
                         }
                     }
 
-                    if (log.isDebugEnabled()) {
-                        log.debug("execute action " + a.getAction());
+                    if (log.isInfoEnabled()) {
+                        log.info("execute action " + a.getAction());
                     }
 
                     Object actionResult = null;
