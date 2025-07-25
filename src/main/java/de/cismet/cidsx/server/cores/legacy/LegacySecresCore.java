@@ -30,6 +30,7 @@ import java.nio.file.Files;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,6 @@ import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
-import java.util.Base64;
 
 /**
  * DOCUMENT ME!
@@ -214,13 +214,17 @@ public class LegacySecresCore implements SecresCore {
                     // The webdav client is a normal http client that uses Basic Authentifizierung, if a user and
                     // password is set
                     final WebDavClient webDav;
-                    
+
                     if (authString != null) {
-                        String decodedAuthString = new String(Base64.getDecoder().decode(authString));
-                        
+                        final String decodedAuthString = new String(Base64.getDecoder().decode(
+                                    authString.substring("Basic ".length())));
+
                         if (decodedAuthString.contains(":")) {
-                            String userFromAuthString = decodedAuthString.substring(0, decodedAuthString.indexOf(":"));
-                            String passwdFromAuthString = decodedAuthString.substring(decodedAuthString.indexOf(":") + 1);
+                            final String userFromAuthString = decodedAuthString.substring(
+                                    0,
+                                    decodedAuthString.indexOf(":"));
+                            final String passwdFromAuthString = decodedAuthString.substring(decodedAuthString.indexOf(
+                                        ":") + 1);
 
                             webDav = new WebDavClient(null, userFromAuthString, passwdFromAuthString);
                         } else {
