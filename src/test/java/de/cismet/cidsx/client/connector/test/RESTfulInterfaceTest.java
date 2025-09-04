@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.github.fge.jackson.JsonLoader;
-import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -27,6 +26,7 @@ import de.cismet.cids.jsonpatch.CidsBeanPatchUtils;
 import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PropertyResourceBundle;
@@ -364,7 +364,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         JsonNode operations = JsonLoader.fromURL(RESTfulInterfaceTest.class.getResource("patches.json"));
 
         LOGGER.debug("loading " + operations.size() + " patch operations");
-        final List<Object[]> list = Lists.newArrayList();
+        final List<Object[]> list = new ArrayList<>();
         final Iterator<JsonNode> nodeIterator = operations.iterator();
         while (nodeIterator.hasNext()) {
             try {
