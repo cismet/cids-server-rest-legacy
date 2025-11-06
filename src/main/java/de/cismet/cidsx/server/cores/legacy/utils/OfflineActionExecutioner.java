@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -277,7 +278,7 @@ public class OfflineActionExecutioner implements Runnable {
                     if (n.getValue().asText().equals("") && !n.getValue().toString().equals("")
                                 && (n.getValue() instanceof ObjectNode)) {
                         final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
-                                n.getValue().toString());
+                                toLinkedHashMap((ObjectNode)n.getValue()));
                         cidsSAPs.add(cidsSAP);
                     } else {
                         final ServerActionParameter cidsSAP = new ServerActionParameter(n.getKey(),
@@ -291,5 +292,31 @@ public class OfflineActionExecutioner implements Runnable {
         }
 
         return cidsSAPs;
+    }
+
+    /**
+     * Creates a hash map from the given object node.
+     *
+     * @param   objectNode  the node to convert to a hash map
+     *
+     * @return  the created LinkedHashMap object
+     */
+    public static Map<String, Object> toLinkedHashMap(final ObjectNode objectNode) {
+        final Map<String, Object> map = new LinkedHashMap<>();
+        final Iterator<Map.Entry<String, JsonNode>> fields = objectNode.fields();
+
+        while (fields.hasNext()) {
+            final Map.Entry<String, JsonNode> entry = fields.next();
+            if (!(entry.getValue() instanceof NullNode)) {
+                if (entry.getValue().asText().equals("") && !entry.getValue().toString().equals("")
+                            && (entry.getValue() instanceof ObjectNode)) {
+                    map.put(entry.getKey(), toLinkedHashMap((ObjectNode)entry.getValue()));
+                } else {
+                    map.put(entry.getKey(), entry.getValue().asText());
+                }
+            }
+        }
+
+        return map;
     }
 }
