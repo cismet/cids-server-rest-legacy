@@ -279,20 +279,32 @@ public class HasuraHelper {
      * DOCUMENT ME!
      *
      * @param   a       DOCUMENT ME!
-     * @param   result  DOCUMENT ME!
+     * @param   res     DOCUMENT ME!
      * @param   status  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
     public void sendStatusResultUpdate(final SubscriptionResponse.Payload.Data.Action a,
-            final String result,
+            final String res,
             final Integer status) throws Exception {
+        String result = res;
+        boolean noEscape = false;
+
+        try {
+            result = new ObjectMapper().writeValueAsString(result);
+            if (result.startsWith("\"") && result.endsWith("\"")) {
+                result = result.substring(1, result.length() - 1);
+            }
+            noEscape = true;
+        } catch (Exception e) {
+            // nothing to do. The string is not a json string
+        }
         a.setResult(result);
         a.setStatus(status);
         final String query = String.format(
                 STATUS_RESULT_UPDATE_QUERY,
                 a.getId(),
-                a.getResult().replace("\"", "\\\""),
+                (noEscape ? a.getResult() : a.getResult().replace("\"", "\\\"")),
                 a.getStatus());
         final GraphQlQuery queryObject = new GraphQlQuery();
         queryObject.setOperationName("UpdateActionStatus");
