@@ -48,14 +48,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.6</version>
+                <version>9.0.6-prerelease</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.6</version>
+                <version>9.0.6-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -78,14 +78,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>9.1.6</version>
+                <version>9.1.7-prerelease-1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>9.1.6</version>
+                <version>9.1.7-prerelease-1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -104,7 +104,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>9.1.4</version>
+                <version>9.1.5-prerelease</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -133,7 +133,7 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>9.1.4</version>
+                <version>9.1.5-prerelease</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.oracle</groupId>
@@ -298,14 +298,21 @@
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-apache-client</artifactId>
-            <scope>compile</scope>
-            <type>jar</type>
-        </dependency>
         <!-- END: managed dependencies -->
 
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-apache-client4</artifactId>
+            <scope>compile</scope>
+            <version>1.19.4</version>
+            <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
@@ -491,7 +498,7 @@
         <dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
             <artifactId>cids-custom-server-wuppertal</artifactId>
-            <version>9.0</version>
+            <version>9.5.1-prerelease</version>
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>

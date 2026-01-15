@@ -10,8 +10,8 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -397,13 +397,16 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
             resource = getRootResource() + path;
         }
 
-        final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
+        final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
 
         clientConfig.getClasses().add(JacksonJsonProvider.class);
+
+        // Workaround for HttpURLConnection (if PUT/DELETE/other methods required)
         clientConfig.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
 
-        final Client client = ApacheHttpClient.create(clientConfig);
+        final Client client = ApacheHttpClient4.create(clientConfig);
         //client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
+        
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         final WebResource webResource = client.resource(uriBuilder.build());
