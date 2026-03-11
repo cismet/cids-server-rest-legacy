@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -76,6 +76,7 @@ public class LegacySecresCore implements SecresCore {
             "LegacyWebdavCore");
     private static final String CONF_ATTR_PREFIX = "secres://";
     private static final Set<String> missingConfigurations = new TreeSet<String>();
+    private static final Map<String, String> CONFIG_ATTRS = new ConcurrentHashMap<>();
 
     //~ Enums ------------------------------------------------------------------
 
@@ -111,9 +112,17 @@ public class LegacySecresCore implements SecresCore {
         final Map<String, String> respHeaderList = new HashMap<>();
 
         try {
-            final String configAttr = LegacyCoreBackend.getInstance()
-                        .getService()
-                        .getConfigAttr(cidsUser, CONF_ATTR_PREFIX + type, CC);
+            final String cacheKey = cidsUser.getJwsToken() + "|" + CONF_ATTR_PREFIX + type;
+
+            String configAttr = CONFIG_ATTRS.get(cacheKey);
+
+            if (configAttr == null) {
+                configAttr = LegacyCoreBackend.getInstance().getService()
+                            .getConfigAttr(cidsUser, CONF_ATTR_PREFIX + type, CC);
+
+                CONFIG_ATTRS.put(cacheKey, configAttr);
+            }
+
             final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
             final Class<ConfigurationJson> clazz = ConfigurationJson.class;
             ConfigurationJson config = null;
