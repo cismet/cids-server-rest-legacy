@@ -4,17 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.github.fge.jackson.JsonLoader;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
-import com.sun.jersey.core.util.Base64;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -24,15 +14,23 @@ import de.cismet.cids.dynamics.CidsBeanInfo;
 import de.cismet.cids.jsonpatch.CidsBeanPatch;
 import de.cismet.cids.jsonpatch.CidsBeanPatchUtils;
 import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PropertyResourceBundle;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -94,9 +92,9 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
 
         HOST = bundle.getString("host");
         BASIC_AUTH_STRING = "Basic "
-                + new String(Base64.encode(bundle.getString("username")
+                + new String(Base64.getEncoder().encode((bundle.getString("username")
                         + "@" + bundle.getString("domain")
-                        + ":" + bundle.getString("password")));
+                        + ":" + bundle.getString("password")).getBytes()));
 
         DevelopmentTools.initSessionManagerFromRestfulConnectionOnLocalhost(
                 bundle.getString("domain"),
@@ -124,9 +122,9 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         LOGGER.info("RESTfulInterfaceTest successfully initialized");
     }
 
-    private WebResource.Builder createAuthorisationHeader(final WebResource webResource)
+    private Invocation.Builder createAuthorisationHeader(final WebTarget webResource)
             throws RemoteException {
-        final WebResource.Builder builder = webResource.header("Authorization", BASIC_AUTH_STRING);
+        final Invocation.Builder builder = webResource.request().header("Authorization", BASIC_AUTH_STRING);
         return builder;
     }
 
@@ -136,11 +134,10 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         final String className = DEFAULT_CIDS_BEAN.getCidsBeanInfo().getClassKey();
         final String domain = DEFAULT_CIDS_BEAN.getCidsBeanInfo().getDomainKey();
 
-        final MultivaluedMap queryParameters = new MultivaluedMapImpl();
-        final WebResource webResource = this.createWebResource(ENTITIES_API)
-                .path(domain + "." + className + "/" + objectId)
-                .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource);
+        final WebTarget webResource = this.createWebResource(ENTITIES_API)
+                .path(domain + "." + className + "/" + objectId);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webResource);
         builder = this.createMediaTypeHeaders(builder);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("deleteMetaObject '" + objectId + "@" + className + "@" + domain
@@ -149,8 +146,9 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
 
         try {
             builder.delete(ObjectNode.class);
-        } catch (UniformInterfaceException ue) {
-            final ClientResponse.Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
+            
             final String message = "could not delete meta object '"
                     + objectId
                     + "@"
@@ -159,32 +157,18 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
                     + domain
                     + "': "
                     + status.getReasonPhrase();
-
-            LOGGER.error(message, ue);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(ue.getResponse().getEntity(String.class));
-            }
-            throw new RemoteException(message, ue);
         }
     }
 
+    
     private CidsBean patchCidsBean(final CidsBean cidsBean, final CidsBeanPatch patch) throws RemoteException {
-        //final DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
-        //config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
-        //config.getClasses().add(JacksonJsonProvider.class);
-        //Client client = ApacheHttpClient.create(config);
-        //client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
-        //final UriBuilder uriBuilder = UriBuilder.fromPath(this.getRootResource());
-        //final WebResource webResource = client.resource(uriBuilder.build());
-
         final CidsBeanInfo beanInfo = cidsBean.getCidsBeanInfo();
 
-        final MultivaluedMap queryParameters = new MultivaluedMapImpl();
-        queryParameters.add("requestResultingInstance", "true");
-        final WebResource webResource = INSTANCE.createWebResource(ENTITIES_API)
+        final WebTarget webResource = INSTANCE.createWebResource(ENTITIES_API)
                 .path(beanInfo.getDomainKey() + "." + beanInfo.getClassKey()+"/"+cidsBean.getPrimaryKeyValue())
-                .queryParams(queryParameters);
-        WebResource.Builder builder = INSTANCE.createAuthorisationHeader(webResource);
+                .queryParam("requestResultingInstance", "true");
+        
+        Invocation.Builder builder = INSTANCE.createAuthorisationHeader(webResource);
         builder = INSTANCE.createMediaTypeHeaders(builder);
 
         if (LOGGER.isDebugEnabled()) {
@@ -193,7 +177,10 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         }
 
         try {
-            final JsonNode objectNode = builder.method("PATCH", ObjectNode.class, patch);
+            Response response = builder.method("PATCH", Entity.json(patch));
+            final JsonNode objectNode = response.readEntity(JsonNode.class);
+//            final JsonNode objectNode = builder.method("PATCH", ObjectNode.class, patch);
+
             if ((objectNode == null) || (objectNode.size() == 0)) {
                 LOGGER.error("could not patch cids bean for class '" + beanInfo.getDomainKey() + "."
                         + beanInfo.getClassKey() + "': patched cids bean could not be found");
@@ -220,8 +207,8 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
                         + "': patched cids bean could not be found");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final ClientResponse.Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not patch meta object for class  '"
                     + beanInfo.getClassKey()
                     + "@"
@@ -231,7 +218,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
 
             LOGGER.error(message, ue);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(ue.getResponse().getEntity(String.class));
+                LOGGER.debug(ue.getResponse().getEntity());
             }
             throw new RemoteException(message, ue);
         }
@@ -243,12 +230,10 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         final CidsBeanInfo beanInfo
                 = new CidsBeanInfo(defaultCidsBeanNode.get(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER).textValue());
 
-        final MultivaluedMap queryParameters = new MultivaluedMapImpl();
-        queryParameters.add("requestResultingInstance", "true");
-        final WebResource webResource = INSTANCE.createWebResource(ENTITIES_API)
+        final WebTarget webResource = INSTANCE.createWebResource(ENTITIES_API)
                 .path(beanInfo.getDomainKey() + "." + beanInfo.getClassKey())
-                .queryParams(queryParameters);
-        WebResource.Builder builder = INSTANCE.createAuthorisationHeader(webResource);
+                .queryParam("requestResultingInstance", "true");
+        Invocation.Builder builder = INSTANCE.createAuthorisationHeader(webResource);
         builder = INSTANCE.createMediaTypeHeaders(builder);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("insertMetaObject for class '" + beanInfo.getDomainKey() + "."
@@ -256,7 +241,9 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
         }
 
         try {
-            final JsonNode objectNode = builder.method("POST", ObjectNode.class, defaultCidsBeanNode);
+            Response response = builder.method("POST", Entity.json(defaultCidsBeanNode));
+            final JsonNode objectNode = response.readEntity(JsonNode.class);
+//            final JsonNode objectNode = builder.method("POST", ObjectNode.class, defaultCidsBeanNode);
             if ((objectNode == null) || (objectNode.size() == 0)) {
                 LOGGER.error("could not insert meta object for class '" + beanInfo.getDomainKey() + "."
                         + beanInfo.getClassKey() + "': newly inserted meta object could not be found");
@@ -283,8 +270,8 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
                         + "': newly inserted meta object could not be found");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final ClientResponse.Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not insert meta object for class  '"
                     + beanInfo.getClassKey()
                     + "@"
@@ -294,7 +281,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
 
             LOGGER.error(message, ue);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(ue.getResponse().getEntity(String.class));
+                LOGGER.debug(ue.getResponse().getEntity());
             }
             throw new RemoteException(message, ue);
         }
@@ -386,7 +373,7 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
     }
 
     @Override
-    protected WebResource createWebResource(final String path) {
+    protected WebTarget createWebResource(final String path) {
         // remove leading '/' if present
         final String resource;
         if ((path == null) || path.isEmpty()) {
@@ -397,19 +384,22 @@ public class RESTfulInterfaceTest extends RESTfulInterfaceConnector {
             resource = getRootResource() + path;
         }
 
-        final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
-
-        clientConfig.getClasses().add(JacksonJsonProvider.class);
-
-        // Workaround for HttpURLConnection (if PUT/DELETE/other methods required)
-        clientConfig.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
-
-        final Client client = ApacheHttpClient4.create(clientConfig);
+        Client client = ClientBuilder.newBuilder().register(JacksonFeature.class).build();        
+        
+//        final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
+//
+//        clientConfig.getClasses().add(JacksonJsonProvider.class);
+//
+//        // Workaround for HttpURLConnection (if PUT/DELETE/other methods required)
+//        clientConfig.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
+//
+//        final Client client = ApacheHttpClient4.create(clientConfig);
         //client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
         
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
-        final WebResource webResource = client.resource(uriBuilder.build());
+        final WebTarget webResource = client.target(uriBuilder.build());
+        
         return webResource;
     }
 }

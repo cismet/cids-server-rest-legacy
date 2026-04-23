@@ -18,7 +18,7 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import de.cismet.cidsx.server.api.types.CidsNode;
 import de.cismet.cidsx.server.api.types.User;

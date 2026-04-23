@@ -7,7 +7,6 @@
 ****************************************************/
 package de.cismet.cidsx.server.cores.legacy;
 
-import Sirius.server.newuser.UserGroup;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.graphql.GraphqlAction;
